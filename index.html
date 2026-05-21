@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Autlán — Mesa de Riesgos & Coberturas</title>
+  <link rel="stylesheet" href="css/styles.css?v=2" />
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       SIDEBAR — NAVEGACIÓN PRINCIPAL
+  ═══════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <span class="logo-icon">⛏</span>
+        <div>
+          <div class="logo-title">AUTLÁN</div>
+          <div class="logo-sub">Mesa de Riesgos</div>
+        </div>
+      </div>
+      <button class="sidebar-toggle" id="sidebarToggle" title="Colapsar menú">‹</button>
+    </div>
+
+    <nav class="sidebar-nav">
+
+      <div class="nav-section-label">GENERAL</div>
+
+      <a class="nav-item active" data-page="dashboard" href="#">
+        <span class="nav-icon">◈</span>
+        <span class="nav-label">Dashboard</span>
+        <span class="nav-badge" id="badge-dashboard"></span>
+      </a>
+
+      <a class="nav-item" data-page="perfil" href="#">
+        <span class="nav-icon">🏢</span>
+        <span class="nav-label">Perfil Autlán</span>
+      </a>
+
+      <a class="nav-item" data-page="escenarios" href="#">
+        <span class="nav-icon">⚙</span>
+        <span class="nav-label">Escenarios & Inputs</span>
+        <span class="nav-badge warn" id="badge-escenarios">!</span>
+      </a>
+
+      <div class="nav-section-label">COBERTURAS</div>
+
+      <a class="nav-item" data-page="fx" href="#">
+        <span class="nav-icon">💱</span>
+        <span class="nav-label">Tipo de Cambio</span>
+        <span class="nav-status" id="status-fx">●</span>
+      </a>
+
+      <a class="nav-item" data-page="oro" href="#">
+        <span class="nav-icon">🥇</span>
+        <span class="nav-label">Precio del Oro</span>
+        <span class="nav-status danger" id="status-oro">●</span>
+      </a>
+
+      <a class="nav-item" data-page="gas" href="#">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label">Gas Natural</span>
+        <span class="nav-status danger" id="status-gas">●</span>
+      </a>
+
+      <a class="nav-item" data-page="tasa" href="#">
+        <span class="nav-icon">📈</span>
+        <span class="nav-label">Tasa de Interés</span>
+        <span class="nav-status warn" id="status-tasa">●</span>
+      </a>
+
+      <a class="nav-item" data-page="manganeso" href="#">
+        <span class="nav-icon">⛏</span>
+        <span class="nav-label">Manganeso</span>
+        <span class="nav-status" id="status-mn">●</span>
+      </a>
+
+      <div class="nav-section-label">ANÁLISIS</div>
+
+      <a class="nav-item" data-page="secundarios" href="#">
+        <span class="nav-icon">🛡</span>
+        <span class="nav-label">Riesgos Secundarios</span>
+      </a>
+
+      <a class="nav-item" data-page="estrategia" href="#">
+        <span class="nav-icon">★</span>
+        <span class="nav-label">Estrategia Óptima</span>
+      </a>
+
+    </nav>
+
+    <!-- Indicador de última actualización -->
+    <div class="sidebar-footer">
+      <div class="footer-item">
+        <span class="footer-dot"></span>
+        <span id="last-update">Actualizando...</span>
+      </div>
+      <div class="footer-item muted">XBRL 1T26 · BMV</div>
+    </div>
+
+  </aside>
+
+  <!-- ═══════════════════════════════════════════
+       CONTENIDO PRINCIPAL
+  ═══════════════════════════════════════════ -->
+  <main class="main" id="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="topbar-menu" id="mobileMenu">☰</button>
+        <div class="breadcrumb" id="breadcrumb">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <!-- Pill de escenario activo -->
+        <div class="scenario-pills">
+          <span class="pill active" data-esc="base">Base</span>
+          <span class="pill" data-esc="optimista">Optimista</span>
+          <span class="pill" data-esc="adverso">Adverso</span>
+        </div>
+        <!-- TC en vivo -->
+        <div class="topbar-stat">
+          <span class="stat-label">USD/MXN</span>
+          <span class="stat-val" id="tc-live">17.20</span>
+        </div>
+        <!-- EBITDA proyectado -->
+        <div class="topbar-stat">
+          <span class="stat-label">EBITDA proy.</span>
+          <span class="stat-val" id="ebitda-live">—</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Área de páginas — cada página se inyecta aquí -->
+    <div class="page-container" id="page-container">
+
+      <!-- ─────── PÁGINA 0: DASHBOARD ─────── -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-header">
+          <h1 class="page-title">Dashboard ejecutivo</h1>
+          <p class="page-sub">Estado de riesgo y cobertura en tiempo real · Autlán Q1 2026</p>
+        </div>
+        <div id="dashboard-content"><!-- Renderizado por pages/p0-dashboard.js --></div>
+      </section>
+
+      <!-- ─────── PÁGINA 1: PERFIL ─────── -->
+      <section class="page" id="page-perfil">
+        <div class="page-header">
+          <h1 class="page-title">Perfil Autlán</h1>
+          <p class="page-sub">Datos financieros auditados · XBRL 1T26 BMV</p>
+        </div>
+        <div id="perfil-content"><!-- Renderizado por pages/p1-perfil.js --></div>
+      </section>
+
+      <!-- ─────── PÁGINA 2: ESCENARIOS & INPUTS ─────── -->
+      <section class="page" id="page-escenarios">
+        <div class="page-header">
+          <h1 class="page-title">Escenarios & Inputs</h1>
+          <p class="page-sub">Variables macro · Ajusta los supuestos — alimenta todas las páginas</p>
+        </div>
+        <div id="escenarios-content"><!-- Renderizado por pages/p2-escenarios.js --></div>
+      </section>
+
+      <!-- ─────── PÁGINA 3: TIPO DE CAMBIO ─────── -->
+      <section class="page" id="page-fx">
+        <div class="page-header">
+          <h1 class="page-title">Riesgo Tipo de Cambio</h1>
+          <p class="page-sub">USD / MXN · Exposición, coberturas y payoffs</p>
+        </div>
+        <div id="fx-content"><!-- Renderizado por pages/p3-fx.js --></div>
+      </section>
+
+      <!-- ─────── PÁGINA 4: ORO ─────── -->
+      <section class="page" id="page-oro">
+        <div class="page-header">
+          <h1 class="page-title">Riesgo Precio del Oro</h1>
+          <p class="page-sub">Metallorum · Sin cobertura activa · Precio en máximos históricos</p>
+        </div>
+        <div id="oro-content"><!-- Renderizado por pages/p4-oro.js --></div>
+      </section>
+
+      <!-- ─────── PÁGINA 5: GAS NATURAL ─────── -->
+      <section class="page" id="page-gas">
+        <div class="page-header">
+          <h1 class="page-title">Riesgo Gas Natural</h1>
+          <p class="page-sub">Costo operativo · Sin cobertura activa · Henry Hub</p>
+        </div>
+        <div id="gas-content"><!-- Renderizado por pages/p5-gas.js --></div>
+      </section>
+
+      <!-- ─────── PÁGINA 6: TASA DE INTERÉS ─────── -->
+      <section class="page" id="page-tasa">
+        <div class="page-header">
+          <h1 class="page-title">Riesgo Tasa de Interés</h1>
+          <p class="page-sub">TIIE · SOFR · Mark-to-market del collar existente</p>
+        </div>
+        <div id="tasa-content"><!-- Renderizado por pages/p6-tasa.js --></div>
+      </section>
+
+      <!-- ─────── PÁGINA 7: MANGANESO ─────── -->
+      <section class="page" id="page-manganeso">
+        <div class="page-header">
+          <h1 class="page-title">Riesgo Precio Manganeso</h1>
+          <p class="page-sub">Commodity principal · Mercado OTC limitado · Alternativas de cobertura</p>
+        </div>
+        <div id="manganeso-content"><!-- Renderizado por pages/p7-manganeso.js --></div>
+      </section>
+
+      <!-- ─────── PÁGINA 8: RIESGOS SECUNDARIOS ─────── -->
+      <section class="page" id="page-secundarios">
+        <div class="page-header">
+          <h1 class="page-title">Riesgos Secundarios</h1>
+          <p class="page-sub">Contraparte · Base · Liquidez · Regulatorio · Operativo</p>
+        </div>
+        <div id="secundarios-content"><!-- Renderizado por pages/p8-secundarios.js --></div>
+      </section>
+
+      <!-- ─────── PÁGINA 9: ESTRATEGIA ÓPTIMA ─────── -->
+      <section class="page" id="page-estrategia">
+        <div class="page-header">
+          <h1 class="page-title">Estrategia Óptima de Cobertura</h1>
+          <p class="page-sub">Portafolio recomendado · Política 60% · P&L por escenario</p>
+        </div>
+        <div id="estrategia-content"><!-- Renderizado por pages/p9-estrategia.js --></div>
+      </section>
+
+    </div><!-- /page-container -->
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL — OVERRIDE DE DATO AUDITADO
+  ═══════════════════════════════════════════ -->
+  <div class="modal-overlay" id="overrideModal" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">⚠ Sobreescribir dato auditado</span>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-warning">
+          Este valor proviene de un reporte auditado (XBRL BMV).
+          Modificarlo requeriere una justificación documentada.
+        </p>
+        <div class="field-group">
+          <label>Campo</label>
+          <input type="text" id="overrideField" readonly />
+        </div>
+        <div class="field-group">
+          <label>Valor original</label>
+          <input type="text" id="overrideOriginal" readonly />
+        </div>
+        <div class="field-group">
+          <label>Nuevo valor</label>
+          <input type="number" id="overrideValue" placeholder="Ingresa el nuevo valor" />
+        </div>
+        <div class="field-group">
+          <label>Justificación <span class="required">*</span></label>
+          <textarea id="overrideJustif" rows="3"
+            placeholder="Ej: Guía de producción 2026 publicada en reporte anual, página 14..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" id="modalCancel">Cancelar</button>
+        <button class="btn-primary" id="modalConfirm">Confirmar override</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TOAST — NOTIFICACIONES
+  ═══════════════════════════════════════════ -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ═══════════════════════════════════════════
+       SCRIPTS — orden de carga importa
+  ═══════════════════════════════════════════ -->
+
+  <!-- 1. Datos base -->
+  <script src="js/data.js"></script>
+
+  <!-- 2. Modelos matemáticos -->
+  <script src="js/models.js"></script>
+
+  <!-- 3. Motor de escenarios y estado -->
+  <script src="js/scenarios.js"></script>
+
+  <!-- 4. Páginas individuales -->
+  <script src="pages/p0-dashboard.js"></script>
+  <script src="pages/p1-perfil.js"></script>
+  <script src="pages/p2-escenarios.js"></script>
+  <script src="pages/p3-fx.js"></script>
+  <script src="pages/p4-oro.js"></script>
+  <script src="pages/p5-gas.js"></script>
+  <script src="pages/p6-tasa.js"></script>
+  <script src="pages/p7-manganeso.js"></script>
+  <script src="pages/p8-secundarios.js"></script>
+  <script src="pages/p9-estrategia.js"></script>
+  
+  <!-- 5. App principal — inicialización y navegación -->
+  <script>
+  (() => {
+
+    // ── NAVEGACIÓN ──────────────────────────────
+    const pages   = document.querySelectorAll(".page");
+    const navItems = document.querySelectorAll(".nav-item");
+    const breadcrumb = document.getElementById("breadcrumb");
+
+    const PAGE_LABELS = {
+      dashboard:   "Dashboard",
+      perfil:      "Perfil Autlán",
+      escenarios:  "Escenarios & Inputs",
+      fx:          "Tipo de Cambio",
+      oro:         "Precio del Oro",
+      gas:         "Gas Natural",
+      tasa:        "Tasa de Interés",
+      manganeso:   "Manganeso",
+      secundarios: "Riesgos Secundarios",
+      estrategia:  "Estrategia Óptima",
+    };
+
+    function navigateTo(pageId) {
+      // Ocultar todas las páginas
+      pages.forEach(p => p.classList.remove("active"));
+      navItems.forEach(n => n.classList.remove("active"));
+
+      // Mostrar página destino
+      const target = document.getElementById(`page-${pageId}`);
+      if (target) target.classList.add("active");
+
+      // Marcar nav item activo
+      const navItem = document.querySelector(`[data-page="${pageId}"]`);
+      if (navItem) navItem.classList.add("active");
+
+      // Actualizar breadcrumb
+      breadcrumb.textContent = PAGE_LABELS[pageId] || pageId;
+
+      // Emitir evento para que la página se renderice si es lazy
+      Scenarios.emit(`page:${pageId}`, {});
+
+      // Cerrar menú mobile si está abierto
+      document.getElementById("sidebar").classList.remove("mobile-open");
+    }
+
+    // Click en nav items
+    navItems.forEach(item => {
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+        navigateTo(item.dataset.page);
+      });
+    });
+
+    // Scenario pills en topbar
+    document.querySelectorAll(".pill").forEach(pill => {
+      pill.addEventListener("click", () => {
+        document.querySelectorAll(".pill").forEach(p => p.classList.remove("active"));
+        pill.classList.add("active");
+        document.documentElement.setAttribute("data-active-scenario", pill.dataset.esc);
+        document.body.setAttribute("data-active-scenario", pill.dataset.esc);
+        Scenarios.emit("escenario:seleccionado", { nombre: pill.dataset.esc });
+      });
+    });
+
+    // ── SIDEBAR TOGGLE ──────────────────────────
+    const sidebar = document.getElementById("sidebar");
+    const main    = document.getElementById("main");
+
+    document.getElementById("sidebarToggle").addEventListener("click", () => {
+      sidebar.classList.toggle("collapsed");
+      main.classList.toggle("expanded");
+      const btn = document.getElementById("sidebarToggle");
+      btn.textContent = sidebar.classList.contains("collapsed") ? "›" : "‹";
+    });
+
+    document.getElementById("mobileMenu").addEventListener("click", () => {
+      sidebar.classList.toggle("mobile-open");
+    });
+
+    // ── TOPBAR EN TIEMPO REAL ───────────────────
+    Scenarios.on("calc:update", ({ actual }) => {
+      const tc = Scenarios.getVar("usdmxn");
+      document.getElementById("tc-live").textContent = `$${tc.toFixed(2)}`;
+
+      const ebitda = actual.resultados.ebitda;
+      const el     = document.getElementById("ebitda-live");
+      el.textContent = `USD ${(ebitda/1000).toFixed(1)}M`;
+      el.style.color = ebitda > 0 ? "var(--color-success)" : "var(--color-danger)";
+    });
+
+    // ── MODAL DE OVERRIDE ───────────────────────
+    let _overrideCallback = null;
+
+    window.openOverrideModal = (campo, valorOriginal, callback) => {
+      document.getElementById("overrideField").value    = campo;
+      document.getElementById("overrideOriginal").value = valorOriginal;
+      document.getElementById("overrideValue").value    = "";
+      document.getElementById("overrideJustif").value   = "";
+      document.getElementById("overrideModal").style.display = "flex";
+      _overrideCallback = callback;
+    };
+
+    document.getElementById("modalClose").addEventListener("click",  closeModal);
+    document.getElementById("modalCancel").addEventListener("click", closeModal);
+    document.getElementById("overrideModal").addEventListener("click", (e) => {
+      if (e.target.id === "overrideModal") closeModal();
+    });
+
+    document.getElementById("modalConfirm").addEventListener("click", () => {
+      const valor   = parseFloat(document.getElementById("overrideValue").value);
+      const justif  = document.getElementById("overrideJustif").value.trim();
+      const campo   = document.getElementById("overrideField").value;
+
+      if (isNaN(valor)) {
+        showToast("Ingresa un valor numérico válido", "error"); return;
+      }
+      if (!justif) {
+        showToast("La justificación es obligatoria", "error"); return;
+      }
+
+      Scenarios.setOverride(campo, valor, justif);
+      if (_overrideCallback) _overrideCallback(valor, justif);
+      showToast(`Override registrado: ${campo}`, "success");
+      closeModal();
+    });
+
+    function closeModal() {
+      document.getElementById("overrideModal").style.display = "none";
+      _overrideCallback = null;
+    }
+
+    // ── TOAST ───────────────────────────────────
+    window.showToast = (mensaje, tipo = "info", duracion = 3000) => {
+      const container = document.getElementById("toastContainer");
+      const toast     = document.createElement("div");
+      toast.className = `toast toast-${tipo}`;
+      toast.textContent = mensaje;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => toast.classList.add("visible"));
+      setTimeout(() => {
+        toast.classList.remove("visible");
+        setTimeout(() => toast.remove(), 300);
+      }, duracion);
+    };
+
+    // ── TIMESTAMP ───────────────────────────────
+    function updateTimestamp() {
+      const now = new Date();
+      document.getElementById("last-update").textContent =
+        now.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    setInterval(updateTimestamp, 60000);
+    updateTimestamp();
+
+    // ── INICIALIZACIÓN ──────────────────────────
+    document.documentElement.setAttribute("data-active-scenario", "base");
+    document.body.setAttribute("data-active-scenario", "base");
+    Scenarios.init();
+    // Renderizar dashboard inicial
+    if (typeof renderDashboard === "function") renderDashboard();
+    if (typeof renderPerfil    === "function") renderPerfil();
+    if (typeof renderEscenarios === "function") renderEscenarios();
+    if (typeof renderFX        === "function") renderFX();
+    if (typeof renderOro       === "function") renderOro();
+    if (typeof renderGas       === "function") renderGas();
+    if (typeof renderManganeso === "function") renderManganeso();
+    if (typeof renderSecundarios === "function") renderSecundarios();
+    if (typeof renderEstrategia === "function") renderEstrategia();
+
+    console.log("[App] Autlán Risk Calculator inicializado");
+    console.log("[App] Versión data:", AUTLAN._version);
+
+  })();
+  </script>
+
+</body>
+</html>
