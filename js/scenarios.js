@@ -204,10 +204,17 @@ const Scenarios = (() => {
   // ─────────────────────────────────────────
 
   const _baseFinanciera = {
-    ingresos_anual:   322746,
-    ebitda_anual:      31470,
-    gastoFinanciero:   42493,
-    capex_anual:       30000,
+    ingresos_anual:   322746,  // 2025 auditado (XBRL 4T25)
+    // Run-rate 1T26: UAFIRDA $10.8M × 4 = $43.2M — mejora significativa vs 2025
+    // Usamos 2025 auditado como ancla conservadora; el modelo mostrará upside
+    ebitda_anual:      31470,  // 2025 CALC — ancla conservadora
+    ebitda_1T26_rr:    43200,  // run-rate 1T26 × 4 (junta may-2026) — para referencia
+    gastoFinanciero:   42493,  // 2025 auditado
+    gastoFin_1T26_rr:  29272,  // run-rate 1T26 ($7,318 × 4) — para referencia
+    capex_anual:       30000,  // estimado mantenimiento
+    // TC promedio para conversiones
+    tcPromedio2025:    17.00,
+    tc1T26:            18.07,
   };
 
   function _recalcular() {
