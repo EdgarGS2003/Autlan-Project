@@ -825,5 +825,5 @@ function _oroBindCalcs() {
 // Lazy render
 Scenarios.on("page:oro", () => {
   const el = document.getElementById("oro-content");
-  if (el) renderFX();
+  if (el && !el.innerHTML.trim()) renderOro();
 });
