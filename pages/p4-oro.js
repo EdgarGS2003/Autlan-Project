@@ -15,10 +15,11 @@ function renderOro() {
         Precio del oro en máximos históricos
         (<strong>USD <span id="oro-precio-live">3,000</span>/oz</strong>)
         y <strong>sin cobertura activa</strong>.
-        Metallorum duplicó producción en 1T26 —
-        exposición al downside completamente desprotegida.
+        Metallorum vendió ~<strong>2,400 oz en 1T26</strong> con meta de
+        <strong>20,000 oz en 2026</strong> y +100,000 oz en años siguientes.
+        Exposición al downside completamente desprotegida.
       </span>
-    </div>
+    </div>`
 
     <!-- KPIs -->
     <div class="grid-4 mb-24" id="oro-kpis"></div>
@@ -102,7 +103,8 @@ function _oroRenderKPIs() {
   if (!el) return;
 
   const precio   = Scenarios.getVar("precioOro");
-  const ozAnual  = 520000; // estimado anualizado (390K oz en 9M25 × 4/3)
+  // 1T26: ~2,400 oz vendidas. Meta 2026: 20,000 oz. Usar meta como base de modelo.
+  const ozAnual  = 20000; // oz/año — meta mgmt 2026 (junta may-2026)
   const ingresos = precio * ozAnual / 1000; // USD miles
   const base     = 3000;
   const delta    = precio - base;
@@ -183,7 +185,7 @@ function _oroTabForward() {
         </div>
         <div class="field-group">
           <label>Volumen a cubrir (oz)</label>
-          <input type="number" id="oro-fwd-oz" value="130000" step="5000"
+          <input type="number" id="oro-fwd-oz" value="10000" step="5000"
                  oninput="calcOroForward()" />
         </div>
         <div class="field-group">
@@ -232,7 +234,7 @@ function _oroTabPut() {
         </div>
         <div class="field-group">
           <label>Volumen a cubrir (oz)</label>
-          <input type="number" id="oro-put-oz" value="130000" step="5000"
+          <input type="number" id="oro-put-oz" value="10000" step="5000"
                  oninput="calcOroPut()" />
         </div>
         <div class="field-group">
@@ -291,7 +293,7 @@ function _oroTabCollar() {
         </div>
         <div class="field-group">
           <label>Volumen a cubrir (oz)</label>
-          <input type="number" id="oro-col-oz" value="130000" step="5000"
+          <input type="number" id="oro-col-oz" value="10000" step="5000"
                  oninput="calcOroCollar()" />
         </div>
       </div>
@@ -324,7 +326,7 @@ function _oroTabFuturos() {
         </div>
         <div class="field-group">
           <label>Número de contratos (100 oz c/u)</label>
-          <input type="number" id="oro-fut-contratos" value="1300" step="100"
+          <input type="number" id="oro-fut-contratos" value="100" step="10"
                  oninput="calcOroFuturos()" />
         </div>
         <div class="field-group">
@@ -563,7 +565,7 @@ function _oroRenderTablaComparativa() {
   if (!el) return;
 
   const esc   = Scenarios.getState().escenarios;
-  const oz    = 520000; // oz anualizadas
+  const oz    = 20000; // oz anualizadas
   const r     = Scenarios.getVar("sofr1m") / 100;
   const T     = 0.5;
   const floor = 2700;
@@ -738,7 +740,7 @@ function _oroRenderRecomendacion() {
   if (!el) return;
 
   const precio = Scenarios.getVar("precioOro");
-  const oz     = 520000;
+  const oz     = 20000;
 
   el.innerHTML = `
     <div class="card-title" style="margin-bottom:16px;">
