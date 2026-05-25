@@ -65,7 +65,7 @@ function _dashboardHTML() {
           <div class="card-title">Estructura de deuda</div>
           <div class="card-sub">USD 185.9M total · 1T26</div>
         </div>
-        <span class="badge badge-warn">DSCR 0.6x</span>
+        <span class="badge badge-warn">Deuda/UAFIRDA 4.4x</span>
       </div>
       <div id="dash-deuda"></div>
     </div>
