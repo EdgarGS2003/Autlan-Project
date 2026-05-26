@@ -477,8 +477,14 @@ const Models = (() => {
 
     // 3. Impacto precio oro en ingresos Metallorum
     const deltaOro   = (precioOro - oro_base) / oro_base;
-    const impactoOro = 20000 * deltaOro; // ~USD 20M ingresos oro anualizados (1T26 × 4)
-
+    // 3. Impacto precio oro en ingresos Metallorum
+    // 1T26: ~2,400 oz vendidas → anualizado ~9,600 oz → meta 2026: 20,000 oz
+    // Usar 20,000 oz como base conservadora del año completo (guía mgmt)
+    const ozAnualizadasOro = 20000; // oz — meta 2026 según junta may-2026
+    const deltaOro   = (precioOro - oro_base) / oro_base;
+    const impactoOro = (ozAnualizadasOro * oro_base / 1000) * deltaOro;
+    // = USD 60M base × delta % → ~USD 0.6M por cada 1% de cambio en precio
+    
     // 4. Impacto TIIE en costo financiero (deuda TIIE ~MXN 30M equiv USD)
     const deltaTIIE      = (tiie28 - tiie_base) / 100; // en puntos porcentuales
     const impactoTIIE    = -29747 * deltaTIIE;          // USD equiv — negativo si sube tasa

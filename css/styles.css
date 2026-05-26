@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   styles.css — Autlán Risk Calculator
+   styles.css — Autlán Risk Calculatorooo
    Estilo: Premium Dark / CloudZero-inspired / Elegancia Financiera
    Acento: Deep Purple #4b2160 · Fondo: Negro profundo
    ═══════════════════════════════════════════════════════════ */
@@ -10,7 +10,7 @@
 /* ── VARIABLES ───────────────────────────────────────── */
 :root {
   /* ── Fondos Premium (inspirado en CloudZero) */
-  --bg-base:          #0d0d0f;   /* Negro casi puro */
+  --bg-base:          #080402;   /* Negro casi puro */
   --bg-surface:       #141417;   /* Superficies elevadas */
   --bg-raised:        #1a1a1f;   /* Cards y hovers */
   --bg-sidebar:       #111114;   /* Sidebar sólido oscuro */
