@@ -376,4 +376,130 @@ const Models = (() => {
     };
   }
 
-  function tablaEscenarios(base, esce
+  function tablaEscenarios(base, escenariosVars) {
+    const resultados = {};
+    for (const [nombre, vars] of Object.entries(escenariosVars)) {
+      resultados[nombre] = impactoEscenario(vars, base);
+    }
+    return resultados;
+  }
+
+  // ─────────────────────────────────────────
+  // 8. EVALUADOR DE ESTRATEGIA DE COBERTURA
+  // ─────────────────────────────────────────
+  function evaluarEstrategia(coberturas, escenarios, base) {
+    const resultado = {
+      costoTotal:     0,
+      costoPctEBITDA: 0,
+      escenarios:     {},
+    };
+
+    for (const [nombre, esc] of Object.entries(escenarios)) {
+      const impacto = impactoEscenario(esc, base);
+      let proteccionTotal = 0;
+      let costoEstrategia = 0;
+
+      for (const cob of coberturas) {
+        if (!cob.activa) continue;
+        costoEstrategia += cob.prima || 0;
+
+        if (cob.tipo === "collar_fx") {
+          const payoff = collarPayoff(esc.usdmxn, cob.floor, cob.cap, cob.nocional);
+          proteccionTotal += payoff.payoffCollar;
+        }
+        if (cob.tipo === "forward_fx") {
+          const payoff = forwardPayoff(esc.usdmxn, cob.strike, cob.nocional);
+          proteccionTotal += payoff.ganancia;
+        }
+        if (cob.tipo === "collar_tasa") {
+          const tasaEsc          = cob.subyacente === "TIIE" ? esc.tiie28 : esc.sofr1m;
+          const pagoSinCobertura = cob.nocional * (tasaEsc / 100 + cob.spread);
+          const tasaEfectiva     = Math.min(Math.max(tasaEsc, cob.floor), cob.cap);
+          const pagoConCobertura = cob.nocional * (tasaEfectiva / 100 + cob.spread);
+          proteccionTotal += pagoSinCobertura - pagoConCobertura;
+        }
+      }
+
+      resultado.escenarios[nombre] = {
+        ebitdaSinCobertura: impacto.resultados.ebitda,
+        proteccion:         proteccionTotal,
+        costoEstrategia,
+        ebitdaConCobertura: impacto.resultados.ebitda + proteccionTotal - costoEstrategia,
+        fcfSinCobertura:    impacto.resultados.fcf,
+        fcfConCobertura:    impacto.resultados.fcf + proteccionTotal - costoEstrategia,
+        dscrConCobertura:  (impacto.resultados.ebitda + proteccionTotal - costoEstrategia)
+                           / impacto.resultados.gastoFin,
+      };
+    }
+
+    const costoAnual          = coberturas.reduce((s, c) => s + (c.prima || 0), 0);
+    resultado.costoTotal      = costoAnual;
+    resultado.costoPctEBITDA  = (costoAnual / base.ebitda_anual * 100).toFixed(2);
+
+    return resultado;
+  }
+
+  // ─────────────────────────────────────────
+  // PARÁMETROS POR ACTIVO
+  // ─────────────────────────────────────────
+  const PARAMS = {
+    fx_usdmxn: {
+      sigma:   0.12,
+      q:       0.071,
+      r:       0.043,
+      v0:      0.0144,
+      kappa:   2.5,
+      theta_v: 0.0169,
+      xi:      0.40,
+      rho_sv: -0.60,
+    },
+    oro: {
+      sigma:   0.18,
+      q:       0.00,
+      r:       0.043,
+      v0:      0.0324,
+      kappa:   1.2,
+      theta_v: 0.0400,
+      xi:      0.35,
+      rho_sv: -0.40,
+    },
+    gas: {
+      sigma:   0.45,
+      kappa:   1.5,
+      mu_eq:   Math.log(3.20),
+      r:       0.043,
+    },
+    tasa_tiie: {
+      sigma:   0.25,
+      kappa:   0.80,
+    },
+    tasa_sofr: {
+      sigma:   0.20,
+      kappa:   0.70,
+    },
+  };
+
+  // ─────────────────────────────────────────
+  // API PÚBLICA
+  // ─────────────────────────────────────────
+  return {
+    blackScholes,
+    heston,
+    schwartz,
+    forwardPrice,
+    forwardPayoff,
+    swapMTM,
+    capPrice,
+    collarPrice,
+    collarPayoff,
+    impactoEscenario,
+    tablaEscenarios,
+    evaluarEstrategia,
+    PARAMS,
+    normCDF,
+    normPDF,
+  };
+
+})();
+
+if (typeof module !== "undefined") module.exports = Models;
