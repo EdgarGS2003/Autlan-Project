@@ -89,7 +89,12 @@
         <span class="nav-icon">★</span>
         <span class="nav-label">Estrategia Óptima</span>
       </a>
-
+      
+      <a class="nav-item" data-page="docs" href="#">
+        <span class="nav-icon">📖</span>
+        <span class="nav-label">Documentación</span>
+      </a>
+      
     </nav>
 
     <!-- Indicador de última actualización -->
@@ -227,6 +232,15 @@
         <div id="estrategia-content"><!-- Renderizado por pages/p9-estrategia.js --></div>
       </section>
 
+      <!-- ─────── PÁGINA 10: DOCUMENTACIÓN ─────── -->
+      <section class="page" id="page-docs">
+        <div class="page-header">
+          <h1 class="page-title">Documentación del Modelo</h1>
+          <p class="page-sub">Cómo funciona cada página, modelo, cálculo y la estrategia óptima</p>
+        </div>
+        <div id="docs-content"><!-- Renderizado por pages/p10-docs.js --></div>
+      </section>
+      
     </div><!-- /page-container -->
   </main>
 
@@ -301,6 +315,7 @@
   <script src="pages/p7-manganeso.js"></script>
   <script src="pages/p8-secundarios.js"></script>
   <script src="pages/p9-estrategia.js"></script>
+  <script src="pages/p10-docs.js"></script>
   
   <!-- 5. App principal — inicialización y navegación -->
   <script>
@@ -322,6 +337,7 @@
       manganeso:   "Manganeso",
       secundarios: "Riesgos Secundarios",
       estrategia:  "Estrategia Óptima",
+      docs: "Documentación del Modelo",
     };
 
     function navigateTo(pageId) {
@@ -472,6 +488,7 @@
     if (typeof renderManganeso === "function") renderManganeso();
     if (typeof renderSecundarios === "function") renderSecundarios();
     if (typeof renderEstrategia === "function") renderEstrategia();
+    if (typeof renderDocs === "function") renderDocs();
 
     console.log("[App] Autlán Risk Calculator inicializado");
     console.log("[App] Versión data:", AUTLAN._version);
