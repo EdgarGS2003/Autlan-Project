@@ -2,9 +2,10 @@
  * data.js — Compañía Minera Autlán, S.A.B. de C.V.
  * Base de datos precargada desde XBRLs auditados BMV
  * Fuentes: XBRL 4T25 (31-dic-2025) y XBRL 1T26 (31-mar-2026)
+ *          + Key Points Junta may-2026
  *
  * Convención de moneda: USD miles (000s) salvo indicación
- * Flag "source": "XBRL_4T25" | "XBRL_1T26" | "CALC" | "ASSUMPTION"
+ * Flag "source": "XBRL_4T25" | "XBRL_1T26" | "CALC" | "ASSUMPTION" | "JUNTA_MAY26"
  * Flag "audited": true = dato auditado, no editar sin justificación
  */
 
@@ -48,12 +49,12 @@ const AUTLAN = {
       impuestos:          { valor: -5992, source: "XBRL_4T25", audited: true },
       perdidaNeta:        { valor:-37773, source: "XBRL_4T25", audited: true },
       // Métricas derivadas
-      margenBruto:       { valor: 15.9,  source: "CALC", audited: false }, // %
+      margenBruto:       { valor: 15.9,  source: "CALC", audited: false },
       ebitda:            { valor: 31470, source: "CALC", audited: false }, // utilidad op + D&A (35,564)
-      margenEbitda:      { valor:  9.7,  source: "CALC", audited: false }, // %
+      margenEbitda:      { valor:  9.7,  source: "CALC", audited: false },
       depreciacion:      { valor: 35564, source: "XBRL_4T25", audited: true },
     },
-    // 1T26 — fuente XBRL 1T26
+    // 1T26 — fuente XBRL 1T26 + confirmado en junta may-2026
     t1_2026: {
       ingresos:           { valor:  98386, source: "XBRL_1T26", audited: true },
       costoVentas:        { valor:  83463, source: "XBRL_1T26", audited: true },
@@ -61,20 +62,34 @@ const AUTLAN = {
       gastosVenta:        { valor:   5905, source: "XBRL_1T26", audited: true },
       gastosAdmin:        { valor:  10656, source: "XBRL_1T26", audited: true },
       otrosGastos:        { valor:  -1808, source: "XBRL_1T26", audited: true },
-      utilidadOperacion:  { valor:    170, source: "XBRL_1T26", audited: true },
+      utilidadOperacion:  { valor:    170, source: "XBRL_1T26", audited: true,
+                            nota: "Primer trimestre positivo en más de un año — confirmado junta may-2026" },
       ingresosFinancieros:{ valor:   1486, source: "XBRL_1T26", audited: true },
       gastosFinancieros:  { valor:   7318, source: "XBRL_1T26", audited: true },
       perdidaAnteImpuestos:{ valor: -5662, source: "XBRL_1T26", audited: true },
       impuestos:          { valor:    314, source: "XBRL_1T26", audited: true },
-      perdidaNeta:        { valor:  -5976, source: "XBRL_1T26", audited: true },
+      perdidaNeta:        { valor:  -5976, source: "XBRL_1T26", audited: true,
+                            nota: "Arrastrada por costo financiero $7.3 MD — junta may-2026" },
+      // UAFIRDA confirmada en junta (puede diferir de EBITDA IFRS por ajustes)
+      uafirda:            { valor:  10800, source: "JUNTA_MAY26", audited: false,
+                            nota: "+44% vs 1T25, margen 11% — dato confirmado en junta may-2026" },
+      margenUafirda:      { valor:   11.0, source: "JUNTA_MAY26", audited: false },
       // vs 1T25
       ingresos_1T25:      { valor:  80135, source: "XBRL_1T26", audited: true },
-      variacion_yoy:      { valor:  22.8,  source: "CALC",      audited: false }, // %
+      variacion_yoy:      { valor:  22.8,  source: "CALC",      audited: false },
+      uafirda_1T25:       { valor:   7500, source: "JUNTA_MAY26", audited: false,
+                            nota: "Implícito: +44% YoY desde $7.5M aprox" },
     },
     // 1T25 para referencia
     t1_2025: {
       ingresos:    { valor: 80135, source: "XBRL_1T26", audited: true },
       perdidaNeta: { valor: -7632, source: "XBRL_1T26", audited: true },
+    },
+    // Run-rate 1T26 × 4 — para proyecciones (no auditado)
+    runRate2026: {
+      ingresos:       { valor: 393544, source: "CALC", audited: false, nota: "1T26 × 4" },
+      uafirda:        { valor:  43200, source: "CALC", audited: false, nota: "UAFIRDA 1T26 × 4" },
+      gastoFinanciero:{ valor:  29272, source: "CALC", audited: false, nota: "Gasto fin 1T26 × 4" },
     },
   },
 
@@ -82,10 +97,10 @@ const AUTLAN = {
   // 3. BALANCE GENERAL
   // ─────────────────────────────────────────────
   balance: {
-    // Al 31-mar-2026 — fuente XBRL 1T26
     fecha: "2026-03-31",
     activos: {
-      efectivo:             { valor:  21801, source: "XBRL_1T26", audited: true },
+      efectivo:             { valor:  21801, source: "XBRL_1T26", audited: true,
+                              nota: "Piso de liquidez a monitorear — junta may-2026" },
       cuentasCobrar:        { valor:  52387, source: "XBRL_1T26", audited: true },
       inventarios:          { valor:  88033, source: "XBRL_1T26", audited: true },
       otrosCirculantes:     { valor:  55390, source: "XBRL_1T26", audited: true },
@@ -113,15 +128,21 @@ const AUTLAN = {
       primaEmision:         { valor:  32993, source: "XBRL_1T26", audited: true },
       utilidadesAcumuladas: { valor: 137974, source: "XBRL_1T26", audited: true },
       oriAcumulados:        { valor: -15674, source: "XBRL_1T26", audited: true },
-      totalControladora:    { valor: 228098, source: "XBRL_1T26", audited: true },
+      totalControladora:    { valor: 228098, source: "XBRL_1T26", audited: true,
+                              nota: "Capital contable $228.1 MD — junta may-2026" },
       participacionNc:      { valor:   4173, source: "XBRL_1T26", audited: true },
       totalCapital:         { valor: 232271, source: "XBRL_1T26", audited: true },
     },
-    // Métricas de apalancamiento
     metricas: {
       leverage:    { valor: 63.0, source: "CALC", audited: false, nota: "Deuda total / Activos totales %" },
-      deudaTotal:  { valor: 185932, source: "CALC", audited: false, nota: "Deuda CP + LP (sin arrendamientos)" },
-      deudaNeta:   { valor: 164131, source: "CALC", audited: false, nota: "Deuda total - Efectivo" },
+      deudaTotal:  { valor: 190600, source: "JUNTA_MAY26", audited: false,
+                     nota: "Deuda total confirmada en junta: $190.6 MD (-$7.2 MD vs dic-2025)" },
+      deudaNeta:   { valor: 168799, source: "CALC", audited: false,
+                     nota: "Deuda total $190.6M - Efectivo $21.8M" },
+      deudaUafirdaLTM: { valor: 4.4, source: "JUNTA_MAY26", audited: false,
+                          nota: "~4.4x — nivel a vigilar vs covenants no revelados públicamente" },
+      covenants:   { source: "PENDIENTE",
+                     nota: "ABIERTO: Leverage máximo y cobertura de intereses mínima del crédito Santander no revelados" },
     },
   },
 
@@ -130,11 +151,13 @@ const AUTLAN = {
   // ─────────────────────────────────────────────
   deuda: {
     fecha: "2026-03-31",
+    totalConfirmado: { valor: 190600, source: "JUNTA_MAY26", audited: false,
+                       nota: "Confirmado en junta may-2026. XBRL registra 185,932 (diferencia por arrendamientos / ajuste)" },
     creditos: [
       {
         id: 1,
         acreedor:    "Banco Santander México",
-        tipo:        "Banca comercial",
+        tipo:        "Banca comercial — crédito principal sindicado",
         extranjero:  false,
         fechaFirma:  "2024-11-05",
         vencimiento: "2031-10-05",
@@ -143,14 +166,15 @@ const AUTLAN = {
         spread:      6.00,
         moneda:      "USD",
         saldoTotal:  { valor: 119470, source: "XBRL_1T26", audited: true },
-        // Desglose por vencimiento (USD miles)
+        saldoJunta:  { valor: 120000, source: "JUNTA_MAY26", audited: false,
+                       nota: "~$120 MD confirmado en junta may-2026" },
         vencimientos:{ cp: 1079, a1: 3237, a2: 15184, a3: 21632, a4: 28184, a5mas: 50234 },
-        notas: "Crédito sindicado principal. Mayor exposición SOFR.",
+        notas: "Crédito sindicado principal. Mayor exposición SOFR. Covenants no revelados.",
       },
       {
         id: 2,
         acreedor:    "Banco Santander México",
-        tipo:        "Banca comercial",
+        tipo:        "Banca comercial — tramo adicional",
         extranjero:  false,
         fechaFirma:  "2024-11-05",
         vencimiento: "2027-11-05",
@@ -160,11 +184,12 @@ const AUTLAN = {
         moneda:      "USD",
         saldoTotal:  { valor: 16009, source: "XBRL_1T26", audited: true },
         vencimientos:{ cp: 0, a1: 0, a2: 16009, a3: 0, a4: 0, a5mas: 0 },
+        notas: "Tramo adicional Santander SOFR+5.5%, vence 2027 — confirmado junta may-2026.",
       },
       {
         id: 3,
         acreedor:    "Banco Santander México",
-        tipo:        "Banca comercial",
+        tipo:        "Banca comercial — tramo MXN",
         extranjero:  false,
         fechaFirma:  "2024-11-05",
         vencimiento: "2027-11-05",
@@ -172,7 +197,7 @@ const AUTLAN = {
         tasaBase:    "TIIE28",
         spread:      5.50,
         moneda:      "MXN",
-        saldoTotal:  { valor: 14887, source: "XBRL_1T26", audited: true }, // USD equiv
+        saldoTotal:  { valor: 14887, source: "XBRL_1T26", audited: true },
         vencimientos:{ cp: 0, a1: 0, a2: 14887, a3: 0, a4: 0, a5mas: 0 },
       },
       {
@@ -186,9 +211,11 @@ const AUTLAN = {
         tasaBase:    "TIIE28",
         spread:      4.00,
         moneda:      "MXN",
-        saldoTotal:  { valor: 11392, source: "XBRL_1T26", audited: true }, // USD equiv
+        saldoTotal:  { valor: 11392, source: "XBRL_1T26", audited: true },
+        saldoJunta:  { valor: 14000, source: "JUNTA_MAY26", audited: false,
+                       nota: "~$14 MD equiv. confirmado en junta may-2026" },
         vencimientos:{ cp: 2680, a1: 0, a2: 2354, a3: 2378, a4: 2476, a5mas: 4504 },
-        notas: "Subsidiaria CEM. Cubierto parcialmente con collar TIIE.",
+        notas: "Subsidiaria CEM. Cubierto parcialmente con collar TIIE. Vence 2031.",
       },
       {
         id: 5,
@@ -207,7 +234,7 @@ const AUTLAN = {
       {
         id: 6,
         acreedor:    "Banco Santander (España)",
-        tipo:        "Banca internacional",
+        tipo:        "Banca internacional — EMD",
         extranjero:  true,
         fechaFirma:  "2025-05-16",
         vencimiento: "2028-05-31",
@@ -216,6 +243,7 @@ const AUTLAN = {
         spread:      0.40,
         moneda:      "EUR",
         saldoTotal:  { valor: 3401, source: "XBRL_1T26", audited: true },
+        notas: "Deuda EMD (España). Varios bancos en euros, tasas fijas bajas — junta may-2026.",
       },
       {
         id: 7,
@@ -232,14 +260,17 @@ const AUTLAN = {
         saldoTotal:  { valor: 2000, source: "XBRL_1T26", audited: true },
       },
     ],
-    // Resumen por tipo de tasa (para el modelo de swap)
     resumenTasa: {
-      sofr_usd:    { saldo: 135479, pct: 72.9, source: "CALC" }, // Créditos 1+2
-      tiie_mxn:    { saldo:  29747, pct: 16.0, source: "CALC" }, // Créditos 3+4+5
+      sofr_usd:    { saldo: 135479, pct: 72.9, source: "CALC" },
+      tiie_mxn:    { saldo:  29747, pct: 16.0, source: "CALC" },
       euribor_eur: { saldo:   3401, pct:  1.8, source: "CALC" },
       fija:        { saldo:   2000, pct:  1.1, source: "CALC" },
       arrendamientos:{ saldo: 4703, pct:  2.5, source: "CALC" },
       total:       { saldo: 185932, source: "CALC" },
+    },
+    certificadosBursatiles: {
+      programa:    { valor: 3500000, moneda: "MXN miles", nota: "Programa renovado hasta $3,500 MP" },
+      emisionesActivas: { valor: 0, nota: "Sin certificados bursátiles vigentes al 1T26 — junta may-2026" },
     },
   },
 
@@ -250,7 +281,26 @@ const AUTLAN = {
     fecha: "2026-03-31",
     fuente: "XBRL_1T26",
 
-    // COLLAR DE TASA DE INTERÉS — TIIE (único instrumento de tasa activo)
+    // Gobernanza — tres niveles (confirmado junta may-2026)
+    gobernanza: {
+      nivel1: { nombre: "Consejo de Administración", rol: "Política general de coberturas" },
+      nivel2: { nombre: "Comité de Auditoría", rol: "Supervisión, revisión trimestral" },
+      nivel3: { nombre: "Comité interno ejecutivo", rol: "Decide tipo de cobertura y timing, revisa mensualmente" },
+      valuador: { nombre: "Irvin", rol: "Tercero independiente — entrega valuaciones trimestrales" },
+      modeloPropietario: false,
+      nota: "La empresa mide riesgos internamente pero no tiene modelo propietario — junta may-2026",
+    },
+
+    // Filosofía de cobertura (junta may-2026)
+    filosofia: {
+      prioridad:      "Preservación de liquidez",
+      instrumentos:   "Preferencia por collares sin costo (zero-cost) — no desembolsan prima, aceptan limitar upside",
+      limiteMaximo:   "Cubren hasta 60% de ingresos presupuestados en moneda extranjera",
+      decisiones:     "Muy dependientes de condiciones de mercado para decidir cuándo y cuánto cubrir",
+      collarTIIE:     "TIIE actualmente ~7%, por debajo del piso del collar (8.75%) — collar de tasa sin beneficio actual",
+    },
+
+    // COLLAR DE TASA DE INTERÉS — TIIE
     collarTasa: {
       id:           "IFD-TASA-01",
       tipo:         "Collar de tasa de interés (Cap + Floor)",
@@ -258,41 +308,38 @@ const AUTLAN = {
       entidad:      "Compañía de Energía Mexicana (CEM) — subsidiaria",
       fechaContrato:"2025-02-07",
       vencimiento:  "2028-06-23",
-      nocionalMXN:  { valor: 157584, source: "XBRL_4T25", audited: true }, // MXN miles
-      nocionalPct:  50, // % del saldo de deuda TIIE de CEM cubierto
-      cap:          11.00,  // % — floor corto (vende call)
-      floor:        8.75,   // % — cap largo (compra put)
-      // Situación actual: TIIE actual ~7.10% → DEBAJO del floor 8.75%
-      // → El collar NO está siendo ejercido → pérdida de prima sin beneficio
+      nocionalMXN:  { valor: 157584, source: "XBRL_4T25", audited: true },
+      nocionalPct:  50,
+      cap:          11.00,
+      floor:        8.75,
       tiieActual:   7.10,
-      estadoActual: "SIN_EJERCICIO", // TIIE < floor → instrumento fuera del dinero
+      estadoActual: "SIN_EJERCICIO",
+      nota:         "TIIE ~7% < floor 8.75% → collar sin beneficio actual — confirmado junta may-2026",
       mtm: {
-        // Al 1T26 el collar representa un ACTIVO (la empresa es acreedora del valor)
-        // pero genera minusvalía porque TIIE cayó por debajo del floor
         minusvalia1T26: { valor: 31.5, moneda: "USD", source: "XBRL_1T26", audited: true },
         perdidaAcum:    { valor: 45.6, moneda: "USD", source: "XBRL_4T25", audited: true,
                           nota: "Pérdida acumulada desde contratación (11 cupones ejercidos al 4T25)" },
       },
-      // Costo real: empresa paga TIIE de mercado (7.1%) + spread sin beneficio del collar
       costoEfectivo: {
-        tasa:  7.10 + 4.00, // TIIE + spread promedio TIIE del crédito CEM = ~11.1%
-        nota:  "Pagando tasa de mercado completa sin beneficio del cap porque TIIE < floor"
+        tasa:  7.10 + 4.00,
+        nota:  "Pagando tasa de mercado completa sin beneficio del cap porque TIIE < floor",
       },
       vencimientosMensuales: "Día 23 de cada mes",
       audited: true,
     },
 
-    // COLLARES USD/MXN — los 4 collares de FX contratados en 1T26
+    // COLLARES USD/MXN — 4 collares vigentes al 1T26
+    // Nocional total: $19.8 MD — rangos $17.30–$18.2761 — vencen jun-dic 2026
     collarsFX: [
       {
         id:          "IFD-FX-01",
         tipo:        "Collar de opciones USD/MXN",
-        fechaContrato:"2026-02-04",  // collar previo al trimestre reportado
+        fechaContrato:"2026-02-04",
         vencimiento: "2026-06-30",
-        nocionalUSD: { valor: 1000, moneda: "USD", source: "XBRL_1T26", audited: true }, // USD miles/mes
-        floorUSD:    17.30,   // put largo (protege vs apreciación peso)
-        capUSD:      18.2761, // call corto (limita upside si peso se deprecia)
-        vencimientosMensuales: "Fin de cada mes (abr-jun 2026)",
+        nocionalUSD: { valor: 1000, moneda: "USD", source: "XBRL_1T26", audited: true },
+        floorUSD:    17.30,
+        capUSD:      18.2761,
+        nota:        "Protege apreciación del peso (floor $17.30). Con TC actual ~$17.20 cerca del floor.",
         ejercidos:   0,
         audited:     true,
       },
@@ -304,7 +351,6 @@ const AUTLAN = {
         nocionalUSD: { valor: 1000, moneda: "USD", source: "XBRL_1T26", audited: true },
         floorUSD:    17.40,
         capUSD:      18.30,
-        vencimientosMensuales: "Fin de cada mes (abr-jun 2026)",
         ejercidos:   0,
         audited:     true,
       },
@@ -316,7 +362,6 @@ const AUTLAN = {
         nocionalUSD: { valor: 1000, moneda: "USD", source: "XBRL_1T26", audited: true },
         floorUSD:    17.60,
         capUSD:      18.40,
-        vencimientosMensuales: "Fin de cada mes (abr-jun 2026)",
         ejercidos:   0,
         audited:     true,
       },
@@ -328,28 +373,26 @@ const AUTLAN = {
         nocionalUSD: { valor: 1000, moneda: "USD", source: "XBRL_1T26", audited: true },
         floorUSD:    17.70,
         capUSD:      18.2761,
-        vencimientosMensuales: "Fin de cada mes (abr-jun 2026)",
         ejercidos:   0,
         audited:     true,
       },
     ],
 
-    // RESUMEN DE EXPOSICIÓN VS COBERTURA ACTIVA
     exposicionVsCobertura: {
       // FX
       ingresosFX_anualizado:  { valor: 393544, nota: "1T26 × 4, proxy ingresos anualizados USD" },
       coberturaFX_nocional:   { valor:  12000, nota: "4 collares × USD 1M/mes × 3 meses" },
       pctCubierto_FX:         { valor:    3.0, nota: "12M / 393M — CRÍTICO: muy por debajo del 60% permitido" },
-      limitePolítica_FX:      { valor:   60.0, nota: "Política interna Autlán" },
+      limitePolítica_FX:      { valor:   60.0, nota: "Política interna Autlán — junta may-2026" },
       gapCobertura_FX:        { valor:   57.0, nota: "% exposición adicional que se puede cubrir" },
       // Tasa
       deudaVariableTotal:     { valor: 165226, nota: "SOFR+TIIE total USD equiv (créditos 1-5)" },
       coberturaTasa_nocional: { valor:   8700, nota: "Collar TIIE (MXN 157.6M ÷ TC 18.1 aprox)" },
       pctCubierto_tasa:       { valor:    5.3, nota: "% de deuda variable cubierta con collar TIIE" },
-      // Oro
-      coberturaOro:           { valor:      0, nota: "SIN COBERTURA — precio en máximos históricos USD 3,000+/oz" },
-      // Gas
-      coberturaGas:           { valor:      0, nota: "SIN COBERTURA — exposición total a precio de mercado" },
+      // Oro — sin cobertura confirmado
+      coberturaOro:           { valor:      0, nota: "SIN COBERTURA — confirmado junta may-2026. Precio en máximos USD 3,000+/oz" },
+      // Gas — sin cobertura confirmado
+      coberturaGas:           { valor:      0, nota: "SIN COBERTURA — confirmado junta may-2026" },
     },
   },
 
@@ -358,34 +401,63 @@ const AUTLAN = {
   // ─────────────────────────────────────────────
   segmentos: {
     ferroaleaciones: {
-      ingresos2025:    { valor: 289000, source: "XBRL_4T25", audited: true }, // ~90% aprox
+      ingresos2025:    { valor: 289000, source: "XBRL_4T25", audited: true },
       pctTotal:        { valor: 89.6,   source: "CALC" },
       monedaVentas:    "USD (exportaciones) + MXN (doméstico)",
-      mercados:        { mexico: 30, eeuu: 45, europa: 20, otros: 5 }, // % estimado
+      mercados:        { mexico: 30, eeuu: 45, europa: 20, otros: 5 },
       volumenYoy:      { valor: 7.0, nota: "Crecimiento volumen 2025 vs 2024 %" },
-      // Precio manganeso referencia
       precioMnActual:  { valor: 1309, moneda: "USD/MT", fecha: "Q1 2026", source: "IMARC" },
+      // Ventaja competitiva estructural — confirmada junta may-2026
+      aranceles232: {
+        exento:       true,
+        mercados:     ["EUA", "Europa"],
+        nota:         "Exento de aranceles Sección 232 en EUA y Europa — ventaja competitiva estructural vs competidores asiáticos",
+        implicacion:  "Ingresos 100% USD protegidos de disrupciones arancelarias. Empresa confía en renegociación favorable T-MEC.",
+        riesgo:       "Supuesto T-MEC favorable a estresar en modelo — junta may-2026",
+      },
     },
     emd: {
       ingresos2025:    { valor: 28000, source: "XBRL_4T25", audited: false, nota: "~9% estimado" },
       pctTotal:        { valor: 8.7,  source: "CALC" },
       monedaVentas:    "USD",
+      costos:          "EUR (País Vasco)",
       mercados:        { global: 100 },
+      desempenio:      { nota: "Mejor nivel de UAFIRDA desde su adquisición — junta may-2026" },
     },
     metallorum: {
-      // Oro — segmento estratégico en crecimiento
+      // Oro — segmento estratégico, reactivado en 2025
       ingresos2025:    { valor: 5000,  source: "XBRL_4T25", audited: false, nota: "Inicial, < 2%" },
       pctTotal:        { valor: 1.5,   source: "CALC" },
       monedaVentas:    "USD",
-      onzasVendidas9M25:{ valor: 390000, source: "XBRL_4T25", audited: false, nota: "oz acum a 9M25" },
-      precioOroActual: { valor: 3000,  moneda: "USD/oz", nota: "Precio de mercado may-2026 (aprox)" },
-      meta2028:        { valor: 15.0,  nota: "Target % de ingresos totales" },
-      // 1T26: duplicaron producción y ventas de oro
-      produccion1T26:  { nota: "Duplicó vs 1T25 — dato cualitativo XBRL 1T26" },
+      // 1T26 — datos confirmados en junta may-2026
+      ozVendidas1T26:  { valor: 2400,  source: "JUNTA_MAY26", audited: false,
+                         nota: "~2.4 kOz vendidas en 1T26. kOz = miles de onzas troy (oz troy estándar)." },
+      // Metas de producción — junta may-2026
+      meta2026:        { valor: 20000, source: "JUNTA_MAY26", audited: false,
+                         nota: "Meta ~20,000 oz para el año completo 2026" },
+      metaLargoPlazo:  { valor: 100000, source: "JUNTA_MAY26", audited: false,
+                         nota: "Objetivo +100,000 oz/año en años siguientes. Requiere capex no revelado." },
+      coberturaOro:    { valor: 0, nota: "Sin coberturas de precio de oro actualmente — junta may-2026" },
+      // Certificación y escalamiento
+      certificacionSRK:{ estado: "En proceso",
+                         nota:   "SRK en proceso — proyecta triplicar onzas vendibles una vez certificado" },
+      // Preguntas abiertas del modelo — junta may-2026
+      aisc:            { source: "PENDIENTE",
+                         nota:   "ABIERTO: Costo cash por onza (AISC) no revelado públicamente" },
+      precioRealizadoNeto: { source: "PENDIENTE",
+                              nota: "ABIERTO: Precio realizado neto por oz y unidad exacta de las kOz reportadas" },
+      capexEscalamiento:  { source: "PENDIENTE",
+                             nota:  "ABIERTO: Capex requerido para escalar a 20,000 oz y luego a 100,000 oz/año" },
+      precioOroActual:  { valor: 3000, moneda: "USD/oz", nota: "Precio de mercado may-2026 (aprox)" },
+      meta2028:         { valor: 15.0, nota: "Target % de ingresos totales" },
     },
     energia: {
+      // Actualizado con datos confirmados junta may-2026
+      ahorro1T26:      { valor: 1400,  moneda: "USD trimestral", source: "JUNTA_MAY26", audited: false,
+                         nota:  "Ahorro $1.4 MD en 1T26 — hidroeléctrica Atexcaco" },
       ahorro2025:      { valor: 2800,  moneda: "USD trimestral", source: "XBRL_4T25" },
-      autosuficiencia: { valor: 25,    nota: "% consumo eléctrico autogenerado" },
+      autosuficiencia: { valor: 26,    nota: "~26% del consumo energético total cubierto con generación propia — junta may-2026" },
+      energiaLimpia:   { valor: 90,    nota: "90% de energía de fuentes limpias — junta may-2026" },
       fuentes:         ["Hidroeléctrica Atexcaco", "Solar", "Cogeneración"],
     },
   },
@@ -394,8 +466,11 @@ const AUTLAN = {
   // 7. VARIABLES DE MERCADO — PUNTO DE PARTIDA
   // ─────────────────────────────────────────────
   mercado: {
-    fecha: "2026-05-14", // Fecha de los datos de mercado
+    fecha: "2026-05-14",
     usdmxn:     { valor: 17.20, source: "TradingEconomics May-2026" },
+    // TC histórico para contexto del modelo
+    tcPromedio2025: { valor: 17.00, source: "JUNTA_MAY26", nota: "Promedio USD/MXN 2025" },
+    tc1T26:         { valor: 18.07, source: "JUNTA_MAY26", nota: "Promedio 1T26 — ya reflejado en mejora de márgenes" },
     banxico:    { valor:  6.75, source: "Banxico Q1-2026" },
     tiie28:     { valor:  7.10, source: "Banxico Mar-2026" },
     sofr1m:     { valor:  4.30, source: "CALC/Estimado May-2026", audited: false },
@@ -411,36 +486,35 @@ const AUTLAN = {
   // 8. ESCENARIOS MACRO — PRE-CARGADOS Y EDITABLES
   // ─────────────────────────────────────────────
   escenarios: {
-    // Fuente base: Section 1 análisis macro + XBRL data
     variables: {
       usdmxn: {
         label:  "USD / MXN",
         unidad: "pesos por dólar",
-        base:     { valor: 18.0,  narrativa: "Peso estable post-USMCA; Banxico continúa ciclo de baja. DXY moderado 95-102." },
-        optimista:{ valor: 19.5,  narrativa: "Depreciación moderada del peso. Fed mantiene tasas altas; DXY 103+. Favorable para ingresos Autlán." },
-        adverso:  { valor: 16.0,  narrativa: "Apreciación fuerte del peso. Nearshoring acelera flujos USD→MXN. EBITDA comprime ~8-12%." },
+        base:     { valor: 18.0,  narrativa: "TC ~$18 consistente con promedio 1T26 ($18.07). Peso estable post-USMCA. Riesgo soberano por baja de calificadoras puede presionar peso adicional." },
+        optimista:{ valor: 19.5,  narrativa: "Depreciación moderada del peso. Fed mantiene tasas altas; DXY 103+. Favorable para ingresos Autlán — estructura 100% USD ingresos / 60% costos en pesos." },
+        adverso:  { valor: 16.0,  narrativa: "Apreciación fuerte del peso. Collar FX actual (floor $17.30) protege parcialmente. EBITDA comprime ~8-12%. Collar se ejerce bajo $17.30." },
         actual:   17.20,
         min:      14.0,
         max:      23.0,
-        sensibilidad: "Cada $1 de apreciación del peso reduce ingresos MXN-equiv en ~USD 18M sobre base de ingresos USD 322M",
+        sensibilidad: "Cada $1 de apreciación del peso reduce EBITDA ~USD 18M sobre base ingresos USD 322M (estructura 100% USD ingresos / ~60% costos MXN)",
       },
       tiie28: {
         label:  "TIIE 28 días",
         unidad: "% anual",
-        base:     { valor: 6.95,  narrativa: "Banxico completa 1-2 recortes adicionales. Tasa terminal ~6.50% fin de año. Inflación dentro de banda." },
-        optimista:{ valor: 6.50,  narrativa: "3-4 recortes adicionales. Inflación converge a 3.5%. Crecimiento apoya expansión monetaria." },
-        adverso:  { valor: 7.75,  narrativa: "Inflación rebota >5%. Banxico pausa o sube. Costo deuda TIIE de Autlán aumenta ~USD 1-2M por 100bps." },
+        base:     { valor: 6.95,  narrativa: "Banxico completa 1-2 recortes adicionales. Tasa terminal ~6.50% fin de año. Inflación dentro de banda. Collar TIIE sigue sin beneficio (floor 8.75%)." },
+        optimista:{ valor: 6.50,  narrativa: "3-4 recortes adicionales. Inflación converge a 3.5%. Crecimiento apoya expansión monetaria. Deuda TIIE más barata." },
+        adverso:  { valor: 7.75,  narrativa: "Inflación rebota >5%. Banxico pausa o sube. Costo deuda TIIE de Autlán aumenta ~USD 1-2M por 100bps. Collar TIIE aún inútil (floor 8.75% lejano)." },
         actual:   7.10,
         min:      5.0,
         max:      12.0,
-        sensibilidad: "Cada 100bps de alza en TIIE incrementa costo financiero Autlán ~USD 440K (sobre MXN 29.7M deuda TIIE a ~1.5% equivalencia)",
+        sensibilidad: "Cada 100bps de alza en TIIE incrementa costo financiero Autlán ~USD 440K (sobre MXN 29.7M deuda TIIE equiv.)",
       },
       sofr1m: {
         label:  "SOFR 1 mes",
         unidad: "% anual",
         base:     { valor: 4.10,  narrativa: "Fed realiza 1-2 recortes en 2026. Economía USA moderándose sin recesión." },
-        optimista:{ valor: 3.50,  narrativa: "Fed recorta agresivamente ante desaceleración USA. Reduce costo deuda principal Autlán." },
-        adverso:  { valor: 4.80,  narrativa: "Fed mantiene tasas altas por inflación persistente. Costo deuda SOFR de Autlán (USD 135M) aumenta." },
+        optimista:{ valor: 3.50,  narrativa: "Fed recorta agresivamente ante desaceleración USA. Reduce costo deuda principal Autlán (~USD 135M a SOFR+6%)." },
+        adverso:  { valor: 4.80,  narrativa: "Fed mantiene tasas altas por inflación persistente. Costo deuda SOFR de Autlán (USD 135M) aumenta ~USD 1.35M por 100bps." },
         actual:   4.30,
         min:      2.0,
         max:      7.0,
@@ -449,20 +523,20 @@ const AUTLAN = {
       precioOro: {
         label:  "Precio del Oro",
         unidad: "USD / oz",
-        base:     { valor: 2900,  narrativa: "Corrección moderada desde máximos. Demanda banco central sostiene piso. DXY moderado." },
-        optimista:{ valor: 3300,  narrativa: "Risk-off global. Tensiones geopolíticas. Bancos centrales aceleran compras. USD débil." },
-        adverso:  { valor: 2400,  narrativa: "Fortaleza USD (DXY >105). Fed hawkish. Apetito de riesgo mejora. Salida de ETFs de oro." },
+        base:     { valor: 2900,  narrativa: "Corrección moderada desde máximos. Demanda banco central sostiene piso. DXY moderado. Metallorum: meta 20,000 oz 2026 afectada moderadamente." },
+        optimista:{ valor: 3300,  narrativa: "Risk-off global. Tensiones geopolíticas. Bancos centrales aceleran compras. USD débil. Metallorum sin cobertura captura upside total." },
+        adverso:  { valor: 2400,  narrativa: "Fortaleza USD (DXY >105). Fed hawkish. Salida de ETFs. Metallorum sin cobertura impactado ~USD 12M sobre meta 20K oz." },
         actual:   3000,
         min:      1800,
         max:      4000,
-        sensibilidad: "Cada USD 100/oz de variación en precio oro impacta ingresos Metallorum ~USD 1.5-2M anualizados (estimado 390K oz/año)",
+        sensibilidad: "Cada USD 100/oz impacta ingresos Metallorum ~USD 2M anualizados (base: meta 20,000 oz 2026 — junta may-2026)",
       },
       precioMn: {
         label:  "Precio Manganeso",
         unidad: "USD / MT",
         base:     { valor: 1300,  narrativa: "Recuperación frágil. China restocking moderado. India compensa caída China parcialmente." },
-        optimista:{ valor: 1600,  narrativa: "China stimulus fuerte. Gabon ban cataliza (anticipo 2029). India accelera. Oferta australiana limitada." },
-        adverso:  { valor:  900,  narrativa: "China demanda decepciona. Dumping asiático en México. Acero global contrae. Autlán: -USD 30-50M ingresos." },
+        optimista:{ valor: 1600,  narrativa: "China stimulus fuerte. Gabon ban cataliza (anticipo 2029). India acelera. Oferta australiana limitada." },
+        adverso:  { valor:  900,  narrativa: "China demanda decepciona. Dumping asiático en México. Acero global contrae. Autlán: -USD 30-50M ingresos. Exención Sección 232 no protege vs precios bajos." },
         actual:   1309,
         min:       600,
         max:      2200,
@@ -473,7 +547,7 @@ const AUTLAN = {
         unidad: "USD / MMBtu",
         base:     { valor: 3.20,  narrativa: "Mercado equilibrado. Sin disrupciones mayores en oferta. CFE mantiene tarifas estables." },
         optimista:{ valor: 2.50,  narrativa: "Oferta USA aumenta. Invierno suave. Precios a mínimos. Reduce costo operativo Autlán." },
-        adverso:  { valor: 5.00,  narrativa: "Tensiones Medio Oriente. Invierno frío. Alta demanda LNG Europa. Costo smelting sube USD 3-5M." },
+        adverso:  { valor: 5.00,  narrativa: "Tensiones Medio Oriente. Invierno frío. Alta demanda LNG Europa. Costo smelting sube USD 3-5M. Sin cobertura activa." },
         actual:   3.20,
         min:      1.5,
         max:      8.0,
@@ -482,24 +556,21 @@ const AUTLAN = {
       volumenFerroaleaciones: {
         label:  "Volumen Ferroaleaciones",
         unidad: "% vs plan base",
-        base:     { valor: 100,   narrativa: "Volumen alineado con guía 2026. Exportaciones USA sostenidas. Doméstico +5% recuperación parcial." },
-        optimista:{ valor: 115,   narrativa: "Doméstico se recupera +12%. AHMSA parcial restart. USA crece. Autlán gana share vs dumping asiático." },
-        adverso:  { valor:  80,   narrativa: "Doméstico contrae -8%. Tariff shock. Dumping asiático gana mercado. Autlán exporta más a menor margen." },
+        base:     { valor: 100,   narrativa: "Volumen alineado con guía 2026. Exportaciones USA sostenidas gracias a exención Sección 232. Doméstico +5%." },
+        optimista:{ valor: 115,   narrativa: "Doméstico +12%. AHMSA partial restart. USA crece. Autlán gana share vs dumping asiático (ventaja 232)." },
+        adverso:  { valor:  80,   narrativa: "Doméstico contrae -8%. Tariff shock general. Dumping asiático presiona. Autlán exporta más a menor margen." },
         actual:   100,
         min:      60,
         max:      130,
       },
     },
-
-    // Resultados financieros por escenario — se recalculan en tiempo real
-    // Estos son los valores base que models.js actualiza
     resultadosBase: {
-      ingresos_anual:    322746, // 2025 auditado
-      costoFijo_anual:   200000, // estimado (costos que no varían con volumen/precio)
-      costoVariable_pct: 62.0,   // % de ingresos (sensible a FX, gas, insumos)
-      ebitda_anual:       31470, // 2025 calculado
-      gastoFinanciero:    42493, // 2025 auditado
-      capex_anual:        30000, // estimado mantenimiento
+      ingresos_anual:    322746,
+      costoFijo_anual:   200000,
+      costoVariable_pct: 62.0,
+      ebitda_anual:       31470,
+      gastoFinanciero:    42493,
+      capex_anual:        30000,
     },
   },
 
@@ -507,51 +578,144 @@ const AUTLAN = {
   // 9. POLÍTICA DE COBERTURA
   // ─────────────────────────────────────────────
   politicaCobertura: {
-    fuente:         "XBRL 1T26 + XBRL 4T25 — política formal documentada",
+    fuente: "XBRL 1T26 + XBRL 4T25 + Junta may-2026",
     fx: {
-      instrumentos:  ["Collares", "Forwards", "Swaps", "Opciones"],
+      instrumentos:  ["Collares zero-cost (preferidos)", "Forwards", "Swaps", "Opciones"],
       limiteNocional:{ valor: 60, unidad: "% de ingresos presupuestados en USD", audited: true },
       horizonteMax:  { valor: 12, unidad: "meses", audited: true },
       objetivo:      "Cubrir riesgo de apreciación del peso vs USD",
+      estadoActual:  "CRÍTICO: ~3% cubierto vs límite 60% — collares vencen jun-2026",
     },
     tasa: {
       instrumentos:  ["Swaps de tasa", "Opciones TIIE (caps/floors/collars)"],
       limiteNocional:{ valor: 50, unidad: "% del saldo de deuda variable (práctica observada)", audited: false },
       objetivo:      "Limitar exposición al alza en TIIE y SOFR",
+      estadoActual:  "Collar TIIE activo pero sin beneficio (TIIE 7% < floor 8.75%)",
     },
     oro: {
-      instrumentos:  ["Forwards", "Costless collars"],
-      limiteNocional:{ valor: 60, unidad: "% producción vendible (estimado por política general)", audited: false },
+      instrumentos:  ["Forwards OTC", "Costless collars (preferidos)"],
+      limiteNocional:{ valor: 60, unidad: "% producción vendible", audited: false },
       objetivo:      "Proteger contra caída en precio del oro",
-      estadoActual:  "SIN COBERTURA al 1T26",
+      estadoActual:  "SIN COBERTURA al 1T26 — confirmado junta may-2026",
+      oportunidad:   "Precio en máximos USD 3,000+/oz — momento óptimo para contratar collar zero-cost",
     },
     gas: {
       instrumentos:  ["Forwards de precio"],
       limiteNocional:{ valor: 60, unidad: "% consumo presupuestado (estimado)", audited: false },
       objetivo:      "Fijar precio máximo de compra de gas natural",
-      estadoActual:  "SIN COBERTURA al 1T26",
+      estadoActual:  "SIN COBERTURA al 1T26 — confirmado junta may-2026",
     },
     principios: [
       "Exclusivamente con fines de cobertura — no especulación",
       "Solo con contrapartes de alta calidad crediticia reconocida",
       "Principalmente mercados OTC / extrabursátiles",
       "Tratamiento contable: cobertura de flujo de efectivo (IFRS 9)",
-      "Valuación trimestral por contrapartes + verificación interna",
+      "Valuación trimestral por tercero independiente (Irvin) + verificación interna",
+      "Prioridad absoluta: preservación de liquidez — junta may-2026",
     ],
   },
 
   // ─────────────────────────────────────────────
-  // 10. HELPER — ESTADO DE OVERRIDES DEL USUARIO
-  // (se llena en runtime cuando el usuario sobreescribe datos auditados)
+  // 10. KEY POINTS JUNTA MAY-2026
+  // Información cualitativa y cuantitativa confirmada en junta
+  // Source: "JUNTA_MAY26" — no auditada, sujeta a verificación con reporte oficial
+  // ─────────────────────────────────────────────
+  juntaMay2026: {
+    fecha: "2026-05-25",
+
+    // Financieros clave 1T26 — confirmados en junta
+    financieros1T26: {
+      ventasNetas:      { valor:  98400, moneda: "USD miles", nota: "+23% vs 1T25" },
+      uafirda:          { valor:  10800, moneda: "USD miles", nota: "+44% vs 1T25, margen 11%" },
+      utilidadOperativa:{ valor:    170, moneda: "USD miles", nota: "Primer trimestre positivo en más de un año" },
+      perdidaNeta:      { valor:  -6200, moneda: "USD miles", nota: "Arrastrada por costo financiero $7.3 MD" },
+      costoFinanciero:  { valor:   7300, moneda: "USD miles", nota: "Principal driver de pérdida neta" },
+      caja:             { valor:  21800, moneda: "USD miles", nota: "Número a monitorear como piso de liquidez" },
+      deuda:            { valor: 190600, moneda: "USD miles", nota: "-$7.2 MD vs diciembre 2025" },
+      capitalContable:  { valor: 228100, moneda: "USD miles" },
+    },
+
+    // Riesgo cambiario — el central para el modelo
+    riesgoCambiario: {
+      estructuraFavorable: "Ingresos 100% USD, ~60% costos en pesos → peso depreciado favorece operativamente",
+      impactoObservado:    "Peso depreciado de $17 (promedio 2025) a $18.07 (1T26) ya reflejado en mejora de márgenes",
+      riesgoSoberano:      "Calificadoras bajaron calificación México → posible presión adicional al peso",
+      tmec:                "Empresa confía en renegociación favorable del T-MEC — supuesto a estresar en el modelo",
+      collarsFX:           "Collares actuales protegen apreciación del peso (floor $17.30) — posición correcta para el entorno actual",
+    },
+
+    // Proyectos de largo plazo — no modelables aún
+    proyectosLargoPlazo: {
+      manganEV: {
+        nombre:      "ManganEV / HPMSM",
+        descripcion: "Sulfato de manganeso alta pureza para baterías EV",
+        estado:      "Fase de barrenación para Estudio de Pre-Factibilidad",
+        capex:       "Sin definir públicamente",
+        fechas:      "Sin definir públicamente",
+        nota:        "No modelable aún — monitorear PFS",
+      },
+      metallorumEscalamiento: {
+        nombre:      "Metallorum — escalamiento",
+        descripcion: "Salto a 100,000 oz/año requiere capex no revelado",
+        estado:      "Certificación SRK en proceso — proyecta triplicar onzas vendibles",
+        capex:       "No revelado",
+        hitos:       ["Certificación SRK", "20,000 oz 2026", "100,000 oz años siguientes"],
+      },
+    },
+
+    // Preguntas que quedaron abiertas — para seguimiento
+    preguntasAbiertas: [
+      {
+        id: 1,
+        pregunta: "Covenants específicos del crédito Santander",
+        detalle:  "Leverage máximo y cobertura de intereses mínima — no revelados públicamente",
+        impacto:  "ALTO — determina margen de maniobra financiero real",
+      },
+      {
+        id: 2,
+        pregunta: "Costo cash por onza (AISC) en Metallorum",
+        detalle:  "Sin dato público — necesario para calcular margen real de la operación de oro",
+        impacto:  "MEDIO — afecta rentabilidad proyectada de Metallorum",
+      },
+      {
+        id: 3,
+        pregunta: "Unidad exacta de las kOz y precio realizado neto",
+        detalle:  "Confirmar si kOz = miles de oz troy y cuál es el precio neto recibido",
+        impacto:  "MEDIO — afecta calibración del modelo de ingresos oro",
+      },
+      {
+        id: 4,
+        pregunta: "Capex para escalar Metallorum a 20,000 oz y 100,000 oz",
+        detalle:  "Sin revelar — necesario para modelar FCF y necesidades de financiamiento",
+        impacto:  "ALTO — cambia tesis de valoración si capex es significativo",
+      },
+      {
+        id: 5,
+        pregunta: "Resultados del PFS de ManganEV y capex estimado de planta comercial",
+        detalle:  "En fase de Pre-Factibilidad — sin datos públicos",
+        impacto:  "BAJO en corto plazo, ALTO en largo plazo para la tesis EV",
+      },
+    ],
+  },
+
+  // ─────────────────────────────────────────────
+  // 11. HELPER — ESTADO DE OVERRIDES DEL USUARIO
   // ─────────────────────────────────────────────
   overrides: {},
 
   // ─────────────────────────────────────────────
-  // 11. VERSIÓN Y METADATOS DEL ARCHIVO
+  // 12. VERSIÓN Y METADATOS DEL ARCHIVO
   // ─────────────────────────────────────────────
-  _version:   "1.0.0",
+  _version:   "1.1.0",
   _creado:    "2026-05-14",
-  _fuentes:   ["XBRL 4T25 BMV", "XBRL 1T26 BMV", "Section 1 Analysis", "HR Ratings Dic-2025"],
+  _actualizado: "2026-05-25",
+  _fuentes:   [
+    "XBRL 4T25 BMV",
+    "XBRL 1T26 BMV",
+    "Section 1 Analysis",
+    "HR Ratings Dic-2025",
+    "Junta Autlán may-2026",
+  ],
 };
 
 // Exportar para uso en módulos (Node) o acceso global (browser)
