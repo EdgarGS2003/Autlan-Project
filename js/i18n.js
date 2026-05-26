@@ -1,794 +1,546 @@
 /**
- * js/i18n.js — Sistema de Traducción Internacionalización (ES / EN)
+ * js/i18n.js — Sistema de Traducción ES / EN
  * Autlán Risk Desk Dashboard
  *
- * Implementa una traducción dinámica y no invasiva utilizando:
- * 1. Un MutationObserver que detecta cambios en el DOM y traduce dinámicamente.
- * 2. Un proxy / interceptor para CanvasRenderingContext2D para traducir texto de los payoffs.
- * 3. Selector estético de lenguaje inyectado en el topbar.
+ * Estrategia: Opción C — traducción via API de Claude en runtime.
+ * Cuando el usuario cambia a EN, se traduce el innerHTML completo
+ * de cada página activa con Claude Sonnet. El resultado se cachea
+ * en memoria para no repetir llamadas en la misma sesión.
+ *
+ * Flujo:
+ *   1. Usuario hace clic en EN
+ *   2. Se guarda el HTML original de la página activa
+ *   3. Se llama a la API con el HTML + prompt de traducción
+ *   4. Se reemplaza el innerHTML con la traducción
+ *   5. Si el usuario vuelve a ES, se restaura el HTML original
+ *   6. Si navega a otra página en EN, se traduce esa página también
+ *   7. Todo se cachea — cada página se traduce una sola vez por sesión
  */
 
 window.I18N = (() => {
+
   const STORAGE_KEY = "autlan_lang";
   let activeLang = localStorage.getItem(STORAGE_KEY) || "es";
 
-  // Diccionario completo de traducción (Español -> Inglés)
-  const DICTIONARY = {
-    // ── SIDEBAR
-    "Mesa de Riesgos": "Risk Desk",
-    "Mesa de Riesgos & Coberturas": "Risk & Hedging Desk",
-    "GENERAL": "GENERAL",
-    "Dashboard": "Dashboard",
-    "Perfil Autlán": "Autlán Profile",
-    "Escenarios & Inputs": "Scenarios & Inputs",
-    "COBERTURAS": "HEDGING",
-    "Tipo de Cambio": "Exchange Rate",
-    "Precio del Oro": "Gold Price",
-    "Gas Natural": "Natural Gas",
-    "Tasa de Interés": "Interest Rate",
-    "Manganeso": "Manganese",
-    "ANÁLISIS": "ANALYSIS",
-    "Riesgos Secundarios": "Secondary Risks",
-    "Estrategia Óptima": "Optimal Strategy",
-    "Actualizando...": "Updating...",
-    "XBRL 1T26 · BMV": "XBRL 1Q26 · BMV",
+  // Cache de traducciones por página — clave: pageId, valor: { original, translated }
+  const _cache = {};
 
-    // ── TOPBAR
-    "Base": "Base",
-    "Optimista": "Optimistic",
-    "Adverso": "Adverse",
-    "EBITDA proy.": "Proj. EBITDA",
+  // Estado de traducción en curso (evita llamadas paralelas)
+  const _inProgress = {};
 
-    // ── GENERAL BUTTONS & ALERTS
-    "Guardado": "Saved",
-    "Cancelar": "Cancel",
-    "Confirmar": "Confirm",
-    "Editar": "Edit",
-    "Guardar": "Save",
-    "Actualizar": "Update",
-    "Cargando...": "Loading...",
-    "Activa": "Active",
-    "Auditado": "Audited",
-    "Outlook Negativo": "Negative Outlook",
-    "CRÍTICO": "CRITICAL",
-    "SIN COBERTURA": "UNHEDGED",
-    "FUERA DINERO": "OTM",
-    "FUERA DEL DINERO": "OUT OF THE MONEY",
-    "En el dinero": "In the money",
-    "Fuera del dinero": "Out of the money",
+  // ─────────────────────────────────────────
+  // PROMPT DE SISTEMA PARA CLAUDE
+  // ─────────────────────────────────────────
+  const SYSTEM_PROMPT = `You are a professional financial translator specializing in derivatives, hedging, and mining industry terminology. You will receive HTML from a financial risk dashboard for a Mexican manganese mining company (Autlán).
 
-    // ── PÁGINA 0: DASHBOARD
-    "Dashboard ejecutivo": "Executive Dashboard",
-    "Estado de riesgo y cobertura en tiempo real · Autlán Q1 2026": "Real-time risk and hedging status · Autlán Q1 2026",
-    "Estado de cobertura · Al 31 mar 2026": "Hedging Status · As of March 31, 2026",
-    "Impacto financiero por escenario": "Financial Impact by Scenario",
-    "Variable / Resultado": "Variable / Outcome",
-    "Estructura de deuda": "Debt Structure",
-    "USD 185.9M total · 1T26": "USD 185.9M Total · 1Q26",
-    "Política de cobertura": "Hedging Policy",
-    "Límites formales documentados · XBRL 1T26": "Formal Documented Limits · XBRL 1Q26",
-    "Ingresos 1T26 (anualiz.)": "1Q26 Revenues (annualized)",
-    "EBITDA proyectado": "Projected EBITDA",
-    "Deuda neta": "Net Debt",
-    "DSCR proyectado": "Projected DSCR",
-    "Bajo 1.0x": "Below 1.0x",
-    "Total deuda": "Total Debt",
-    "deuda a tasa variable · Solo": "variable rate debt · Only",
-    "tasa fija": "fixed rate",
-    "Objetivo exclusivo de cobertura — no especulación.": "Hedging only — not for speculation.",
-    "Contrapartes de alta calidad crediticia. Mercados OTC/extrabursátiles.": "High credit quality counterparties. OTC/over-the-counter markets.",
-    "Tratamiento contable IFRS 9 — cobertura de flujo de efectivo.": "IFRS 9 accounting treatment — cash flow hedge accounting.",
-    "Bajo 1.0x": "Below 1.0x",
+RULES — follow exactly:
+1. Translate ALL visible Spanish text to English.
+2. Keep ALL HTML tags, attributes, classes, and inline styles EXACTLY as-is.
+3. Keep ALL numbers, currency values, percentages, and dates EXACTLY as-is.
+4. Keep ALL ticker symbols, proper nouns (Autlán, Metallorum, EMD, Santander, COMEX, BMV, XBRL, SOFR, TIIE, EURIBOR), and acronyms EXACTLY as-is.
+5. Translate financial terms accurately: UAFIRDA→EBITDA, utilidad→profit, pérdida→loss, cobertura→hedge/hedging, collar→collar, vencimiento→maturity, tasa→rate, deuda→debt, apalancamiento→leverage.
+6. Quarter notation: 1T26→1Q26, 4T25→4Q25, etc.
+7. Return ONLY the translated HTML — no explanations, no markdown, no code blocks.
+8. If a piece of text is already in English, leave it as-is.`;
 
-    // ── PÁGINA 1: PERFIL
-    "Perfil Financiero Autlán": "Autlán Financial Profile",
-    "Datos auditados XBRL 4T25 y 1T26 · BMV": "Audited Data XBRL 4Q25 & 1Q26 · BMV",
-    "Resultados financieros clave": "Key Financial Results",
-    "Ingresos 2025": "Revenues 2025",
-    "EBITDA 2025": "EBITDA 2025",
-    "Pérdida neta 2025": "Net Loss 2025",
-    "Ingresos 1T26": "Revenues 1Q26",
-    "Pico 38% en 2022": "Peak 38% in 2022",
-    "Gasto financiero": "Financial expense",
-    "Récord trimestral": "Quarterly record",
-    "Estado de resultados comparativo": "Comparative Income Statement",
-    "Concepto (USD miles)": "Concept (USD thousands)",
-    "Ingresos netos": "Net revenues",
-    "Costo de ventas": "Cost of goods sold",
-    "Utilidad bruta": "Gross profit",
-    "Gastos de venta": "Selling expenses",
-    "Gastos de administración": "Administrative expenses",
-    "Utilidad (pérdida) operación": "Operating profit (loss)",
-    "Gastos financieros": "Financial expenses",
-    "Pérdida neta": "Net loss",
-    "Balance general · 31 mar 2026": "Balance Sheet · March 31, 2026",
-    "XBRL 1T26 · cifras en USD miles": "XBRL 1Q26 · figures in USD thousands",
-    "Activos": "Assets",
-    "Efectivo y equivalentes": "Cash and equivalents",
-    "Cuentas por cobrar": "Accounts receivable",
-    "Inventarios": "Inventories",
-    "Otros circulantes": "Other current assets",
-    "Total activo circulante": "Total current assets",
-    "Propiedades, planta y equipo": "Property, plant and equipment",
-    "Intangibles y crédito mercantil": "Intangibles and goodwill",
-    "Total activo no circulante": "Total non-current assets",
-    "TOTAL ACTIVOS": "TOTAL ASSETS",
-    "Pasivos y capital": "Liabilities & Equity",
-    "Pasivos circulantes": "Current liabilities",
-    "Deuda largo plazo": "Long-term debt",
-    "Otras provisiones LP": "Other LT provisions",
-    "Total pasivos": "Total liabilities",
-    "Capital contable total": "Total equity",
-    "Métricas de crédito": "Credit Metrics",
-    "Leverage (Deuda/Activos)": "Leverage (Debt/Assets)",
-    "Gasto financiero anual": "Annual financial expense",
-    "Efectivo disponible": "Available cash",
-    "Deuda / EBITDA": "Debt / EBITDA",
-    "Calificaciones crediticias": "Credit Ratings",
-    "Segmentos de negocio · 2025": "Business Segments · 2025",
-    "Ferroaleaciones & Mn": "Ferroalloys & Mn",
-    "EMD (batería/industrial)": "EMD (battery/industrial)",
-    "Metallorum (oro)": "Metallorum (gold)",
-    "Energía (intra-segmento)": "Energy (intra-segment)",
-    "Estructura de deuda detallada · 1T26": "Detailed Debt Structure · 1Q26",
-    "Acreedor": "Creditor",
-    "Tasa": "Rate",
-    "Moneda": "Currency",
-    "Vencimiento": "Maturity",
-    "Saldo (USD K)": "Balance (USD K)",
-    "Riesgo": "Risk",
-    "TOTAL DEUDA": "TOTAL DEBT",
-    "Instrumentos derivados vigentes · 1T26": "Active Derivative Instruments · 1Q26",
-    "Collar TIIE — Tasa de interés": "TIIE Collar — Interest Rate",
-    "Floor (cap largo)": "Floor (long cap)",
-    "Cap (floor corto)": "Cap (short floor)",
-    "Collares USD/MXN — Tipo de cambio": "USD/MXN Collars — Exchange Rate",
-    "Nocional total activo": "Total Active Notional",
-    "Ingresos anualizados": "Annualized Revenues",
-    "% cubierto actualmente": "% Currently Covered",
-    "Límite de política": "Policy Limit",
-    "Gap sin protección": "Unprotected Gap",
+  // ─────────────────────────────────────────
+  // LLAMADA A LA API
+  // ─────────────────────────────────────────
+  async function translateWithAPI(html) {
+    // Limpiar el HTML de scripts embebidos para no enviarlos
+    const clean = html.replace(/<script[\s\S]*?<\/script>/gi, "");
 
-    // ── PÁGINA 2: ESCENARIOS & INPUTS
-    "Variables independientes": "Independent Variables",
-    "Valores por escenario": "Values per Scenario",
-    "Narrativa macro por escenario": "Macro Narrative per Scenario",
-    "Variables dependientes — calculadas en tiempo real": "Dependent Variables — Calculated in Real-Time",
-    "Descomposición del impacto sobre EBITDA": "EBITDA Impact Decomposition",
-    "Muestra cómo las variables macro afectan el EBITDA vs. Año Base 2025": "Shows how macro variables affect EBITDA vs. Base Year 2025",
-    "Restablecer valores": "Reset Values",
-    "Guardar escenario": "Save Scenario",
-    "Nombre del escenario": "Scenario Name",
-    "Guardar como nuevo": "Save as New",
-    "Tipo de cambio (USD/MXN)": "Exchange Rate (USD/MXN)",
-    "Precio del Manganeso (USD/t)": "Manganese Price (USD/t)",
-    "Precio del Oro (USD/oz)": "Gold Price (USD/oz)",
-    "Tasa TIIE 28d (% anual)": "TIIE 28d Rate (% annual)",
-    "Tasa SOFR 1m (% anual)": "SOFR 1m Rate (% annual)",
-    "Costo Gas Natural (USD/MMBtu)": "Natural Gas Cost (USD/MMBtu)",
-    "Ingresos Mn Proyectados": "Projected Mn Revenues",
-    "Ingresos Oro Proyectados": "Projected Gold Revenues",
-    "Costo Energía (Smelting)": "Energy Cost (Smelting)",
-    "Margen EBITDA proyectado": "Projected EBITDA Margin",
-    "FCF proyectado (anual)": "Projected FCF (Annual)",
-    "DSCR final proyectado": "Projected Final DSCR",
-    "Impacto Manganeso": "Manganese Impact",
-    "Impacto Oro (Metallorum)": "Gold Impact (Metallorum)",
-    "Impacto Gas Natural": "Natural Gas Impact",
-    "Impacto Tasas de Interés": "Interest Rate Impact",
-    "Impacto Tipo de Cambio": "Exchange Rate Impact",
-    "EBITDA Proyectado Final": "Final Projected EBITDA",
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 8000,
+        system: SYSTEM_PROMPT,
+        messages: [{
+          role: "user",
+          content: `Translate this financial dashboard HTML to English:\n\n${clean}`
+        }]
+      })
+    });
 
-    // ── PÁGINA 3: TIPO DE CAMBIO
-    "Collares USD/MXN vigentes · 1T26": "Active USD/MXN Collars · 1Q26",
-    "Evaluar instrumentos de cobertura": "Evaluate Hedging Instruments",
-    "Comparativo de flujos por escenario": "Flow Comparison by Scenario",
-    "Diagrama de payoff · USD/MXN": "Payoff Diagram · USD/MXN",
-    "Análisis y recomendación": "Analysis & Recommendation",
-    "USD/MXN actual": "Current USD/MXN",
-    "Impacto por $1 MXN": "Impact per $1 MXN",
-    "Exposición cubierta": "Covered Exposure",
-    "Exposición sin cubrir": "Uncovered Exposure",
-    "En ingresos anualizados": "In Annualized Revenues",
-    "Por movimiento unitario": "Per Unit Movement",
-    "Muy por debajo del 60%": "Far Below 60%",
-    "desprotegido": "unprotected",
-    "Gap vs política": "Gap vs Policy",
-    "Fecha contrato": "Contract Date",
-    "Floor (put largo)": "Floor (long put)",
-    "Cap (call corto)": "Cap (short call)",
-    "Nocional/mes": "Notional/month",
-    "Estado TC actual": "Current FX Status",
-    "Payoff estimado": "Estimated Payoff",
-    "✓ Put protege": "✓ Put protects",
-    "✗ Call limita": "✗ Call limits",
-    "◎ Dentro del rango": "◎ Within range",
-    "Parámetros del collar": "Collar Parameters",
-    "Floor — put largo (piso de protección)": "Floor — long put (protection floor)",
-    "Cap — call corto (techo que se cede)": "Cap — short call (yielded ceiling)",
-    "Nocional (USD miles)": "Notional (USD thousands)",
-    "Horizonte (meses)": "Horizon (months)",
-    "Volatilidad implícita (%)": "Implied Volatility (%)",
-    "Parámetros del forward": "Forward Parameters",
-    "Tipo de cambio spot (USD/MXN)": "Spot Exchange Rate (USD/MXN)",
-    "Tasa MXN — TIIE (% anual)": "MXN Rate — TIIE (% annual)",
-    "Tasa USD — SOFR (% anual)": "USD Rate — SOFR (% annual)",
-    "Put USD/MXN — opción de venta": "USD/MXN Put — Sell Option",
-    "Spot actual": "Current Spot",
-    "Strike (precio de ejercicio)": "Strike (exercise price)",
-    "Modelo de pricing": "Pricing Model",
-    "Black-Scholes estándar": "Standard Black-Scholes",
-    "Heston (volatilidad estocástica)": "Heston (stochastic volatility)",
-    "Cross-currency swap USD/MXN": "USD/MXN Cross-Currency Swap",
-    "Nocional en USD (miles)": "Notional in USD (thousands)",
-    "Tasa fija MXN que recibes (%)": "Fixed MXN Rate Received (%)",
-    "TIIE actual (%)": "Current TIIE (%)",
-    "Spread sobre TIIE (%)": "Spread over TIIE (%)",
-    "Vencimiento (años)": "Maturity (years)",
-    "Resultado del collar": "Collar Outcome",
-    "Prima put": "Put premium",
-    "Prima call": "Call premium",
-    "Costo neto collar": "Net collar cost",
-    "Costo total nocional": "Total notional cost",
-    "Rango protegido": "Protected range",
-    "¿Costless collar?": "Costless collar?",
-    "✓ Sí — prima cero": "✓ Yes — zero premium",
-    "✗ No — tiene costo": "✗ No — has cost",
-    "Modelo": "Model",
-    "Resultado del forward": "Forward Outcome",
-    "Precio forward": "Forward price",
-    "Puntos swap (fwd−spot)": "Swap points (fwd-spot)",
-    "Diferencial tasas (TIIE−SOFR)": "Interest rate differential (TIIE-SOFR)",
-    "Costo de oportunidad": "Opportunity cost",
-    "Resultado de la put": "Put Outcome",
-    "Prima total nocional": "Total notional premium",
-    "Prima % nocional": "Premium % of notional",
-    "Delta": "Delta",
-    "Gamma": "Gamma",
-    "Vega (por 1% vol)": "Vega (per 1% vol)",
-    "Moneyness": "Moneyness",
-    "ITM — en el dinero": "ITM — in the money",
-    "OTM — fuera del dinero": "OTM — out of the money",
-    "Resultado del swap": "Swap Outcome",
-    "Tasa fija pactada": "Contracted fixed rate",
-    "Tasa variable actual": "Current variable rate",
-    "Mark-to-market": "Mark-to-Market",
-    "Ahorro/costo anual": "Annual saving/cost",
-    "DV01": "DV01",
-    "Sin cobertura": "Unhedged",
-    "Ganancia/pérdida del instrumento en función del tipo de cambio al vencimiento": "Gain/loss of the instrument as a function of the exchange rate at maturity",
-    "TC actual": "Actual FX",
-    "Análisis de postura · USD/MXN": "Stance Analysis · USD/MXN",
-    "QUÉ RIESGO MITIGA": "WHAT RISK IT MITIGATES",
-    "QUÉ RIESGO ACEPTA": "WHAT RISK IT ACCEPTS",
-    "QUÉ SACRIFICA": "WHAT IT SACRIFICES",
-    "Postura actual:": "Current stance:",
-
-    // ── PÁGINA 4: ORO
-    "Flujo por escenario · Sin vs Con cobertura": "Cash Flow per Scenario · Unhedged vs Hedged",
-    "Diagrama de payoff · Precio del oro": "Payoff Diagram · Gold Price",
-    "Precio Oro actual": "Current Gold Price",
-    "Producción proyectada": "Projected Production",
-    "Sensibilidad (USD/oz)": "Sensitivity (USD/oz)",
-    "Volatilidad anual oro": "Annual Gold Vol.",
-    "Para 2026 (anualizado)": "For 2026 (annualized)",
-    "Por cada USD 100/oz": "Per USD 100/oz shift",
-    "Exposición no cubierta": "Uncovered Exposure",
-    "En máximos de 10 años": "At 10-year highs",
-    "Parámetros del forward oro": "Gold Forward Parameters",
-    "Precio forward oro (USD/oz)": "Gold Forward Price (USD/oz)",
-    "Put sobre oro · Heston": "Gold Put Option · Heston",
-    "Costless collar sobre oro": "Gold Costless Collar",
-    "Futuros COMEX (GC)": "COMEX Futures (GC)",
-    "Margen inicial requerido": "Required Initial Margin",
-    "Resultado del forward oro": "Gold Forward Outcome",
-    "Resultado futuros COMEX": "COMEX Futures Outcome",
-    "Ganancia/pérdida del instrumento en función del precio del oro al vencimiento": "Gain/loss of the instrument as a function of the gold price at maturity",
-    "Precio oro actual": "Current gold price",
-
-    // ── PÁGINA 5: GAS NATURAL
-    "Perfil de consumo energético · Autlán": "Energy Consumption Profile · Autlán",
-    "Exposición al gas natural": "Natural Gas Exposure",
-    "Costo operativo gas por escenario": "Gas Operating Cost by Scenario",
-    "Diagrama de payoff · Gas natural": "Payoff Diagram · Natural Gas",
-    "Precio Gas actual": "Current Gas Price",
-    "Consumo anualizado": "Annualized Consumption",
-    "Sensibilidad (gas)": "Sensitivity (Gas)",
-    "Costo gas proyectado": "Projected Gas Cost",
-    "Por cada USD 1/MMBtu": "Per USD 1/MMBtu shift",
-    "Exposición desprotegida": "Unprotected Exposure",
-    "Fuentes de energía": "Energy Sources",
-    "Gas natural (Henry Hub)": "Natural Gas (Henry Hub)",
-    "Energía eléctrica (CENACE)": "Electricity (CENACE)",
-    "Diésel y otros combustibles": "Diesel & other fuels",
-    "Parámetros del swap de gas": "Gas Swap Parameters",
-    "Precio swap pactado (USD/MMBtu)": "Contracted Swap Price (USD/MMBtu)",
-    "Collar de gas": "Gas Collar",
-    "Resultado de la put de gas": "Gas Put Outcome",
-    "Resultado del swap de gas": "Gas Swap Outcome",
-    "Ganancia/pérdida en función del precio de Henry Hub al vencimiento": "Gain/loss as a function of Henry Hub price at maturity",
-    "Precio gas actual": "Current gas price",
-
-    // ── PÁGINA 6: TASA DE INTERÉS
-    "Collar de tasa existente": "Existing Interest Rate Collar",
-    "Análisis de situación actual": "Current Situation Analysis",
-    "Costo de intereses por escenario": "Interest Expense by Scenario",
-    "TIIE 28d actual": "Current TIIE 28d",
-    "SOFR 1m actual": "Current SOFR 1m",
-    "Deuda tasa variable": "Variable Rate Debt",
-    "Interés proyectado (anual)": "Projected Interest (Annual)",
-    "Spread promedio bancario": "Average Bank Spread",
-    "Nocional collar activo": "Active Collar Notional",
-    "Cupones pendientes": "Pending Coupons",
-    "Mark-to-Market actual": "Current Mark-to-Market",
-    "Acreedores vinculados": "Linked Creditors",
-    "Pérdida en 1T26": "Loss in 1Q26",
-    "Parámetros del cap de tasa": "Interest Rate Cap Parameters",
-    "Cap de tasa (strike)": "Interest Rate Cap (Strike)",
-    "Parámetros del swap de tasa": "Interest Rate Swap Parameters",
-    "Pagar fija / recibir variable": "Pay Fixed / Receive Variable",
-    "Tasa fija a pagar (%)": "Fixed Rate to Pay (%)",
-    "Fijar 100% de deuda variable": "Fix 100% of Variable Debt",
-    "Resultado del cap": "Cap Outcome",
-    "Resultado del collar de tasa": "Rate Collar Outcome",
-    "Resultado del swap de tasa": "Rate Swap Outcome",
-    "Ganancia/pérdida del collar en función de la TIIE 28d al vencimiento": "Gain/loss of the collar as a function of TIIE 28d at maturity",
-    "TIIE actual": "Current TIIE",
-
-    // ── PÁGINA 7: MANGANESO
-    "Estructura del mercado": "Market Structure",
-    "Drivers del precio": "Price Drivers",
-    "Precio Mn actual": "Current Mn Price",
-    "Producción anualizada": "Annualized Production",
-    "Sensibilidad Mn": "Mn Sensitivity",
-    "Ingresos Mn proyectados": "Projected Mn Revenues",
-    "Por cada USD 100/t": "Per USD 100/t shift",
-    "Exposición no mitigable": "Non-mitigatable Exposure",
-    "No existen derivados OTC fluidos": "Fluid OTC derivatives do not exist",
-    "Estrategias de mitigación operativa": "Operational Mitigation Strategies",
-    "Payoff estimado de cobertura comercial": "Estimated Payoff of Commercial Hedging",
-    "Ganancia/pérdida comercial en función del precio del Manganeso al vencimiento": "Commercial gain/loss as a function of Manganese price at maturity",
-    "Precio Mn actual": "Current Mn price",
-
-    // ── PÁGINA 8: RIESGOS SECUNDARIOS
-    "Matriz de riesgos secundarios": "Secondary Risk Matrix",
-    "Detalle de riesgos identificados": "Detail of Identified Risks",
-    "Clasificación": "Classification",
-    "Mitigación activa": "Active Mitigation",
-    "Severidad": "Severity",
-    "Probabilidad": "Probability",
-
-    // ── PÁGINA 9: ESTRATEGIA ÓPTIMA
-    "Portafolio de cobertura recomendado": "Recommended Hedging Portfolio",
-    "Payoff consolidado del portafolio": "Consolidated Portfolio Payoff",
-    "Muestra la ganancia o pérdida neta combinada de todas las coberturas recomendadas": "Shows the combined net gain or loss of all recommended hedges",
-    "Composición del portafolio recomendado": "Composition of the Recommended Portfolio",
-    "Efecto de la estrategia óptima sobre EBITDA": "Effect of the Optimal Strategy on EBITDA",
-    "Consolidado del portafolio": "Portfolio Consolidated",
-    "Monto anualizado": "Annualized Amount",
-    "Estado": "Status",
-    "Instrumento recomendado": "Recommended Instrument",
-    "Activar": "Activate",
-    "Estrategia sugerida": "Suggested Strategy",
-    "Anualizado": "Annualized",
-    "Payoff consolidado en función de las variables de mercado en escenario adverso": "Consolidated payoff as a function of market variables in adverse scenario"
-  };
-
-  // Reemplazos dinámicos más avanzados (Regex o patrones dinámicos)
-  const DYNAMIC_PATTERNS = [
-    {
-      // Cobertura FX activa
-      es: /Cobertura FX activa:\s*solo\s*<strong>([\d.]+)%<\/strong>\s*de exposición cubierta/i,
-      en: (m) => `Active FX Hedging: only <strong>${m[1]}%</strong> of exposure covered`
-    },
-    {
-      es: /vs límite de política de\s*<strong>([\d.]+)%<\/strong>/i,
-      en: (m) => `vs policy limit of <strong>${m[1]}%</strong>`
-    },
-    {
-      es: /Gap de\s*<strong>([\d.]+)\s*pp<\/strong>\s*sin protección/i,
-      en: (m) => `Gap of <strong>${m[1]} pp</strong> unprotected`
-    },
-    {
-      es: /sobre ~USD\s*<strong>([\d.]+)(M|K)<\/strong>\s*de ingresos anualizados\./i,
-      en: (m) => `over ~USD <strong>${m[1]}${m[2]}</strong> of annualized revenues.`
-    },
-    {
-      // Precio del oro
-      es: /Precio del oro en máximos históricos\s*\(~USD\s*([\d,.]+)\/oz\)\s*y\s*<strong>sin cobertura activa<\/strong>/i,
-      en: (m) => `Gold price at historic highs (~USD ${m[1]}/oz) and <strong>no active hedging</strong>`
-    },
-    {
-      es: /Metallorum duplicó producción en 1T26\s*—\s*exposición al downside sin protección\./i,
-      en: "Metallorum doubled production in 1Q26 — unprotected exposure to the downside."
-    },
-    {
-      // TIIE Collar
-      es: /Collar TIIE\s*\(floor\s*([\d.]+)%\s*\/\s*cap\s*([\d.]+)%\)\s*fuera del dinero/i,
-      en: (m) => `TIIE Collar (floor ${m[1]}% / cap ${m[2]}%) out of the money`
-    },
-    {
-      es: /TIIE actual\s*<strong>([\d.]+)%<\/strong>\s*está por debajo del floor/i,
-      en: (m) => `current TIIE <strong>${m[1]}%</strong> is below the floor`
-    },
-    {
-      es: /Empresa paga prima sin beneficio\.\s*Pérdida acumulada:\s*<strong>USD\s*([\d,.]+)(K|M)<\/strong>/i,
-      en: (m) => `Company pays premium without benefit. Cumulative loss: <strong>USD ${m[1]}${m[2]}</strong>`
-    },
-    {
-      // Gas
-      es: /Gas natural\s*<strong>sin cobertura activa<\/strong>/i,
-      en: "Natural gas <strong>no active hedging</strong>"
-    },
-    {
-      es: /Smelting es energía-intensivo\s*—\s*cada USD 1\/MMBtu de alza impacta costos operativos ~USD 2-3M\./i,
-      en: "Smelting is energy-intensive — each USD 1/MMBtu increase impacts operating costs by ~USD 2-3M."
-    },
-    {
-      // Balance auditado alert
-      es: /Datos precargados desde\s*<strong>XBRL 4T25 y 1T26 BMV<\/strong>\s*—\s*auditados bajo IFRS\./i,
-      en: "Preloaded data from <strong>XBRL 4Q25 & 1Q26 BMV</strong> — audited under IFRS."
-    },
-    {
-      es: /Para sobreescribir un valor,\s*haz clic en\s*<strong>Editar<\/strong>\s*e ingresa la justificación\./i,
-      en: "To override a value, click <strong>Edit</strong> and enter the justification."
-    },
-    {
-      // Segmento alert
-      es: /Metallorum duplicó producción en 1T26\.\s*Meta:\s*15% de ingresos totales para 2028\./i,
-      en: "Metallorum doubled production in 1Q26. Target: 15% of total revenues by 2028."
-    },
-    {
-      es: /Oro en USD 3,000\+\/oz\s*—\s*sin cobertura activa\./i,
-      en: "Gold at USD 3,000+/oz — no active hedging."
-    },
-    {
-      // Collar TIIE alert
-      es: /TIIE actual\s*\(([\d.]+)%\)\s*por debajo del floor\s*\(([\d.]+)%\)\s*—\s*el collar no se ejerce\./i,
-      en: (m) => `Current TIIE (${m[1]}%) below floor (${m[2]}%) — collar is not exercised.`
-    },
-    {
-      es: /La empresa paga la tasa de mercado completa más prima sin beneficio activo\./i,
-      en: "The company pays the full market rate plus premium without active benefit."
-    },
-    {
-      // Collares FX alert
-      es: /Cobertura FX activa cubre solo\s*~([\d.]+)%\s*de exposición\s*vs\s*([\d.]+)%\s*permitido por política\./i,
-      en: (m) => `Active FX coverage covers only ~${m[1]}% of exposure vs ${m[2]}% allowed by policy.`
-    },
-    {
-      es: /Con USD\/MXN actual en\s*([\d.]+),\s*cada peso de apreciación reduce ingresos ~USD\s*([\d.]+)M\./i,
-      en: (m) => `With current USD/MXN at ${m[1]}, each peso of appreciation reduces revenues by ~USD ${m[2]}M.`
-    },
-    {
-      // Postura alerts
-      es: /TC en zona de riesgo alto\s*\(\$([\d.]+)\)\./i,
-      en: (m) => `FX in high risk zone ($${m[1]}).`
-    },
-    {
-      es: /Cada centavo adicional de apreciación impacta los ingresos no cubiertos\s*\(~([\d.]+)%\)\s*directamente\./i,
-      en: (m) => `Each additional cent of appreciation directly impacts uncovered revenues (~${m[1]}%).`
-    },
-    {
-      es: /Prioridad:\s*activar coberturas hasta el 60% de política inmediatamente\./i,
-      en: "Priority: activate hedging up to 60% policy limit immediately."
-    },
-    {
-      es: /TC en zona de alerta\s*\(\$([\d.]+)\)\./i,
-      en: (m) => `FX in alert zone ($${m[1]}).`
-    },
-    {
-      es: /El gap de cobertura\s*\(([\d.]+)\s*pp\)\s*representa una exposición significativa\./i,
-      en: (m) => `The hedging gap (${m[1]} pp) represents a significant exposure.`
-    },
-    {
-      es: /Collares costless son la estrategia más eficiente en términos costo\/protección bajo las condiciones actuales\./i,
-      en: "Costless collars are the most efficient cost/protection strategy under current conditions."
-    },
-    {
-      es: /TC en zona favorable\s*\(\$([\d.]+)\)\./i,
-      en: (m) => `FX in favorable zone ($${m[1]}).`
-    },
-    {
-      es: /El peso débil beneficia los ingresos\./i,
-      en: "The weak peso benefits revenues."
-    },
-    {
-      es: /Considerar reducir cobertura hacia el mínimo de política para capturar el diferencial cambiario positivo\./i,
-      en: "Consider reducing hedging toward the policy minimum to capture the positive exchange differential."
-    }
-  ];
-
-  // Traduce una cadena de texto individual (Español -> Inglés)
-  function translateText(text) {
-    if (!text) return text;
-    const trimmed = text.trim();
-
-    // 1. Intentar correspondencia exacta
-    if (DICTIONARY[trimmed]) {
-      return DICTIONARY[trimmed];
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
     }
 
-    // 2. Probar correspondencia con claves insensibles a mayúsculas/espacios
-    for (let key in DICTIONARY) {
-      if (key.toLowerCase() === trimmed.toLowerCase()) {
-        return DICTIONARY[key];
-      }
-    }
+    const data = await response.json();
+    const text = data.content
+      .filter(b => b.type === "text")
+      .map(b => b.text)
+      .join("");
 
-    // 3. Probar correspondencia parcial y reemplazar sub-cadenas clave
-    let translated = text;
-
-    // Intenta patrones dinámicos
-    let matchedAny = false;
-    for (let pat of DYNAMIC_PATTERNS) {
-      if (pat.es.test(translated)) {
-        if (typeof pat.en === "function") {
-          translated = translated.replace(pat.es, pat.en);
-        } else {
-          translated = translated.replace(pat.es, pat.en);
-        }
-        matchedAny = true;
-      }
-    }
-
-    if (matchedAny) {
-      return translated;
-    }
-
-    // Traducir palabras recurrentes de tablas
-    const wordReplacements = {
-      "Ingresos": "Revenues",
-      "ingresos": "revenues",
-      "Costo": "Cost",
-      "costo": "cost",
-      "Utilidad": "Profit",
-      "pérdida": "loss",
-      "Pérdida": "Loss",
-      "Deuda": "Debt",
-      "deuda": "debt",
-      "Total": "Total",
-      "total": "total",
-      "activo": "asset",
-      "Activo": "Asset",
-      "pasivo": "liability",
-      "Pasivo": "Liability",
-      "Capital": "Equity",
-      "capital": "equity",
-      "tasa": "rate",
-      "Tasa": "Rate",
-      "fija": "fixed",
-      "Fija": "Fixed",
-      "variable": "variable",
-      "Variable": "Variable",
-      "cubierto": "covered",
-      "cobertura": "hedging",
-      "Cobertura": "Hedging",
-      "exposición": "exposure",
-      "Exposición": "Exposure",
-      "actual": "current",
-      "proyectado": "projected",
-      "Proyectado": "Projected",
-      "anual": "annual",
-      "Anual": "Annual",
-      "meses": "months",
-      "años": "years"
-    };
-
-    for (let esWord in wordReplacements) {
-      // Reemplaza sólo palabras enteras para no romper strings más grandes
-      const regex = new RegExp(`\\b${esWord}\\b`, 'g');
-      translated = translated.replace(regex, wordReplacements[esWord]);
-    }
-
-    return translated;
+    // Limpiar posibles backticks si Claude los incluyó
+    return text.replace(/^```html\n?/i, "").replace(/\n?```$/i, "").trim();
   }
 
-  // Realiza traducción recursiva en un nodo del DOM
-  function translateNode(node) {
-    if (activeLang === "es") {
-      // Restaurar original si existe en caché
-      if (node.nodeType === Node.TEXT_NODE) {
-        if (node.__originalText !== undefined) {
-          node.textContent = node.__originalText;
-        }
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        // Skip script / style
-        if (node.tagName === "SCRIPT" || node.tagName === "STYLE") return;
+  // ─────────────────────────────────────────
+  // TRADUCIR UNA PÁGINA
+  // ─────────────────────────────────────────
+  async function translatePage(pageId) {
+    const container = document.getElementById(`${pageId}-content`);
+    if (!container) return;
 
-        if (node.tagName === "INPUT" || node.tagName === "TEXTAREA") {
-          if (node.__originalPlaceholder !== undefined) {
-            node.placeholder = node.__originalPlaceholder;
-          }
-        }
-
-        if (node.__originalHTML !== undefined) {
-          node.innerHTML = node.__originalHTML;
-        } else {
-          // Seguir con los hijos
-          for (let child of node.childNodes) {
-            translateNode(child);
-          }
-        }
-      }
+    // Si ya está en caché, aplicar directamente
+    if (_cache[pageId]?.translated) {
+      container.innerHTML = _cache[pageId].translated;
       return;
     }
 
-    // LENGUAJE === "en"
-    if (node.nodeType === Node.TEXT_NODE) {
-      const orig = node.textContent;
-      if (orig && orig.trim().length > 0) {
-        // Si no está cacheado, guardarlo
-        if (node.__originalText === undefined) {
-          node.__originalText = orig;
-        }
-        const trans = translateText(orig);
-        if (trans !== orig) {
-          node.textContent = trans;
-        }
-      }
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      if (node.tagName === "SCRIPT" || node.tagName === "STYLE") return;
+    // Si ya hay una traducción en curso para esta página, esperar
+    if (_inProgress[pageId]) return;
 
-      // Traducir inputs placeholder
-      if (node.tagName === "INPUT" || node.tagName === "TEXTAREA") {
-        const ph = node.placeholder;
-        if (ph && ph.trim().length > 0) {
-          if (node.__originalPlaceholder === undefined) {
-            node.__originalPlaceholder = ph;
-          }
-          const transPh = translateText(ph);
-          if (transPh !== ph) {
-            node.placeholder = transPh;
-          }
-        }
-      }
+    // Guardar HTML original si no está guardado
+    if (!_cache[pageId]) {
+      _cache[pageId] = { original: container.innerHTML, translated: null };
+    }
 
-      // Si el elemento contiene tags internos como strong o b, traducimos su innerHTML directamente para mantener gramática
-      const classList = node.classList;
-      const shouldTranslateHTMLDirectly = 
-        classList.contains("alert") || 
-        classList.contains("kpi-sub") || 
-        classList.contains("card-sub") ||
-        classList.contains("modal-warning") ||
-        node.tagName === "TH" || 
-        node.tagName === "TD";
+    // Si el contenido está vacío (página lazy no renderizada), esperar
+    if (!container.innerHTML.trim()) return;
 
-      if (shouldTranslateHTMLDirectly) {
-        const origHTML = node.innerHTML;
-        if (origHTML && origHTML.trim().length > 0 && !origHTML.includes("class=")) {
-          if (node.__originalHTML === undefined) {
-            node.__originalHTML = origHTML;
-          }
-          const transHTML = translateText(origHTML);
-          if (transHTML !== origHTML) {
-            node.innerHTML = transHTML;
-            return; // Detener recursión ya que reemplazamos los hijos
-          }
-        }
-      }
+    _inProgress[pageId] = true;
 
-      // Recursión para hijos
-      for (let child of node.childNodes) {
-        translateNode(child);
+    // Mostrar indicador de carga
+    _showTranslatingBadge(pageId, true);
+
+    try {
+      const translated = await translateWithAPI(container.innerHTML);
+      _cache[pageId].translated = translated;
+      container.innerHTML = translated;
+    } catch (err) {
+      console.error(`[i18n] Error traduciendo ${pageId}:`, err);
+      if (window.showToast) {
+        showToast("Translation error — check API connection", "error");
       }
+    } finally {
+      _inProgress[pageId] = false;
+      _showTranslatingBadge(pageId, false);
     }
   }
 
-  // Función para traducir la interfaz completa
-  function translateInterface() {
-    // Traducir sidebar, página activa y modals
-    const rootElements = [
-      document.getElementById("sidebar"),
-      document.getElementById("main"),
-      document.getElementById("overrideModal")
-    ];
+  // ─────────────────────────────────────────
+  // RESTAURAR PÁGINA AL ESPAÑOL
+  // ─────────────────────────────────────────
+  function restorePage(pageId) {
+    const container = document.getElementById(`${pageId}-content`);
+    if (!container) return;
 
-    rootElements.forEach(el => {
-      if (el) {
-        translateNode(el);
-      }
-    });
-
-    // Actualizar labels dinámicos en breadcrumb
-    const breadcrumb = document.getElementById("breadcrumb");
-    if (breadcrumb && activeLang === "en") {
-      breadcrumb.textContent = translateText(breadcrumb.textContent);
+    if (_cache[pageId]?.original) {
+      container.innerHTML = _cache[pageId].original;
     }
   }
 
-  // MutationObserver para traducir contenido cargado dinámicamente en tiempo real
-  let observer = null;
-  function initObserver() {
-    if (observer) observer.disconnect();
+  // ─────────────────────────────────────────
+  // BADGE "TRANSLATING..."
+  // ─────────────────────────────────────────
+  function _showTranslatingBadge(pageId, show) {
+    const badgeId = `translating-badge-${pageId}`;
+    let badge = document.getElementById(badgeId);
 
-    observer = new MutationObserver((mutations) => {
-      // Desactivar temporalmente para evitar bucles infinitos al modificar texto
-      observer.disconnect();
+    if (show) {
+      if (badge) return;
+      badge = document.createElement("div");
+      badge.id = badgeId;
+      badge.style.cssText = `
+        position: fixed;
+        top: 16px;
+        right: 50%;
+        transform: translateX(50%);
+        background: var(--accent);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 20px;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        animation: fadeIn 0.2s ease;
+      `;
+      badge.innerHTML = `
+        <span style="display:inline-block; width:8px; height:8px;
+                     border-radius:50%; background:#fff;
+                     animation: pulse 1s infinite;"></span>
+        Translating...
+      `;
+      document.body.appendChild(badge);
+    } else {
+      if (badge) badge.remove();
+    }
+  }
 
-      mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(node => {
-          translateNode(node);
-        });
-        if (mutation.type === "characterData") {
-          translateNode(mutation.target);
-        }
-      });
+  // ─────────────────────────────────────────
+  // OBTENER PÁGINA ACTIVA
+  // ─────────────────────────────────────────
+  function _getActivePageId() {
+    const activeNav = document.querySelector(".nav-item.active");
+    return activeNav?.dataset?.page || null;
+  }
 
-      // Reconectar observer
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-        characterData: true
-      });
+  // ─────────────────────────────────────────
+  // TOPBAR — sidebar items
+  // ─────────────────────────────────────────
+  const STATIC_LABELS = {
+    es: {
+      sidebar_title:    "Mesa de Riesgos",
+      nav_general:      "GENERAL",
+      nav_dashboard:    "Dashboard",
+      nav_perfil:       "Perfil Autlán",
+      nav_escenarios:   "Escenarios & Inputs",
+      nav_coberturas:   "COBERTURAS",
+      nav_fx:           "Tipo de Cambio",
+      nav_oro:          "Precio del Oro",
+      nav_gas:          "Gas Natural",
+      nav_tasa:         "Tasa de Interés",
+      nav_manganeso:    "Manganeso",
+      nav_analisis:     "ANÁLISIS",
+      nav_secundarios:  "Riesgos Secundarios",
+      nav_estrategia:   "Estrategia Óptima",
+      nav_docs:         "Documentación",
+      pill_base:        "Base",
+      pill_optimista:   "Optimista",
+      pill_adverso:     "Adverso",
+      label_ebitda:     "EBITDA proy.",
+      label_tc:         "USD/MXN",
+      breadcrumbs: {
+        dashboard:   "Dashboard",
+        perfil:      "Perfil Autlán",
+        escenarios:  "Escenarios & Inputs",
+        fx:          "Tipo de Cambio",
+        oro:         "Precio del Oro",
+        gas:         "Gas Natural",
+        tasa:        "Tasa de Interés",
+        manganeso:   "Manganeso",
+        secundarios: "Riesgos Secundarios",
+        estrategia:  "Estrategia Óptima",
+        docs:        "Documentación del Modelo",
+      }
+    },
+    en: {
+      sidebar_title:    "Risk Desk",
+      nav_general:      "GENERAL",
+      nav_dashboard:    "Dashboard",
+      nav_perfil:       "Autlán Profile",
+      nav_escenarios:   "Scenarios & Inputs",
+      nav_coberturas:   "HEDGING",
+      nav_fx:           "Exchange Rate",
+      nav_oro:          "Gold Price",
+      nav_gas:          "Natural Gas",
+      nav_tasa:         "Interest Rate",
+      nav_manganeso:    "Manganese",
+      nav_analisis:     "ANALYSIS",
+      nav_secundarios:  "Secondary Risks",
+      nav_estrategia:   "Optimal Strategy",
+      nav_docs:         "Documentation",
+      pill_base:        "Base",
+      pill_optimista:   "Optimistic",
+      pill_adverso:     "Adverse",
+      label_ebitda:     "Proj. EBITDA",
+      label_tc:         "USD/MXN",
+      breadcrumbs: {
+        dashboard:   "Dashboard",
+        perfil:      "Autlán Profile",
+        escenarios:  "Scenarios & Inputs",
+        fx:          "Exchange Rate",
+        oro:         "Gold Price",
+        gas:         "Natural Gas",
+        tasa:        "Interest Rate",
+        manganeso:   "Manganese",
+        secundarios: "Secondary Risks",
+        estrategia:  "Optimal Strategy",
+        docs:        "Model Documentation",
+      }
+    }
+  };
+
+  function _translateStaticUI(lang) {
+    const L = STATIC_LABELS[lang];
+
+    // Logo subtitle
+    const logoSub = document.querySelector(".logo-sub");
+    if (logoSub) logoSub.textContent = L.sidebar_title;
+
+    // Nav section labels
+    const sectionLabels = document.querySelectorAll(".nav-section-label");
+    const sectionKeys = ["nav_general", "nav_coberturas", "nav_analisis"];
+    sectionLabels.forEach((el, i) => {
+      if (sectionKeys[i]) el.textContent = L[sectionKeys[i]];
     });
 
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      characterData: true
+    // Nav items
+    const navMap = {
+      dashboard:   "nav_dashboard",
+      perfil:      "nav_perfil",
+      escenarios:  "nav_escenarios",
+      fx:          "nav_fx",
+      oro:         "nav_oro",
+      gas:         "nav_gas",
+      tasa:        "nav_tasa",
+      manganeso:   "nav_manganeso",
+      secundarios: "nav_secundarios",
+      estrategia:  "nav_estrategia",
+      docs:        "nav_docs",
+    };
+
+    document.querySelectorAll(".nav-item[data-page]").forEach(item => {
+      const page = item.dataset.page;
+      const key  = navMap[page];
+      if (!key) return;
+      const label = item.querySelector(".nav-label");
+      if (label) label.textContent = L[key];
+    });
+
+    // Scenario pills
+    document.querySelectorAll(".pill[data-esc]").forEach(pill => {
+      const esc = pill.dataset.esc;
+      if (esc === "base")      pill.textContent = L.pill_base;
+      if (esc === "optimista") pill.textContent = L.pill_optimista;
+      if (esc === "adverso")   pill.textContent = L.pill_adverso;
+    });
+
+    // Topbar labels
+    const tcLabel = document.querySelector(".topbar-stat .stat-label");
+    if (tcLabel) tcLabel.textContent = L.label_tc;
+    const ebitdaLabels = document.querySelectorAll(".topbar-stat .stat-label");
+    if (ebitdaLabels[1]) ebitdaLabels[1].textContent = L.label_ebitda;
+
+    // Breadcrumb
+    const bc = document.getElementById("breadcrumb");
+    if (bc) {
+      const pageId = _getActivePageId();
+      if (pageId && L.breadcrumbs[pageId]) {
+        bc.textContent = L.breadcrumbs[pageId];
+      }
+    }
+
+    // Page headers (título y subtítulo de cada sección)
+    const pageHeaderMap = {
+      dashboard:   { en_title: "Executive Dashboard",     en_sub: "Real-time risk & hedging status · Autlán Q1 2026" },
+      perfil:      { en_title: "Autlán Profile",          en_sub: "Audited data · XBRL 1Q26 BMV" },
+      escenarios:  { en_title: "Scenarios & Inputs",      en_sub: "Macro variables · Adjust assumptions — feeds all pages" },
+      fx:          { en_title: "Exchange Rate Risk",      en_sub: "USD / MXN · Exposure, hedges and payoffs" },
+      oro:         { en_title: "Gold Price Risk",         en_sub: "Metallorum · No active hedge · Price at historic highs" },
+      gas:         { en_title: "Natural Gas Risk",        en_sub: "Operating cost · No active hedge · Henry Hub" },
+      tasa:        { en_title: "Interest Rate Risk",      en_sub: "TIIE · SOFR · Mark-to-market of existing collar" },
+      manganeso:   { en_title: "Manganese Price Risk",    en_sub: "Core commodity · Limited OTC market · Hedging alternatives" },
+      secundarios: { en_title: "Secondary Risks",         en_sub: "Counterparty · Basis · Liquidity · Regulatory · Operational" },
+      estrategia:  { en_title: "Optimal Hedging Strategy",en_sub: "Recommended portfolio · 60% Policy · P&L by scenario" },
+      docs:        { en_title: "Model Documentation",     en_sub: "How each page, model, calculation and optimal strategy works" },
+    };
+
+    document.querySelectorAll(".page").forEach(page => {
+      const pageId = page.id.replace("page-", "");
+      if (!pageHeaderMap[pageId]) return;
+      const title = page.querySelector(".page-title");
+      const sub   = page.querySelector(".page-sub");
+      if (lang === "en") {
+        if (title) title.textContent = pageHeaderMap[pageId].en_title;
+        if (sub)   sub.textContent   = pageHeaderMap[pageId].en_sub;
+      } else {
+        // Restaurar español — no hacemos nada porque la página se re-renderiza
+      }
+    });
+
+    // Sidebar footer
+    const footerItems = document.querySelectorAll(".sidebar-footer .footer-item");
+    if (footerItems[1]) {
+      footerItems[1].textContent = lang === "en" ? "XBRL 1Q26 · BMV" : "XBRL 1T26 · BMV";
+    }
+  }
+
+  // ─────────────────────────────────────────
+  // CAMBIAR IDIOMA — función principal
+  // ─────────────────────────────────────────
+  async function setLanguage(lang) {
+    if (lang === activeLang) return;
+
+    const prevLang = activeLang;
+    activeLang = lang;
+    localStorage.setItem(STORAGE_KEY, lang);
+
+    // Actualizar botones del selector
+    const buttons = document.querySelectorAll(".lang-selector button");
+    if (buttons.length === 2) {
+      buttons[0].style.cssText = getSelectorBtnStyle(lang === "es");
+      buttons[1].style.cssText = getSelectorBtnStyle(lang === "en");
+    }
+
+    // Traducir elementos estáticos (sidebar, pills, headers)
+    _translateStaticUI(lang);
+
+    // Obtener página activa
+    const pageId = _getActivePageId();
+
+    if (lang === "en" && pageId) {
+      // Guardar HTML original antes de traducir
+      const container = document.getElementById(`${pageId}-content`);
+      if (container && container.innerHTML.trim()) {
+        if (!_cache[pageId]) {
+          _cache[pageId] = { original: container.innerHTML, translated: null };
+        } else if (!_cache[pageId].original) {
+          _cache[pageId].original = container.innerHTML;
+        }
+        await translatePage(pageId);
+      }
+    } else if (lang === "es" && pageId) {
+      // Restaurar español: limpiar caché de traducción y re-renderizar
+      // Re-renderizar fuerza el español original desde el JS
+      _rerenderPage(pageId);
+    }
+
+    // Mostrar toast
+    if (window.showToast) {
+      const msg = lang === "es"
+        ? "Idioma: Español"
+        : "Language: English — translating with AI...";
+      showToast(msg, "success");
+    }
+  }
+
+  // ─────────────────────────────────────────
+  // RE-RENDERIZAR PÁGINA (restaurar ES)
+  // ─────────────────────────────────────────
+  function _rerenderPage(pageId) {
+    // Limpiar caché de traducción para que se re-traduzca si vuelve a EN
+    if (_cache[pageId]) {
+      _cache[pageId].translated = null;
+    }
+
+    // Re-renderizar la página para que vuelva al español original del JS
+    const renderFns = {
+      dashboard:   () => typeof renderDashboard   === "function" && renderDashboard(),
+      perfil:      () => typeof renderPerfil      === "function" && renderPerfil(),
+      escenarios:  () => typeof renderEscenarios  === "function" && renderEscenarios(),
+      fx:          () => typeof renderFX          === "function" && renderFX(),
+      oro:         () => typeof renderOro         === "function" && renderOro(),
+      gas:         () => typeof renderGas         === "function" && renderGas(),
+      tasa:        () => typeof renderTasa        === "function" && renderTasa(),
+      manganeso:   () => typeof renderManganeso   === "function" && renderManganeso(),
+      secundarios: () => typeof renderSecundarios === "function" && renderSecundarios(),
+      estrategia:  () => typeof renderEstrategia  === "function" && renderEstrategia(),
+      docs:        () => typeof renderDocs        === "function" && renderDocs(),
+    };
+
+    if (renderFns[pageId]) renderFns[pageId]();
+  }
+
+  // ─────────────────────────────────────────
+  // INTERCEPTAR NAVEGACIÓN
+  // Para traducir automáticamente al navegar entre páginas en EN
+  // ─────────────────────────────────────────
+  function _hookNavigation() {
+    // Escuchar clicks en nav items
+    document.querySelectorAll(".nav-item[data-page]").forEach(item => {
+      item.addEventListener("click", async () => {
+        if (activeLang !== "en") return;
+
+        const pageId = item.dataset.page;
+
+        // Esperar a que la página se renderice (lazy render puede tomar un tick)
+        setTimeout(async () => {
+          const container = document.getElementById(`${pageId}-content`);
+          if (!container || !container.innerHTML.trim()) return;
+
+          // Guardar original si es la primera vez
+          if (!_cache[pageId]) {
+            _cache[pageId] = { original: container.innerHTML, translated: null };
+          }
+
+          // Traducir si no está en caché
+          if (!_cache[pageId].translated) {
+            await translatePage(pageId);
+          } else {
+            // Aplicar caché directamente
+            container.innerHTML = _cache[pageId].translated;
+          }
+
+          // Actualizar breadcrumb
+          const bc = document.getElementById("breadcrumb");
+          const L  = STATIC_LABELS["en"];
+          if (bc && L.breadcrumbs[pageId]) {
+            bc.textContent = L.breadcrumbs[pageId];
+          }
+        }, 150);
+      });
     });
   }
 
-  // Interceptar texto en canvas de gráficos payoffs
-  function initCanvasInterceptor() {
-    const originalFillText = CanvasRenderingContext2D.prototype.fillText;
+  // ─────────────────────────────────────────
+  // INTERCEPTAR CANVAS (para labels de gráficos)
+  // ─────────────────────────────────────────
+  const _canvasTranslations = {
+    "Sin cobertura":       "Unhedged",
+    "Precio actual":       "Current price",
+    "TC actual":           "Current FX",
+    "Precio gas actual":   "Current gas price",
+    "Precio Mn actual":    "Current Mn price",
+    "Precio oro actual":   "Current gold price",
+    "TIIE actual":         "Current TIIE",
+    "Base":                "Base",
+    "Optimista":           "Optimistic",
+    "Adverso":             "Adverse",
+  };
+
+  function _initCanvasInterceptor() {
+    const origFill   = CanvasRenderingContext2D.prototype.fillText;
+    const origStroke = CanvasRenderingContext2D.prototype.strokeText;
+
     CanvasRenderingContext2D.prototype.fillText = function(text, x, y, maxWidth) {
-      let t = text;
-      if (activeLang === "en") {
-        t = translateText(text);
-      }
-      originalFillText.call(this, t, x, y, maxWidth);
+      const t = activeLang === "en"
+        ? (_canvasTranslations[text] || text)
+        : text;
+      origFill.call(this, t, x, y, maxWidth);
     };
 
-    const originalStrokeText = CanvasRenderingContext2D.prototype.strokeText;
     CanvasRenderingContext2D.prototype.strokeText = function(text, x, y, maxWidth) {
-      let t = text;
-      if (activeLang === "en") {
-        t = translateText(text);
-      }
-      originalStrokeText.call(this, t, x, y, maxWidth);
+      const t = activeLang === "en"
+        ? (_canvasTranslations[text] || text)
+        : text;
+      origStroke.call(this, t, x, y, maxWidth);
     };
   }
 
-  // Inyectar el botón selector de lenguaje en el topbar de forma estética
-  function injectLanguageSelector() {
-    // Esperar a que el topbar esté renderizado
+  // ─────────────────────────────────────────
+  // SELECTOR DE IDIOMA EN TOPBAR
+  // ─────────────────────────────────────────
+  function _injectLanguageSelector() {
     const interval = setInterval(() => {
       const topbarRight = document.querySelector(".topbar-right");
-      if (topbarRight) {
-        clearInterval(interval);
+      if (!topbarRight) return;
+      clearInterval(interval);
 
-        // Crear selector de lenguaje estético y moderno
-        const langContainer = document.createElement("div");
-        langContainer.className = "lang-selector";
-        langContainer.style.cssText = `
-          display: flex;
-          align-items: center;
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-md);
-          padding: 3px;
-          gap: 2px;
-          margin-right: 8px;
-        `;
+      const langContainer = document.createElement("div");
+      langContainer.className = "lang-selector";
+      langContainer.style.cssText = `
+        display: flex;
+        align-items: center;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 3px;
+        gap: 2px;
+        margin-right: 8px;
+      `;
 
-        const btnES = document.createElement("button");
-        btnES.textContent = "ES";
-        btnES.style.cssText = getSelectorBtnStyle(activeLang === "es");
-        btnES.onclick = () => setLanguage("es");
+      const btnES = document.createElement("button");
+      btnES.textContent = "ES";
+      btnES.style.cssText = getSelectorBtnStyle(activeLang === "es");
+      btnES.onclick = () => setLanguage("es");
 
-        const btnEN = document.createElement("button");
-        btnEN.textContent = "EN";
-        btnEN.style.cssText = getSelectorBtnStyle(activeLang === "en");
-        btnEN.onclick = () => setLanguage("en");
+      const btnEN = document.createElement("button");
+      btnEN.textContent = "EN";
+      btnEN.style.cssText = getSelectorBtnStyle(activeLang === "en");
+      btnEN.onclick = () => setLanguage("en");
 
-        langContainer.appendChild(btnES);
-        langContainer.appendChild(btnEN);
-
-        // Insertar al inicio del topbarRight (antes de los scenario pills)
-        topbarRight.insertBefore(langContainer, topbarRight.firstChild);
-      }
+      langContainer.appendChild(btnES);
+      langContainer.appendChild(btnEN);
+      topbarRight.insertBefore(langContainer, topbarRight.firstChild);
     }, 100);
   }
 
@@ -799,75 +551,74 @@ window.I18N = (() => {
       padding: 4px 8px;
       border-radius: 4px;
       cursor: pointer;
-      transition: all var(--transition);
+      transition: all 0.2s;
+      border: none;
       color: ${active ? "#ffffff" : "var(--text-muted)"};
-      background: ${active ? "var(--accent-bright)" : "transparent"};
-      box-shadow: ${active ? "0 2px 8px rgba(124, 58, 173, 0.3)" : "none"};
+      background: ${active ? "var(--accent)" : "transparent"};
+      box-shadow: ${active ? "0 2px 8px rgba(27,79,138,0.4)" : "none"};
     `;
   }
 
-  function setLanguage(lang) {
-    if (lang === activeLang) return;
-    activeLang = lang;
-    localStorage.setItem(STORAGE_KEY, lang);
-
-    // Actualizar estilos del botón
-    const buttons = document.querySelectorAll(".lang-selector button");
-    if (buttons.length === 2) {
-      buttons[0].style.cssText = getSelectorBtnStyle(lang === "es");
-      buttons[1].style.cssText = getSelectorBtnStyle(lang === "en");
-    }
-
-    // Traducir interfaz
-    translateInterface();
-
-    // Forzar redibujo de los canvas payoffs si Scenarios está listo
-    if (window.Scenarios) {
-      // Emitir cambio de escenario para forzar re-render de la página activa
-      const currentActiveNav = document.querySelector(".nav-item.active");
-      if (currentActiveNav) {
-        const pageId = currentActiveNav.dataset.page;
-        Scenarios.emit(`page:${pageId}`, {});
-        // También emitir calc:update para actualizar KPIs
-        const cache = Scenarios.getCache();
-        if (cache && cache.actual) {
-          Scenarios.emit("calc:update", cache);
-        }
+  // ─────────────────────────────────────────
+  // CSS — animaciones del badge
+  // ─────────────────────────────────────────
+  function _injectStyles() {
+    const style = document.createElement("style");
+    style.textContent = `
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.3; }
       }
-    }
-
-    // Mostrar toast de éxito
-    if (window.showToast) {
-      const msg = lang === "es" ? "Idioma cambiado a Español" : "Language changed to English";
-      showToast(msg, "success");
-    }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateX(50%) translateY(-8px); }
+        to   { opacity: 1; transform: translateX(50%) translateY(0); }
+      }
+    `;
+    document.head.appendChild(style);
   }
 
-  // Inicialización
+  // ─────────────────────────────────────────
+  // INICIALIZACIÓN
+  // ─────────────────────────────────────────
   function init() {
-    initCanvasInterceptor();
-    injectLanguageSelector();
-    initObserver();
+    _injectStyles();
+    _initCanvasInterceptor();
+    _injectLanguageSelector();
 
-    // Ejecutar traducción inicial si no es español
+    // Esperar a que el DOM esté listo para hookear navegación
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", _hookNavigation);
+    } else {
+      setTimeout(_hookNavigation, 200);
+    }
+
+    // Si el usuario tenía EN guardado, traducir al cargar
     if (activeLang === "en") {
-      // Esperar un momento a que los scripts de renderizado inicial terminen
-      setTimeout(() => {
-        translateInterface();
-      }, 300);
+      setTimeout(async () => {
+        _translateStaticUI("en");
+        const pageId = _getActivePageId();
+        if (pageId) await translatePage(pageId);
+      }, 500);
     }
   }
 
-  // Auto-inicializar cuando el DOM esté listo
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
     init();
   }
 
+  // ─────────────────────────────────────────
+  // API PÚBLICA
+  // ─────────────────────────────────────────
   return {
-    getLocale: () => activeLang,
-    translate: translateText,
-    setLanguage: setLanguage
+    getLocale:       () => activeLang,
+    setLanguage,
+    translatePage,
+    clearCache:      (pageId) => {
+      if (pageId) delete _cache[pageId];
+      else        Object.keys(_cache).forEach(k => delete _cache[k]);
+    },
   };
+
 })();
