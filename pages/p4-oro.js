@@ -19,7 +19,7 @@ function renderOro() {
         <strong>20,000 oz en 2026</strong> y +100,000 oz en años siguientes.
         Exposición al downside completamente desprotegida.
       </span>
-    </div>`
+    </div>
 
     <!-- KPIs -->
     <div class="grid-4 mb-24" id="oro-kpis"></div>
@@ -102,17 +102,15 @@ function _oroRenderKPIs() {
   const el = document.getElementById("oro-kpis");
   if (!el) return;
 
-  const precio   = Scenarios.getVar("precioOro");
-  // 1T26: ~2,400 oz vendidas. Meta 2026: 20,000 oz. Usar meta como base de modelo.
-  const ozAnual  = 20000; // oz/año — meta mgmt 2026 (junta may-2026)
-  const ingresos = precio * ozAnual / 1000; // USD miles
-  const base     = 3000;
-  const delta    = precio - base;
-  const impacto  = delta * ozAnual / 1000;
+  const precio  = Scenarios.getVar("precioOro");
+  const ozAnual = 20000; // oz/año — meta mgmt 2026 (junta may-2026)
+  const ingresos = precio * ozAnual / 1000;
+  const base    = 3000;
+  const delta   = precio - base;
+  const impacto = delta * ozAnual / 1000;
 
   document.getElementById("oro-precio-live") &&
-    (document.getElementById("oro-precio-live").textContent =
-      precio.toLocaleString());
+    (document.getElementById("oro-precio-live").textContent = precio.toLocaleString());
 
   [
     {
@@ -126,7 +124,7 @@ function _oroRenderKPIs() {
     {
       label: "Ingresos Metallorum est.",
       value: `USD ${(ingresos/1000).toFixed(1)}M`,
-      sub:   `~${(ozAnual/1000).toFixed(0)}K oz anualizadas · precio actual`,
+      sub:   `~${(ozAnual/1000).toFixed(0)}K oz meta 2026 · precio actual`,
       tipo:  "gold",
       delta: impacto >= 0
         ? `+USD ${(impacto/1000).toFixed(1)}M vs base`
@@ -185,7 +183,7 @@ function _oroTabForward() {
         </div>
         <div class="field-group">
           <label>Volumen a cubrir (oz)</label>
-          <input type="number" id="oro-fwd-oz" value="10000" step="5000"
+          <input type="number" id="oro-fwd-oz" value="10000" step="1000"
                  oninput="calcOroForward()" />
         </div>
         <div class="field-group">
@@ -234,7 +232,7 @@ function _oroTabPut() {
         </div>
         <div class="field-group">
           <label>Volumen a cubrir (oz)</label>
-          <input type="number" id="oro-put-oz" value="10000" step="5000"
+          <input type="number" id="oro-put-oz" value="10000" step="1000"
                  oninput="calcOroPut()" />
         </div>
         <div class="field-group">
@@ -293,7 +291,7 @@ function _oroTabCollar() {
         </div>
         <div class="field-group">
           <label>Volumen a cubrir (oz)</label>
-          <input type="number" id="oro-col-oz" value="10000" step="5000"
+          <input type="number" id="oro-col-oz" value="10000" step="1000"
                  oninput="calcOroCollar()" />
         </div>
       </div>
@@ -372,12 +370,11 @@ window.switchOroTab = function(idx) {
 window.calcOroForward = function() {
   const spot   = parseFloat(document.getElementById("oro-fwd-spot")?.value   || 3000);
   const strike = parseFloat(document.getElementById("oro-fwd-strike")?.value || 2950);
-  const oz     = parseFloat(document.getElementById("oro-fwd-oz")?.value     || 130000);
+  const oz     = parseFloat(document.getElementById("oro-fwd-oz")?.value     || 10000);
   const meses  = parseFloat(document.getElementById("oro-fwd-T")?.value      || 6);
   const r      = parseFloat(document.getElementById("oro-fwd-r")?.value      || 4.30) / 100;
   const T      = meses / 12;
 
-  // Precio forward teórico (gold: sin convenience yield, storage ~0.15% anual)
   const fwdTeorico = Models.forwardPrice(spot, r, 0, T, 0.0015).forward;
   const ingSin     = spot   * oz / 1000;
   const ingCon     = strike * oz / 1000;
@@ -400,7 +397,6 @@ window.calcOroForward = function() {
                   proteccion >= 0 ? "positive" : "warn")}
     ${_resultRow("Descuento vs spot", `${((strike/spot-1)*100).toFixed(1)}%`,
                   strike >= spot ? "positive" : "warn")}
-
     <div class="alert alert-warn" style="margin-top:12px;">
       <span class="alert-icon">⚠</span>
       <span style="font-size:11.5px;">
@@ -418,7 +414,7 @@ window.calcOroPut = function() {
   const strike = parseFloat(document.getElementById("oro-put-strike")?.value || 2800);
   const vol    = parseFloat(document.getElementById("oro-put-vol")?.value    || 18) / 100;
   const meses  = parseFloat(document.getElementById("oro-put-T")?.value      || 6);
-  const oz     = parseFloat(document.getElementById("oro-put-oz")?.value     || 130000);
+  const oz     = parseFloat(document.getElementById("oro-put-oz")?.value     || 10000);
   const modelo = document.getElementById("oro-put-modelo")?.value || "heston";
   const r      = Scenarios.getVar("sofr1m") / 100;
   const T      = meses / 12;
@@ -432,8 +428,8 @@ window.calcOroPut = function() {
     res = Models.blackScholes("put", spot, strike, T, r, vol, 0);
   }
 
-  const primaTot  = res.precio * oz / 1000; // USD miles
-  const primaPct  = (res.precio / spot * 100).toFixed(2);
+  const primaTot = res.precio * oz / 1000;
+  const primaPct = (res.precio / spot * 100).toFixed(2);
 
   const el = document.getElementById("oro-put-result");
   if (!el) return;
@@ -453,7 +449,6 @@ window.calcOroPut = function() {
                   strike < spot ? `OTM — ${((1-strike/spot)*100).toFixed(1)}% fuera`
                                 : `ITM — en el dinero`,
                   strike < spot ? "warn" : "positive")}
-
     <div class="alert alert-info" style="margin-top:12px;">
       <span class="alert-icon">ℹ</span>
       <span style="font-size:11.5px;">
@@ -472,13 +467,12 @@ window.calcOroCollar = function() {
   const cap   = parseFloat(document.getElementById("oro-col-cap")?.value   || 3300);
   const vol   = parseFloat(document.getElementById("oro-col-vol")?.value   || 18) / 100;
   const meses = parseFloat(document.getElementById("oro-col-T")?.value     || 6);
-  const oz    = parseFloat(document.getElementById("oro-col-oz")?.value    || 130000);
+  const oz    = parseFloat(document.getElementById("oro-col-oz")?.value    || 10000);
   const r     = Scenarios.getVar("sofr1m") / 100;
   const T     = meses / 12;
 
-  const res       = Models.collarPrice(spot, floor, cap, T, r, 0, vol,
-                    true, Models.PARAMS.oro);
-  const costoTot  = res.costoNeto * oz / 1000;
+  const res      = Models.collarPrice(spot, floor, cap, T, r, 0, vol, true, Models.PARAMS.oro);
+  const costoTot = res.costoNeto * oz / 1000;
 
   const el = document.getElementById("oro-col-result");
   if (!el) return;
@@ -498,7 +492,6 @@ window.calcOroCollar = function() {
     ${_resultRow("¿Costless?",
                   res.esCostless ? "✓ Sí" : "✗ No — ajustar strikes",
                   res.esCostless ? "positive" : "warn")}
-
     <div class="alert alert-${res.esCostless ? "success" : "info"}"
          style="margin-top:12px;">
       <span class="alert-icon">${res.esCostless ? "✓" : "💡"}</span>
@@ -515,17 +508,17 @@ window.calcOroCollar = function() {
 
 window.calcOroFuturos = function() {
   const spot      = parseFloat(document.getElementById("oro-fut-spot")?.value      || 3000);
-  const contratos = parseFloat(document.getElementById("oro-fut-contratos")?.value || 1300);
+  const contratos = parseFloat(document.getElementById("oro-fut-contratos")?.value || 100);
   const meses     = parseFloat(document.getElementById("oro-fut-T")?.value         || 6);
   const r         = parseFloat(document.getElementById("oro-fut-r")?.value         || 4.30) / 100;
   const margenPct = parseFloat(document.getElementById("oro-fut-margen")?.value    || 7) / 100;
   const T         = meses / 12;
 
-  const ozTotal    = contratos * 100;
-  const fwdPrice   = Models.forwardPrice(spot, r, 0, T, 0.0015).forward;
-  const nocional   = fwdPrice * ozTotal / 1000; // USD miles
-  const margenReq  = nocional * margenPct;
-  const costoOport = (r * margenReq * T); // costo financiero del margen
+  const ozTotal   = contratos * 100;
+  const fwdPrice  = Models.forwardPrice(spot, r, 0, T, 0.0015).forward;
+  const nocional  = fwdPrice * ozTotal / 1000;
+  const margenReq = nocional * margenPct;
+  const costoOport = r * margenReq * T;
 
   const el = document.getElementById("oro-fut-result");
   if (!el) return;
@@ -538,24 +531,39 @@ window.calcOroFuturos = function() {
     ${_resultRow("Onzas totales cubiertas", `${ozTotal.toLocaleString()} oz`)}
     ${_resultRow("Nocional total", `USD ${nocional.toFixed(1)}M`)}
     ${_resultRow("Margen inicial requerido",
-                  `USD ${margenReq.toFixed(1)}M (${(margenPct*100).toFixed(0)}%)`,
-                  "warn")}
+                  `USD ${margenReq.toFixed(1)}M (${(margenPct*100).toFixed(0)}%)`, "warn")}
     ${_resultRow("Costo financiero del margen",
                   `USD ${costoOport.toFixed(0)}K/período`, "warn")}
-    ${_resultRow("Basis risk",
-                  "Diferencia COMEX spot vs precio cliente", "warn")}
-
+    ${_resultRow("Basis risk", "Diferencia COMEX spot vs precio cliente", "warn")}
     <div class="alert alert-warn" style="margin-top:12px;">
       <span class="alert-icon">⚠</span>
       <span style="font-size:11.5px;">
         Los futuros requieren margen inicial de
         <strong>USD ${margenReq.toFixed(1)}M</strong> — capital inmovilizado.
-        Con DSCR de 0.6x, esto puede presionar la liquidez de Autlán.
+        Con Deuda/UAFIRDA 4.4x, esto puede presionar la liquidez de Autlán.
         El OTC forward o collar es preferible dado el perfil de liquidez actual.
       </span>
     </div>
   `;
 };
+
+// ─────────────────────────────────────────
+// HELPER — fila de resultado
+// ─────────────────────────────────────────
+function _resultRow(label, value, tipo = "") {
+  const color = tipo === "positive" ? "var(--success)"
+              : tipo === "warn"     ? "var(--warn)"
+              : tipo === "danger"   ? "var(--danger)"
+              : tipo === "accent"   ? "var(--accent)"
+              : "var(--text-primary)";
+  return `
+    <div class="flex-between" style="padding:6px 0;
+          border-bottom:1px solid var(--border);">
+      <span style="font-size:12px; color:var(--text-muted);">${label}</span>
+      <span class="mono" style="font-size:12px; font-weight:600;
+            color:${color};">${value}</span>
+    </div>`;
+}
 
 // ─────────────────────────────────────────
 // TABLA COMPARATIVA
@@ -565,14 +573,14 @@ function _oroRenderTablaComparativa() {
   if (!el) return;
 
   const esc   = Scenarios.getState().escenarios;
-  const oz    = 20000; // oz anualizadas
+  const oz    = 20000;
   const r     = Scenarios.getVar("sofr1m") / 100;
   const T     = 0.5;
   const floor = 2700;
   const cap   = 3300;
   const fwdK  = 2950;
 
-  const putP  = Models.heston("put", 3000, floor, T, r, 0,
+  const putP = Models.heston("put", 3000, floor, T, r, 0,
     Models.PARAMS.oro.v0, Models.PARAMS.oro.kappa,
     Models.PARAMS.oro.theta_v, Models.PARAMS.oro.xi,
     Models.PARAMS.oro.rho_sv).precio;
@@ -601,7 +609,7 @@ function _oroRenderTablaComparativa() {
     {
       label: `Collar $${floor}–$${cap}/oz`,
       fn: (p) => {
-        const pay = Models.collarPayoff(p, floor, cap, oz/1000);
+        const pay = Models.collarPayoff(p, floor, cap, oz / 1000);
         return p * oz / 1000 + pay.payoffCollar;
       },
     },
@@ -635,17 +643,17 @@ function _oroRenderPayoffChart() {
   const h   = canvas.height      || 200;
   canvas.width = w;
 
-  const r   = Scenarios.getVar("sofr1m") / 100;
-  const T   = 0.5;
-  const oz  = 1000; // normalizado a 1K oz para el chart
+  const r     = Scenarios.getVar("sofr1m") / 100;
+  const T     = 0.5;
+  const oz    = 1000;
+  const fwdK  = 2950;
+  const floor = 2700;
+  const cap   = 3300;
 
   const precios = [];
   for (let p = 1800; p <= 4200; p += 20) precios.push(p);
 
-  const fwdK  = 2950;
-  const floor = 2700;
-  const cap   = 3300;
-  const putP  = Models.heston("put", 3000, floor, T, r, 0,
+  const putP = Models.heston("put", 3000, floor, T, r, 0,
     Models.PARAMS.oro.v0, Models.PARAMS.oro.kappa,
     Models.PARAMS.oro.theta_v, Models.PARAMS.oro.xi,
     Models.PARAMS.oro.rho_sv).precio;
@@ -686,7 +694,6 @@ function _oroRenderPayoffChart() {
 
   ctx.clearRect(0, 0, w, h);
 
-  // Precio actual
   const precioAct = Scenarios.getVar("precioOro");
   ctx.strokeStyle = "#C8CDD8";
   ctx.lineWidth   = 1;
@@ -700,7 +707,6 @@ function _oroRenderPayoffChart() {
   ctx.font      = "10px Inter";
   ctx.fillText(`$${precioAct.toLocaleString()}`, xScale(precioAct) + 4, pad + 12);
 
-  // Series
   series.forEach(s => {
     ctx.strokeStyle = s.color;
     ctx.lineWidth   = 2;
@@ -713,14 +719,12 @@ function _oroRenderPayoffChart() {
     ctx.stroke();
   });
 
-  // Eje X
   ctx.fillStyle = "#8A96A8";
   ctx.font      = "10px Inter";
   [2000, 2500, 3000, 3500, 4000].forEach(p => {
     ctx.fillText(`$${p.toLocaleString()}`, xScale(p) - 12, h - 4);
   });
 
-  // Leyenda
   const leyEl = document.getElementById("oro-chart-leyenda");
   if (leyEl) {
     leyEl.innerHTML = series.map(s => `
@@ -786,7 +790,7 @@ function _oroRenderRecomendacion() {
         </div>
         <div style="font-size:12px; line-height:1.6;">
           <strong>Costless collar $2,700–$3,300</strong> sobre
-          50-60% de producción anualizada (~260-312K oz).
+          50-60% de producción meta (~10,000-12,000 oz).
           Alineado con política interna. Sin costo de prima.
           Protege el downside crítico sin sacrificar upside moderado.
         </div>
@@ -798,16 +802,16 @@ function _oroRenderRecomendacion() {
       <span style="font-size:12px;">
         <strong>Postura actual:</strong>
         ${precio > 3000
-          ? `Precio en máximos (USD ${precio.toLocaleString()}/oz). 
-             Es el momento óptimo para contratar forwards o collars — 
-             el precio de ejercicio queda alto y el costo de la prima es bajo 
-             como % del nocional. Cada mes sin cobertura es riesgo gratuito.`
+          ? `Precio en máximos (USD ${precio.toLocaleString()}/oz).
+             Momento óptimo para contratar forwards o collars —
+             el precio de ejercicio queda alto y el costo de prima es bajo.
+             Cada mes sin cobertura es riesgo gratuito sobre meta 20,000 oz 2026.`
           : precio > 2600
-          ? `Precio en zona intermedia (USD ${precio.toLocaleString()}/oz). 
-             Contratar cobertura ahora con forward o collar para asegurar 
-             ingresos sobre la base de USD 2,600-2,700/oz mínimo.`
-          : `Precio en zona de riesgo alto (USD ${precio.toLocaleString()}/oz). 
-             El impacto sobre Metallorum es significativo. 
+          ? `Precio en zona intermedia (USD ${precio.toLocaleString()}/oz).
+             Contratar cobertura con forward o collar para asegurar
+             ingresos mínimos sobre la base de USD 2,600-2,700/oz.`
+          : `Precio en zona de riesgo alto (USD ${precio.toLocaleString()}/oz).
+             Impacto sobre Metallorum significativo sin cobertura.
              Put OTM para limitar pérdida sin sacrificar recuperación.`}
       </span>
     </div>
