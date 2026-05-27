@@ -7,6 +7,8 @@ function renderPerfil() {
   const el = document.getElementById("perfil-content");
   if (!el) return;
 
+  const collar = AUTLAN.derivadosVigentes.collarTasa;
+
   el.innerHTML = `
 
     <!-- ALERTA DATOS AUDITADOS -->
