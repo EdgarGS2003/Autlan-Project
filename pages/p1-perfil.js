@@ -12,47 +12,46 @@ function renderPerfil() {
     <!-- ALERTA DATOS AUDITADOS -->
     <div class="alert alert-info mb-24">
       <span class="alert-icon">🔒</span>
-      <span>Datos precargados desde <strong>XBRL 4T25 y 1T26 BMV</strong> — auditados bajo IFRS.
-      Para sobreescribir un valor, haz clic en <strong>Editar</strong> e ingresa la justificación.</span>
+      <span>${I18N.t("p1.alert")}</span>
     </div>
 
     <!-- KPIs PRINCIPALES -->
-    <div class="section-title">Resultados financieros clave</div>
+    <div class="section-title">${I18N.t("p1.keyResults")}</div>
     <div class="grid-4 mb-24">
 
       <div class="kpi-card accent">
-        <div class="kpi-label">Ingresos 2025</div>
+        <div class="kpi-label">${I18N.t("p1.kpi.rev2025")}</div>
         <div class="kpi-value">USD 322.7M</div>
-        <div class="kpi-sub">+3.1% vs 2024 · USD 312.9M</div>
+        <div class="kpi-sub">${I18N.t("p1.kpi.rev2025.sub")}</div>
       </div>
 
       <div class="kpi-card warn">
-        <div class="kpi-label">EBITDA 2025</div>
+        <div class="kpi-label">${I18N.t("p1.kpi.ebitda2025")}</div>
         <div class="kpi-value">USD 31.5M</div>
-        <div class="kpi-sub">Margen 9.7% · Pico 38% en 2022</div>
+        <div class="kpi-sub">${I18N.t("p1.kpi.ebitda2025.sub")}</div>
       </div>
 
       <div class="kpi-card danger">
-        <div class="kpi-label">Pérdida neta 2025</div>
+        <div class="kpi-label">${I18N.t("p1.kpi.netloss")}</div>
         <div class="kpi-value" style="color:var(--danger);">-USD 37.8M</div>
-        <div class="kpi-sub">Gasto financiero USD 42.5M</div>
+        <div class="kpi-sub">${I18N.t("p1.kpi.netloss.sub")}</div>
       </div>
 
       <div class="kpi-card success">
-        <div class="kpi-label">Ingresos 1T26</div>
+        <div class="kpi-label">${I18N.t("p1.kpi.rev1q26")}</div>
         <div class="kpi-value">USD 98.4M</div>
-        <div class="kpi-sub">+23% vs 1T25 · Récord trimestral</div>
+        <div class="kpi-sub">${I18N.t("p1.kpi.rev1q26.sub")}</div>
       </div>
 
     </div>
 
     <!-- ESTADO DE RESULTADOS COMPARATIVO -->
-    <div class="section-title">Estado de resultados comparativo</div>
+    <div class="section-title">${I18N.t("p1.incomeStatement")}</div>
     <div class="table-wrap mb-24">
       <table>
         <thead>
           <tr>
-            <th>Concepto (USD miles)</th>
+            <th>${I18N.t("p1.concept")}</th>
             <th style="text-align:right;">2024</th>
             <th style="text-align:right;">2025 Anual</th>
             <th style="text-align:right;">1T25</th>
@@ -61,14 +60,14 @@ function renderPerfil() {
           </tr>
         </thead>
         <tbody>
-          ${_filaResultados("Ingresos netos", 312872, 322746, 80135, 98386, true)}
-          ${_filaResultados("Costo de ventas", 252213, 271309, 67449, 83463, false, true)}
-          ${_filaResultados("Utilidad bruta", 60659, 51437, 12686, 14923, true)}
-          ${_filaResultados("Gastos de venta", 12649, 15912, 3101, 5905, false, true)}
-          ${_filaResultados("Gastos de administración", 36523, 37714, 9301, 10656, false, true)}
-          ${_filaResultados("Utilidad (pérdida) operación", 5262, -4094, -1084, 170, true)}
-          ${_filaResultados("Gastos financieros", 31881, 42493, 7654, 7318, false, true)}
-          ${_filaResultados("Pérdida neta", -12025, -37773, -7632, -5976, true)}
+          ${_filaResultados(I18N.t("p1.netRev"), 312872, 322746, 80135, 98386, true)}
+          ${_filaResultados(I18N.t("p1.cogs"), 252213, 271309, 67449, 83463, false, true)}
+          ${_filaResultados(I18N.t("p1.grossProfit"), 60659, 51437, 12686, 14923, true)}
+          ${_filaResultados(I18N.t("p1.sellExp"), 12649, 15912, 3101, 5905, false, true)}
+          ${_filaResultados(I18N.t("p1.adminExp"), 36523, 37714, 9301, 10656, false, true)}
+          ${_filaResultados(I18N.t("p1.opProfit"), 5262, -4094, -1084, 170, true)}
+          ${_filaResultados(I18N.t("p1.finExp"), 31881, 42493, 7654, 7318, false, true)}
+          ${_filaResultados(I18N.t("p1.netLoss"), -12025, -37773, -7632, -5976, true)}
         </tbody>
       </table>
     </div>
@@ -80,73 +79,72 @@ function renderPerfil() {
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">Balance general · 31 mar 2026</div>
-            <div class="card-sub">XBRL 1T26 · cifras en USD miles</div>
+            <div class="card-title">${I18N.t("p1.balance")}</div>
+            <div class="card-sub">${I18N.t("p1.balance.sub")}</div>
           </div>
-          <span class="badge badge-accent">Auditado</span>
+          <span class="badge badge-accent">${I18N.t("label.audited")}</span>
         </div>
 
-        <div class="section-title" style="margin-top:0;">Activos</div>
-        ${_filaBalance("Efectivo y equivalentes", 21801, "success")}
-        ${_filaBalance("Cuentas por cobrar", 52387)}
-        ${_filaBalance("Inventarios", 88033)}
-        ${_filaBalance("Otros circulantes", 55390)}
-        ${_filaBalance("Total activo circulante", 217611, "accent", true)}
-        ${_filaBalance("Propiedades, planta y equipo", 235302)}
-        ${_filaBalance("Intangibles y crédito mercantil", 79708)}
-        ${_filaBalance("Total activo no circulante", 410253, "accent", true)}
-        ${_filaBalance("TOTAL ACTIVOS", 627864, "accent", true, true)}
+        <div class="section-title" style="margin-top:0;">${I18N.t("p1.assets")}</div>
+        ${_filaBalance(I18N.t("p1.cash"), 21801, "success")}
+        ${_filaBalance(I18N.t("p1.ar"), 52387)}
+        ${_filaBalance(I18N.t("p1.inventory"), 88033)}
+        ${_filaBalance(I18N.t("p1.otherCurrent"), 55390)}
+        ${_filaBalance(I18N.t("p1.totalCurrent"), 217611, "accent", true)}
+        ${_filaBalance(I18N.t("p1.ppe"), 235302)}
+        ${_filaBalance(I18N.t("p1.intangibles"), 79708)}
+        ${_filaBalance(I18N.t("p1.totalNonCurrent"), 410253, "accent", true)}
+        ${_filaBalance(I18N.t("p1.totalAssets"), 627864, "accent", true, true)}
 
         <div class="divider"></div>
-        <div class="section-title">Pasivos y capital</div>
-        ${_filaBalance("Pasivos circulantes", 158053, "danger")}
-        ${_filaBalance("Deuda largo plazo", 168227, "danger")}
-        ${_filaBalance("Otras provisiones LP", 69349)}
-        ${_filaBalance("Total pasivos", 395593, "danger", true)}
-        ${_filaBalance("Capital contable total", 232271, "success", true, true)}
+        <div class="section-title">${I18N.t("p1.liabilities")}</div>
+        ${_filaBalance(I18N.t("p1.currentLiab"), 158053, "danger")}
+        ${_filaBalance(I18N.t("p1.ltDebt"), 168227, "danger")}
+        ${_filaBalance(I18N.t("p1.otherLt"), 69349)}
+        ${_filaBalance(I18N.t("p1.totalLiab"), 395593, "danger", true)}
+        ${_filaBalance(I18N.t("p1.equity"), 232271, "success", true, true)}
       </div>
 
       <!-- Métricas y ratings -->
       <div>
         <div class="card mb-16">
           <div class="card-header">
-            <div class="card-title">Métricas de crédito</div>
-            <span class="badge badge-warn">Outlook Negativo</span>
+            <div class="card-title">${I18N.t("p1.creditMetrics")}</div>
+            <span class="badge badge-warn">${I18N.t("badge.negOutlook")}</span>
           </div>
 
-          ${_filaMetrica("Leverage (Deuda/Activos)", "63.0%", "danger")}
-          ${_filaMetrica("Deuda neta", "USD 164.1M", "warn")}
-          ${_filaMetrica("DSCR proyectado 2026-28", "0.6x", "danger")}
-          ${_filaMetrica("Gasto financiero anual", "USD 42.5M", "warn")}
-          ${_filaMetrica("Efectivo disponible", "USD 21.8M", "warn")}
-          ${_filaMetrica("Deuda / EBITDA", "5.9x", "danger")}
+          ${_filaMetrica(I18N.t("p1.leverage"), "63.0%", "danger")}
+          ${_filaMetrica(I18N.t("p1.netDebt"), "USD 164.1M", "warn")}
+          ${_filaMetrica(I18N.t("p1.dscr"), "0.6x", "danger")}
+          ${_filaMetrica(I18N.t("p1.finExpAnn"), "USD 42.5M", "warn")}
+          ${_filaMetrica(I18N.t("p1.cashAvail"), "USD 21.8M", "warn")}
+          ${_filaMetrica(I18N.t("p1.debtEbitda"), "5.9x", "danger")}
 
           <div class="divider"></div>
-          <div class="section-title">Calificaciones crediticias</div>
+          <div class="section-title">${I18N.t("p1.ratings")}</div>
           <div class="grid-3" style="gap:8px; margin-top:8px;">
-            ${_ratingCard("HR Ratings", "A-", "Negativa")}
-            ${_ratingCard("Fitch", "BBB+", "Negativa")}
-            ${_ratingCard("PCR Verum", "A-/M", "Negativa")}
+            ${_ratingCard("HR Ratings", "A-", I18N.t("p1.negativa"))}
+            ${_ratingCard("Fitch", "BBB+", I18N.t("p1.negativa"))}
+            ${_ratingCard("PCR Verum", "A-/M", I18N.t("p1.negativa"))}
           </div>
         </div>
 
         <!-- Segmentos -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Segmentos de negocio · 2025</div>
+            <div class="card-title">${I18N.t("p1.segments")}</div>
             <span class="badge badge-accent">USD 322.7M total</span>
           </div>
 
-          ${_filaSegmento("Ferroaleaciones & Mn", 289000, 89.6, "var(--mn-brown)")}
-          ${_filaSegmento("EMD (batería/industrial)", 28000, 8.7, "var(--accent-mid)")}
-          ${_filaSegmento("Metallorum (oro)", 5000, 1.5, "var(--gold)")}
-          ${_filaSegmento("Energía (intra-segmento)", 2800, 0.9, "var(--success-mid)")}
+          ${_filaSegmento(I18N.t("p1.seg.ferro"), 289000, 89.6, "var(--mn-brown)")}
+          ${_filaSegmento(I18N.t("p1.seg.emd"), 28000, 8.7, "var(--accent-mid)")}
+          ${_filaSegmento(I18N.t("p1.seg.metallorum"), 5000, 1.5, "var(--gold)")}
+          ${_filaSegmento(I18N.t("p1.seg.energy"), 2800, 0.9, "var(--success-mid)")}
 
           <div class="alert alert-info mt-12" style="margin-top:12px;">
             <span class="alert-icon">📈</span>
             <span style="font-size:11.5px;">
-              Metallorum duplicó producción en 1T26. Meta: 15% de ingresos totales para 2028.
-              Oro en USD 3,000+/oz — sin cobertura activa.
+              ${I18N.t("p1.seg.alert")}
             </span>
           </div>
         </div>
@@ -155,18 +153,18 @@ function renderPerfil() {
     </div>
 
     <!-- DEUDA DETALLADA -->
-    <div class="section-title">Estructura de deuda detallada · 1T26</div>
+    <div class="section-title">${I18N.t("p1.debtDetail")}</div>
     <div class="table-wrap mb-24">
       <table>
         <thead>
           <tr>
             <th>#</th>
-            <th>Acreedor</th>
-            <th>Tasa</th>
-            <th>Moneda</th>
-            <th style="text-align:right;">Vencimiento</th>
-            <th style="text-align:right;">Saldo (USD K)</th>
-            <th>Riesgo</th>
+            <th>${I18N.t("p1.creditor")}</th>
+            <th>${I18N.t("p1.rate")}</th>
+            <th>${I18N.t("p1.currency")}</th>
+            <th style="text-align:right;">${I18N.t("p1.maturity")}</th>
+            <th style="text-align:right;">${I18N.t("p1.balance.col")}</th>
+            <th>${I18N.t("p1.risk")}</th>
           </tr>
         </thead>
         <tbody>
@@ -199,7 +197,7 @@ function renderPerfil() {
             </tr>
           `).join("")}
           <tr style="background:var(--bg-raised); font-weight:700;">
-            <td colspan="5" style="font-size:12px;">TOTAL DEUDA</td>
+            <td colspan="5" style="font-size:12px;">${I18N.t("p1.totalDebt")}</td>
             <td class="mono" style="text-align:right;">
               ${AUTLAN.deuda.resumenTasa.total.saldo.toLocaleString()}
             </td>
@@ -207,7 +205,7 @@ function renderPerfil() {
               <span class="badge badge-warn">
                 ${(AUTLAN.deuda.resumenTasa.sofr_usd.pct +
                    AUTLAN.deuda.resumenTasa.tiie_mxn.pct +
-                   AUTLAN.deuda.resumenTasa.euribor_eur.pct).toFixed(0)}% variable
+                   AUTLAN.deuda.resumenTasa.euribor_eur.pct).toFixed(0)}% ${I18N.getLocale() === "en" ? "variable" : "variable"}
               </span>
             </td>
           </tr>
@@ -216,34 +214,33 @@ function renderPerfil() {
     </div>
 
     <!-- DERIVADOS VIGENTES -->
-    <div class="section-title">Instrumentos derivados vigentes · 1T26</div>
+    <div class="section-title">${I18N.t("p1.derivatives")}</div>
     <div class="grid-2 mb-24">
 
       <!-- Collar TIIE -->
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">Collar TIIE — Tasa de interés</div>
-            <div class="card-sub">CEM (subsidiaria) · Vence jun-2028</div>
+            <div class="card-title">${I18N.t("p1.collarTIIE")}</div>
+            <div class="card-sub">${I18N.t("p1.collarTIIE.sub")}</div>
           </div>
-          <span class="badge badge-warn">FUERA DEL DINERO</span>
+          <span class="badge badge-warn">${I18N.t("badge.otm")}</span>
         </div>
 
-        ${_filaMetrica("Instrumento", "Collar sin costo (cap + floor)")}
-        ${_filaMetrica("Subyacente", "TIIEF (TIIE 28 días)")}
-        ${_filaMetrica("Nocional", "MXN 157.6M (50% deuda TIIE CEM)")}
-        ${_filaMetrica("Floor (cap largo)", "8.75% — compra opción")}
-        ${_filaMetrica("Cap (floor corto)", "11.00% — vende opción")}
-        ${_filaMetrica("TIIE actual", "7.10% — debajo del floor", "danger")}
-        ${_filaMetrica("Vencimiento", "23-jun-2028 · mensual")}
-        ${_filaMetrica("Pérdida acumulada", "USD 45.6K (11 cupones)", "danger")}
-        ${_filaMetrica("Minusvalía 1T26", "USD 31.5K", "warn")}
+        ${_filaMetrica(I18N.t("p1.instrument"), I18N.getLocale() === "en" ? "Costless collar (cap + floor)" : "Collar sin costo (cap + floor)")}
+        ${_filaMetrica(I18N.t("p1.underlying"), "TIIEF (TIIE 28 días)")}
+        ${_filaMetrica(I18N.t("p1.notional"), I18N.getLocale() === "en" ? "MXN 157.6M (50% of CEM TIIE debt)" : "MXN 157.6M (50% deuda TIIE CEM)")}
+        ${_filaMetrica(I18N.t("p1.floor.cap"), I18N.getLocale() === "en" ? "8.75% — option buy" : "8.75% — compra opción")}
+        ${_filaMetrica(I18N.t("p1.cap.floor"), I18N.getLocale() === "en" ? "11.00% — option sale" : "11.00% — vende opción")}
+        ${_filaMetrica(I18N.t("p1.tiie.current"), `${collar.tiieActual}% — ${I18N.getLocale() === "en" ? "below floor" : "debajo del floor"}`, "danger")}
+        ${_filaMetrica(I18N.t("p1.maturityDate"), I18N.getLocale() === "en" ? "23-Jun-2028 · monthly" : "23-jun-2028 · mensual")}
+        ${_filaMetrica(I18N.t("p1.accumLoss"), `USD ${collar.mtm.perdidaAcum.valor}K ${I18N.getLocale() === "en" ? "(11 coupons)" : "(11 cupones)"}`, "danger")}
+        ${_filaMetrica(I18N.t("p1.q1loss"), "USD 31.5K", "warn")}
 
         <div class="alert alert-warn" style="margin-top:12px;">
           <span class="alert-icon">⚠</span>
           <span style="font-size:11.5px;">
-            TIIE actual (7.10%) por debajo del floor (8.75%) — el collar no se ejerce.
-            La empresa paga la tasa de mercado completa más prima sin beneficio activo.
+            ${I18N.t("p1.collarAlert")}
           </span>
         </div>
       </div>
@@ -252,10 +249,10 @@ function renderPerfil() {
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">Collares USD/MXN — Tipo de cambio</div>
-            <div class="card-sub">4 collares · Vencen jun-2026</div>
+            <div class="card-title">${I18N.t("p1.collarFX")}</div>
+            <div class="card-sub">${I18N.t("p1.collarFX.sub")}</div>
           </div>
-          <span class="badge badge-danger">SOLO 3% CUBIERTO</span>
+          <span class="badge badge-danger">${I18N.t("badge.only3pct")}</span>
         </div>
 
         <div class="table-wrap" style="margin-bottom:12px;">
@@ -263,10 +260,10 @@ function renderPerfil() {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Floor (put)</th>
-                <th>Cap (call)</th>
-                <th>Nocional/mes</th>
-                <th>Vencimiento</th>
+                <th>${I18N.t("p1.floorPut")}</th>
+                <th>${I18N.t("p1.capCall")}</th>
+                <th>${I18N.t("p1.notionalMonth")}</th>
+                <th>${I18N.t("p1.maturityDate")}</th>
               </tr>
             </thead>
             <tbody>
@@ -283,17 +280,16 @@ function renderPerfil() {
           </table>
         </div>
 
-        ${_filaMetrica("Nocional total activo", "USD 12M (4 meses × USD 1M/mes × 3)")}
-        ${_filaMetrica("Ingresos anualizados", "~USD 394M")}
-        ${_filaMetrica("% cubierto actualmente", "~3% — CRÍTICO", "danger")}
-        ${_filaMetrica("Límite de política", "60% de ingresos USD")}
-        ${_filaMetrica("Gap sin protección", "~57 pp disponibles de política", "warn")}
+        ${_filaMetrica(I18N.t("p1.totalNotional"), I18N.getLocale() === "en" ? "USD 12M (4 months × USD 1M/month × 3)" : "USD 12M (4 meses × USD 1M/mes × 3)")}
+        ${_filaMetrica(I18N.t("p1.annualRev"), "~USD 394M")}
+        ${_filaMetrica(I18N.t("p1.pctCovered"), `~3% — ${I18N.getLocale() === "en" ? "CRITICAL" : "CRÍTICO"}`, "danger")}
+        ${_filaMetrica(I18N.t("p1.policyLimit"), I18N.getLocale() === "en" ? "60% of USD revenues" : "60% de ingresos USD")}
+        ${_filaMetrica(I18N.t("p1.gap"), I18N.getLocale() === "en" ? "~57 pp available under policy" : "~57 pp disponibles de política", "warn")}
 
         <div class="alert alert-danger" style="margin-top:12px;">
           <span class="alert-icon">🚨</span>
           <span style="font-size:11.5px;">
-            Cobertura FX activa cubre solo ~3% de exposición vs 60% permitido por política.
-            Con USD/MXN actual en 17.20, cada peso de apreciación reduce ingresos ~USD 18M.
+            ${I18N.t("p1.fxAlert")}
           </span>
         </div>
       </div>
@@ -303,9 +299,7 @@ function renderPerfil() {
     <!-- NOTA DE DATOS -->
     <div style="font-size:11px; color:var(--text-muted); padding:12px 16px;
                 background:var(--bg-raised); border-radius:var(--radius-md);">
-      📋 Fuentes: XBRL 4T25 BMV (31-dic-2025) · XBRL 1T26 BMV (31-mar-2026) ·
-      HR Ratings Dic-2025 · Section 1 Analysis.
-      Cifras en USD miles salvo indicación. Tipos de cambio según reportes originales IFRS.
+      ${I18N.t("p1.sources")}
     </div>
   `;
 }

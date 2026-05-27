@@ -36,19 +36,19 @@ function _dashboardHTML() {
   <div class="grid-4 mb-24" id="dash-kpis-fin"></div>
 
   <!-- KPIs FILA 2 — Estado de cobertura -->
-  <div class="section-title">Estado de cobertura · Al 31 mar 2026</div>
+  <div class="section-title">${I18N.t("p0.hedgingStatus")}</div>
   <div class="grid-4 mb-24" id="dash-kpis-cob"></div>
 
   <!-- TABLA DE ESCENARIOS -->
-  <div class="section-title">Impacto financiero por escenario</div>
+  <div class="section-title">${I18N.t("p0.scenarioImpact")}</div>
   <div class="scenario-table-wrap mb-24">
     <table class="scenario-table">
       <thead>
         <tr>
-          <th>Variable / Resultado</th>
-          <th class="esc-header-base">Base</th>
-          <th class="esc-header-opt">Optimista</th>
-          <th class="esc-header-adv">Adverso</th>
+          <th>${I18N.t("p0.varResult")}</th>
+          <th class="esc-header-base">${I18N.t("topbar.base")}</th>
+          <th class="esc-header-opt">${I18N.t("topbar.optimista")}</th>
+          <th class="esc-header-adv">${I18N.t("topbar.adverso")}</th>
         </tr>
       </thead>
       <tbody id="dash-scenario-body"></tbody>
@@ -62,10 +62,10 @@ function _dashboardHTML() {
     <div class="card">
       <div class="card-header">
         <div>
-          <div class="card-title">Estructura de deuda</div>
-          <div class="card-sub">USD 185.9M total · 1T26</div>
+          <div class="card-title">${I18N.t("p0.debtStructure")}</div>
+          <div class="card-sub">${I18N.t("p0.debtSub")}</div>
         </div>
-        <span class="badge badge-warn">Deuda/UAFIRDA 4.4x</span>
+        <span class="badge badge-warn">${I18N.t("p0.debtBadge")}</span>
       </div>
       <div id="dash-deuda"></div>
     </div>
@@ -74,10 +74,10 @@ function _dashboardHTML() {
     <div class="card">
       <div class="card-header">
         <div>
-          <div class="card-title">Política de cobertura</div>
-          <div class="card-sub">Límites formales documentados · XBRL 1T26</div>
+          <div class="card-title">${I18N.t("p0.hedgingPolicy")}</div>
+          <div class="card-sub">${I18N.t("p0.policySub")}</div>
         </div>
-        <span class="badge badge-accent">Activa</span>
+        <span class="badge badge-accent">${I18N.t("label.active")}</span>
       </div>
       <div id="dash-politica"></div>
     </div>
@@ -121,19 +121,18 @@ function _renderAlerts() {
   alerts.push({
     tipo: "danger",
     icono: "⚠",
-    texto: `Cobertura FX activa: solo <strong>${exp.pctCubierto_FX.valor}%</strong> de exposición cubierta 
-            vs límite de política de <strong>60%</strong>. 
-            Gap de <strong>${exp.gapCobertura_FX.valor} pp</strong> sin protección 
-            sobre ~USD ${(exp.ingresosFX_anualizado.valor/1000).toFixed(0)}M de ingresos anualizados.`,
+    texto: I18N.getLocale() === "en"
+      ? `Active FX hedging: only <strong>${exp.pctCubierto_FX.valor}%</strong> of exposure covered vs policy limit of <strong>60%</strong>. Gap of <strong>${exp.gapCobertura_FX.valor} pp</strong> without protection on ~USD ${(exp.ingresosFX_anualizado.valor/1000).toFixed(0)}M of annualized revenues.`
+      : `Cobertura FX activa: solo <strong>${exp.pctCubierto_FX.valor}%</strong> de exposición cubierta vs límite de política de <strong>60%</strong>. Gap de <strong>${exp.gapCobertura_FX.valor} pp</strong> sin protección sobre ~USD ${(exp.ingresosFX_anualizado.valor/1000).toFixed(0)}M de ingresos anualizados.`,
   });
 
   // Alert 2 — oro sin cobertura en máximos
   alerts.push({
     tipo: "warn",
     icono: "🥇",
-    texto: `Precio del oro en máximos históricos (~USD ${AUTLAN.mercado.precioOro.valor}/oz) 
-            y <strong>sin cobertura activa</strong>. Metallorum duplicó producción en 1T26 — 
-            exposición al downside sin protección.`,
+    texto: I18N.getLocale() === "en"
+      ? `Gold price at historical highs (~USD ${AUTLAN.mercado.precioOro.valor}/oz) and <strong>no active hedging</strong>. Metallorum doubled production in 1Q26 — downside exposure without protection.`
+      : `Precio del oro en máximos históricos (~USD ${AUTLAN.mercado.precioOro.valor}/oz) y <strong>sin cobertura activa</strong>. Metallorum duplicó producción en 1T26 — exposición al downside sin protección.`,
   });
 
   // Alert 3 — collar TIIE fuera del dinero
@@ -141,19 +140,18 @@ function _renderAlerts() {
   alerts.push({
     tipo: "warn",
     icono: "📈",
-    texto: `Collar TIIE (floor ${collar.floor}% / cap ${collar.cap}%) fuera del dinero — 
-            TIIE actual <strong>${collar.tiieActual}%</strong> está por debajo del floor. 
-            Empresa paga prima sin beneficio. Pérdida acumulada: 
-            <strong>USD ${collar.mtm.perdidaAcum.valor}K</strong>.`,
+    texto: I18N.getLocale() === "en"
+      ? `TIIE collar (floor ${collar.floor}% / cap ${collar.cap}%) out of the money — current TIIE <strong>${collar.tiieActual}%</strong> is below the floor. Company pays premium without benefit. Cumulative loss: <strong>USD ${collar.mtm.perdidaAcum.valor}K</strong>.`
+      : `Collar TIIE (floor ${collar.floor}% / cap ${collar.cap}%) fuera del dinero — TIIE actual <strong>${collar.tiieActual}%</strong> está por debajo del floor. Empresa paga prima sin beneficio. Pérdida acumulada: <strong>USD ${collar.mtm.perdidaAcum.valor}K</strong>.`,
   });
 
   // Alert 4 — gas sin cobertura
   alerts.push({
     tipo: "info",
     icono: "⚡",
-    texto: `Gas natural <strong>sin cobertura activa</strong>. 
-            Smelting es energía-intensivo — cada USD 1/MMBtu de alza 
-            impacta costos operativos ~USD 2-3M.`,
+    texto: I18N.getLocale() === "en"
+      ? `Natural gas <strong>no active hedging</strong>. Smelting is energy-intensive — each USD 1/MMBtu shift impacts operating costs ~USD 2-3M.`
+      : `Gas natural <strong>sin cobertura activa</strong>. Smelting es energía-intensivo — cada USD 1/MMBtu de alza impacta costos operativos ~USD 2-3M.`,
   });
 
   el.innerHTML = alerts.map(a => `
@@ -187,37 +185,45 @@ function _renderKPIsFinancieros() {
 
   const kpis = [
     {
-      label:   "Ingresos 1T26 (anualiz.)",
+      label:   I18N.t("p0.kpi.revenues"),
       value:   `USD ${(r.t1_2026.ingresos.valor * 4 / 1000).toFixed(0)}M`,
-      sub:     `1T26: USD ${(r.t1_2026.ingresos.valor/1000).toFixed(1)}M · +${r.t1_2026.variacion_yoy.valor.toFixed(1)}% YoY`,
+      sub:     I18N.getLocale() === "en"
+        ? `1Q26: USD ${(r.t1_2026.ingresos.valor/1000).toFixed(1)}M · +${r.t1_2026.variacion_yoy.valor.toFixed(1)}% YoY`
+        : `1T26: USD ${(r.t1_2026.ingresos.valor/1000).toFixed(1)}M · +${r.t1_2026.variacion_yoy.valor.toFixed(1)}% YoY`,
       tipo:    "success",
-      delta:   "+23% vs 1T25",
+      delta:   I18N.getLocale() === "en" ? "+23% vs 1Q25" : "+23% vs 1T25",
       deltaDir: "up",
     },
     {
-      label:   "EBITDA proyectado",
+      label:   I18N.t("p0.kpi.ebitda"),
       value:   `USD ${(ebitdaProyectado/1000).toFixed(1)}M`,
-      sub:     `Margen: ${margen}% · Base: USD 31.5M (2025)`,
+      sub:     I18N.getLocale() === "en"
+        ? `Margin: ${margen}% · Base: USD 31.5M (2025)`
+        : `Margen: ${margen}% · Base: USD 31.5M (2025)`,
       tipo:    ebitdaProyectado > 25000 ? "success"
              : ebitdaProyectado > 0    ? "warn"
              : "danger",
-      delta:   `${margen}% margen`,
+      delta:   I18N.getLocale() === "en" ? `${margen}% margin` : `${margen}% margen`,
       deltaDir: margen > 10 ? "up" : "down",
     },
     {
-      label:   "Deuda neta",
+      label:   I18N.t("p0.kpi.debt"),
       value:   `USD ${(b.metricas.deudaNeta.valor/1000).toFixed(1)}M`,
-      sub:     `Total: USD ${(b.metricas.deudaTotal.valor/1000).toFixed(1)}M · Efect: USD ${(b.activos.efectivo.valor/1000).toFixed(1)}M`,
+      sub:     I18N.getLocale() === "en"
+        ? `Total: USD ${(b.metricas.deudaTotal.valor/1000).toFixed(1)}M · Cash: USD ${(b.activos.efectivo.valor/1000).toFixed(1)}M`
+        : `Total: USD ${(b.metricas.deudaTotal.valor/1000).toFixed(1)}M · Efect: USD ${(b.activos.efectivo.valor/1000).toFixed(1)}M`,
       tipo:    "warn",
       delta:   `Leverage ${b.metricas.leverage.valor.toFixed(0)}%`,
       deltaDir: "down",
     },
     {
-      label:   "DSCR proyectado",
+      label:   I18N.t("p0.kpi.dscr"),
       value:   `${AUTLAN.meta.dscr_proyectado.valor}x`,
-      sub:     `HR Ratings · Proyección 2026-2028`,
+      sub:     I18N.getLocale() === "en"
+        ? `HR Ratings · 2026-2028 Projection`
+        : `HR Ratings · Proyección 2026-2028`,
       tipo:    "danger",
-      delta:   "Bajo 1.0x",
+      delta:   I18N.getLocale() === "en" ? "Below 1.0x" : "Bajo 1.0x",
       deltaDir: "down",
     },
   ];
@@ -246,38 +252,46 @@ function _renderKPIsCobertura() {
 
   const items = [
     {
-      label:    "Cobertura FX",
+      label:    I18N.getLocale() === "en" ? "FX Hedging" : "Cobertura FX",
       value:    `${exp.pctCubierto_FX.valor}%`,
-      sub:      `de ${exp.limitePolítica_FX.valor}% permitido · 4 collares activos`,
+      sub:      I18N.getLocale() === "en"
+        ? `of ${exp.limitePolítica_FX.valor}% allowed · 4 active collars`
+        : `de ${exp.limitePolítica_FX.valor}% permitido · 4 collares activos`,
       tipo:     "danger",
-      tag:      "CRÍTICO",
+      tag:      I18N.t("badge.critical"),
       tagClass: "badge-danger",
       nav:      "fx",
     },
     {
-      label:    "Cobertura Oro",
+      label:    I18N.getLocale() === "en" ? "Gold Hedging" : "Cobertura Oro",
       value:    "0%",
-      sub:      "Sin instrumento activo · Precio USD 3,000+/oz",
+      sub:      I18N.getLocale() === "en"
+        ? "No active instrument · Price USD 3,000+/oz"
+        : "Sin instrumento activo · Precio USD 3,000+/oz",
       tipo:     "danger",
-      tag:      "SIN COBERTURA",
+      tag:      I18N.t("badge.unhedged"),
       tagClass: "badge-danger",
       nav:      "oro",
     },
     {
-      label:    "Cobertura Gas",
+      label:    I18N.getLocale() === "en" ? "Gas Hedging" : "Cobertura Gas",
       value:    "0%",
-      sub:      "Sin instrumento activo · Exposición total",
+      sub:      I18N.getLocale() === "en"
+        ? "No active instrument · Total exposure"
+        : "Sin instrumento activo · Exposición total",
       tipo:     "danger",
-      tag:      "SIN COBERTURA",
+      tag:      I18N.t("badge.unhedged"),
       tagClass: "badge-danger",
       nav:      "gas",
     },
     {
-      label:    "Collar TIIE",
+      label:    I18N.getLocale() === "en" ? "TIIE Collar" : "Collar TIIE",
       value:    `${col.nocionalPct}%`,
-      sub:      `Floor ${col.floor}% / Cap ${col.cap}% · Vence jun-2028`,
+      sub:      I18N.getLocale() === "en"
+        ? `Floor ${col.floor}% / Cap ${col.cap}% · Matures Jun-2028`
+        : `Floor ${col.floor}% / Cap ${col.cap}% · Vence jun-2028`,
       tipo:     "warn",
-      tag:      "FUERA DINERO",
+      tag:      I18N.t("badge.otm"),
       tagClass: "badge-warn",
       nav:      "tasa",
     },
@@ -310,7 +324,6 @@ function _renderEscenarios() {
   const O = cache.escenarios.optimista;
   const A = cache.escenarios.adverso;
 
-  const vars = Scenarios.SLIDER_CONFIG;
   const esc  = Scenarios.getState().escenarios;
   const fmt  = Scenarios.fmt;
 
@@ -324,14 +337,14 @@ function _renderEscenarios() {
       mono:  true,
     },
     {
-      label: "Precio Manganeso",
+      label: I18N.t("p2.driver.mn"),
       base:  fmt.mn(esc.base.precioMn),
       opt:   fmt.mn(esc.optimista.precioMn),
       adv:   fmt.mn(esc.adverso.precioMn),
       mono:  true,
     },
     {
-      label: "Precio Oro",
+      label: I18N.t("p2.driver.oro"),
       base:  fmt.oro(esc.base.precioOro),
       opt:   fmt.oro(esc.optimista.precioOro),
       adv:   fmt.oro(esc.adverso.precioOro),
@@ -354,7 +367,7 @@ function _renderEscenarios() {
     { divider: true },
     // Resultados financieros
     {
-      label:     "EBITDA proyectado",
+      label:     I18N.t("p0.kpi.ebitda"),
       base:      fmt.usd(B.resultados.ebitda),
       opt:       fmt.usd(O.resultados.ebitda),
       adv:       fmt.usd(A.resultados.ebitda),
@@ -365,14 +378,14 @@ function _renderEscenarios() {
       advClass:  A.resultados.ebitda > 0 ? "positive" : "negative",
     },
     {
-      label:    "Margen EBITDA",
+      label:    I18N.getLocale() === "en" ? "EBITDA Margin" : "Margen EBITDA",
       base:     `${B.resultados.margenEbitda}%`,
       opt:      `${O.resultados.margenEbitda}%`,
       adv:      `${A.resultados.margenEbitda}%`,
       mono:     true,
     },
     {
-      label:     "FCF proyectado",
+      label:     I18N.getLocale() === "en" ? "Projected FCF" : "FCF proyectado",
       base:      fmt.usd(B.resultados.fcf),
       opt:       fmt.usd(O.resultados.fcf),
       adv:       fmt.usd(A.resultados.fcf),
@@ -383,7 +396,7 @@ function _renderEscenarios() {
       advClass:  A.resultados.fcf > 0 ? "positive" : "negative",
     },
     {
-      label:    "DSCR estimado",
+      label:    I18N.getLocale() === "en" ? "Estimated DSCR" : "DSCR estimado",
       base:     B.resultados.dscr.toFixed(2) + "x",
       opt:      O.resultados.dscr.toFixed(2) + "x",
       adv:      A.resultados.dscr.toFixed(2) + "x",
@@ -395,7 +408,7 @@ function _renderEscenarios() {
     { divider: true },
     // Impactos por driver
     {
-      label: "Impacto FX",
+      label: I18N.getLocale() === "en" ? "FX Impact" : "Impacto FX",
       base:  fmt.usd(B.impactos.fx),
       opt:   fmt.usd(O.impactos.fx),
       adv:   fmt.usd(A.impactos.fx),
@@ -405,7 +418,7 @@ function _renderEscenarios() {
       advClass:  A.impactos.fx >= 0 ? "positive" : "negative",
     },
     {
-      label: "Impacto Manganeso",
+      label: I18N.getLocale() === "en" ? "Manganese Impact" : "Impacto Manganeso",
       base:  fmt.usd(B.impactos.mn),
       opt:   fmt.usd(O.impactos.mn),
       adv:   fmt.usd(A.impactos.mn),
@@ -415,7 +428,7 @@ function _renderEscenarios() {
       advClass:  A.impactos.mn >= 0 ? "positive" : "negative",
     },
     {
-      label: "Impacto Tasa (TIIE+SOFR)",
+      label: I18N.getLocale() === "en" ? "Interest Rate Impact (TIIE+SOFR)" : "Impacto Tasa (TIIE+SOFR)",
       base:  fmt.usd(B.impactos.tiie + B.impactos.sofr),
       opt:   fmt.usd(O.impactos.tiie + O.impactos.sofr),
       adv:   fmt.usd(A.impactos.tiie + A.impactos.sofr),
@@ -472,10 +485,10 @@ function _renderDeuda() {
     { label: "EURIBOR (EUR)",        saldo: resumen.euribor_eur.saldo,
       pct: resumen.euribor_eur.pct,  color: "var(--accent-mid)",
       nota: "EURIBOR + 0.4-1.9%" },
-    { label: "Tasa fija",            saldo: resumen.fija.saldo,
+    { label: I18N.getLocale() === "en" ? "Fixed Rate" : "Tasa fija", saldo: resumen.fija.saldo,
       pct: resumen.fija.pct,        color: "var(--success-mid)",
       nota: "7.9% fija" },
-    { label: "Arrendamientos",       saldo: resumen.arrendamientos.saldo,
+    { label: I18N.getLocale() === "en" ? "Leasing" : "Arrendamientos", saldo: resumen.arrendamientos.saldo,
       pct: resumen.arrendamientos.pct, color: "var(--text-muted)",
       nota: "Leasing" },
   ];
@@ -513,14 +526,15 @@ function _renderDeuda() {
 
     <div class="divider"></div>
     <div class="flex-between">
-      <span style="font-size:12px; font-weight:600;">Total deuda</span>
+      <span style="font-size:12px; font-weight:600;">${I18N.t("p0.kpi.totalDebt")}</span>
       <span class="text-mono" style="font-size:13px; font-weight:700;">
         USD ${(total/1000).toFixed(1)}M
       </span>
     </div>
     <div style="font-size:10.5px; color:var(--text-muted); margin-top:4px;">
-      ${(resumen.sofr_usd.pct + resumen.tiie_mxn.pct + resumen.euribor_eur.pct).toFixed(1)}% 
-      deuda a tasa variable · Solo ${(resumen.fija.pct).toFixed(1)}% tasa fija
+      ${I18N.getLocale() === "en"
+        ? `${(resumen.sofr_usd.pct + resumen.tiie_mxn.pct + resumen.euribor_eur.pct).toFixed(1)}% variable rate debt · Only ${(resumen.fija.pct).toFixed(1)}% fixed rate`
+        : `${(resumen.sofr_usd.pct + resumen.tiie_mxn.pct + resumen.euribor_eur.pct).toFixed(1)}% deuda a tasa variable · Solo ${(resumen.fija.pct).toFixed(1)}% tasa fija`}
     </div>
   `;
 }
@@ -537,34 +551,34 @@ function _renderPolitica() {
 
   const items = [
     {
-      riesgo:    "Tipo de cambio (FX)",
-      limite:    `Hasta ${pol.fx.limiteNocional.valor}% ingresos USD`,
-      horizonte: `Máx ${pol.fx.horizonteMax.valor} meses`,
-      actual:    `${exp.pctCubierto_FX.valor}% cubierto`,
+      riesgo:    I18N.getLocale() === "en" ? "Exchange Rate (FX)" : "Tipo de cambio (FX)",
+      limite:    I18N.getLocale() === "en" ? `Up to ${pol.fx.limiteNocional.valor}% USD revenues` : `Hasta ${pol.fx.limiteNocional.valor}% ingresos USD`,
+      horizonte: I18N.getLocale() === "en" ? `Max ${pol.fx.horizonteMax.valor} months` : `Máx ${pol.fx.horizonteMax.valor} meses`,
+      actual:    I18N.getLocale() === "en" ? `${exp.pctCubierto_FX.valor}% covered` : `${exp.pctCubierto_FX.valor}% cubierto`,
       clase:     "danger",
       instrum:   pol.fx.instrumentos.join(", "),
     },
     {
-      riesgo:    "Tasa de interés",
-      limite:    "50% deuda variable (práctica)",
-      horizonte: "Largo plazo",
-      actual:    `${exp.pctCubierto_tasa.valor.toFixed(1)}% cubierto`,
+      riesgo:    I18N.getLocale() === "en" ? "Interest Rate" : "Tasa de interés",
+      limite:    I18N.getLocale() === "en" ? "50% variable debt (practice)" : "50% deuda variable (práctica)",
+      horizonte: I18N.getLocale() === "en" ? "Long term" : "Largo plazo",
+      actual:    I18N.getLocale() === "en" ? `${exp.pctCubierto_tasa.valor.toFixed(1)}% covered` : `${exp.pctCubierto_tasa.valor.toFixed(1)}% cubierto`,
       clase:     "warn",
       instrum:   pol.tasa.instrumentos.join(", "),
     },
     {
-      riesgo:    "Precio del Oro",
-      limite:    `Hasta ${pol.oro.limiteNocional.valor}% producción`,
-      horizonte: "Flexible",
-      actual:    "0% — Sin cobertura",
+      riesgo:    I18N.getLocale() === "en" ? "Gold Price" : "Precio del Oro",
+      limite:    I18N.getLocale() === "en" ? `Up to ${pol.oro.limiteNocional.valor}% production` : `Hasta ${pol.oro.limiteNocional.valor}% producción`,
+      horizonte: I18N.getLocale() === "en" ? "Flexible" : "Flexible",
+      actual:    I18N.getLocale() === "en" ? "0% — Unhedged" : "0% — Sin cobertura",
       clase:     "danger",
       instrum:   pol.oro.instrumentos.join(", "),
     },
     {
-      riesgo:    "Gas natural",
-      limite:    `Hasta ${pol.gas.limiteNocional.valor}% consumo`,
-      horizonte: "Corto plazo",
-      actual:    "0% — Sin cobertura",
+      riesgo:    I18N.getLocale() === "en" ? "Natural Gas" : "Gas natural",
+      limite:    I18N.getLocale() === "en" ? `Up to ${pol.gas.limiteNocional.valor}% consumption` : `Hasta ${pol.gas.limiteNocional.valor}% consumo`,
+      horizonte: I18N.getLocale() === "en" ? "Short term" : "Corto plazo",
+      actual:    I18N.getLocale() === "en" ? "0% — Unhedged" : "0% — Sin cobertura",
       clase:     "danger",
       instrum:   pol.gas.instrumentos.join(", "),
     },
@@ -579,19 +593,19 @@ function _renderPolitica() {
           <span class="badge badge-${i.clase}">${i.actual}</span>
         </div>
         <div style="font-size:11px; color:var(--text-muted);">
-          Límite: ${i.limite} · ${i.horizonte}
+          ${I18N.getLocale() === "en" ? "Limit" : "Límite"}: ${i.limite} · ${i.horizonte}
         </div>
         <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
-          Instrumentos: ${i.instrum}
+          ${I18N.getLocale() === "en" ? "Instruments" : "Instrumentos"}: ${i.instrum}
         </div>
       </div>`).join("")}
 
     <div style="font-size:11px; color:var(--text-muted);
                 padding:10px; background:var(--bg-raised);
                 border-radius:var(--radius-md);">
-      ⚖ Objetivo exclusivo de cobertura — no especulación.
-      Contrapartes de alta calidad crediticia. Mercados OTC/extrabursátiles.
-      Tratamiento contable IFRS 9 — cobertura de flujo de efectivo.
+      ${I18N.getLocale() === "en"
+        ? `⚖ Hedging only — not for speculation. High credit quality counterparties. OTC/over-the-counter markets. IFRS 9 accounting treatment — cash flow hedge accounting.`
+        : `⚖ Objetivo exclusivo de cobertura — no especulación. Contrapartes de alta calidad crediticia. Mercados OTC/extrabursátiles. Tratamiento contable IFRS 9 — cobertura de flujo de efectivo.`}
     </div>
   `;
 }

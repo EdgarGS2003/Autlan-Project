@@ -3,6 +3,53 @@
  * Motor de supuestos macro · Alimenta todas las páginas
  */
 
+function getSliderLabel(key, defaultLabel) {
+  const keys = {
+    usdmxn: I18N.getLocale() === "en" ? "Exchange rate (USD/MXN)" : "Tipo de cambio (USD/MXN)",
+    precioMn: I18N.t("p2.driver.mn"),
+    precioOro: I18N.t("p2.driver.oro"),
+    tiie28: "TIIE 28d",
+    sofr1m: "SOFR 1m",
+    precioGas: I18N.t("p2.driver.gas"),
+    volPct: I18N.getLocale() === "en" ? "Volume" : "Volumen",
+  };
+  return keys[key] || defaultLabel;
+}
+
+function getSliderSensitivity(key, defaultSens) {
+  const sens = {
+    usdmxn: {
+      es: "Cada $1 MXN de apreciación reduce ingresos ~USD 18M",
+      en: "Each $1 MXN appreciation reduces revenues by ~USD 18M",
+    },
+    tiie28: {
+      es: "Cada 100bps sube costo financiero MXN ~USD 440K",
+      en: "Each 100bps rise increases MXN financial cost by ~USD 440K",
+    },
+    sofr1m: {
+      es: "Cada 100bps sube costo financiero USD ~USD 1.35M",
+      en: "Each 100bps rise increases USD financial cost by ~USD 1.35M",
+    },
+    precioOro: {
+      es: "Cada USD 100/oz impacta ingresos Metallorum ~USD 1.5-2M",
+      en: "Each USD 100/oz shift impacts Metallorum revenues by ~USD 1.5-2M",
+    },
+    precioMn: {
+      es: "Cada USD 100/MT impacta ingresos ferroaleaciones ~USD 5-8M",
+      en: "Each USD 100/MT shift impacts ferroalloy revenues by ~USD 5-8M",
+    },
+    precioGas: {
+      es: "Cada USD 1/MMBtu sube costos operativos ~USD 2-3M",
+      en: "Each USD 1/MMBtu rise increases operating costs by ~USD 2-3M",
+    },
+    volPct: {
+      es: "Variación de ±15% sobre plan base de ingresos",
+      en: "Variation of ±15% on the base revenue plan",
+    },
+  };
+  return sens[key] ? sens[key][I18N.getLocale()] : defaultSens;
+}
+
 function renderEscenarios() {
   const el = document.getElementById("escenarios-content");
   if (!el) return;
@@ -12,9 +59,7 @@ function renderEscenarios() {
     <div class="alert alert-info mb-24">
       <span class="alert-icon">⚙</span>
       <span>
-        Ajusta las variables independientes con los sliders.
-        Las variables dependientes se calculan automáticamente.
-        <strong>Todos los cambios se propagan en tiempo real</strong> a todas las páginas.
+        ${I18N.t("p2.alert")}
       </span>
     </div>
 
@@ -23,29 +68,29 @@ function renderEscenarios() {
 
       <!-- COLUMNA IZQ: Sliders -->
       <div>
-        <div class="section-title">Variables independientes</div>
+        <div class="section-title">${I18N.t("p2.independent")}</div>
         <div class="card" id="sliders-container"></div>
       </div>
 
       <!-- COLUMNA DER: Tabla de escenarios editable -->
       <div>
-        <div class="section-title">Valores por escenario</div>
+        <div class="section-title">${I18N.t("p2.perScenario")}</div>
         <div class="card">
           <div class="table-wrap">
             <table id="esc-table">
               <thead>
                 <tr>
-                  <th>Variable</th>
-                  <th class="esc-header-base">Base</th>
-                  <th class="esc-header-opt">Optimista</th>
-                  <th class="esc-header-adv">Adverso</th>
+                  <th>${I18N.t("p2.variable")}</th>
+                  <th class="esc-header-base">${I18N.t("topbar.base")}</th>
+                  <th class="esc-header-opt">${I18N.t("topbar.optimista")}</th>
+                  <th class="esc-header-adv">${I18N.t("topbar.adverso")}</th>
                 </tr>
               </thead>
               <tbody id="esc-table-body"></tbody>
             </table>
           </div>
           <div style="margin-top:12px; font-size:11px; color:var(--text-muted);">
-            💡 Haz clic en cualquier valor para editarlo directamente.
+            ${I18N.t("label.clickEdit")}
           </div>
         </div>
       </div>
@@ -53,17 +98,17 @@ function renderEscenarios() {
     </div>
 
     <!-- NARRATIVA POR ESCENARIO -->
-    <div class="section-title">Narrativa macro por escenario</div>
+    <div class="section-title">${I18N.t("p2.narrative")}</div>
     <div class="grid-3 mb-24" id="narrativa-container"></div>
 
     <!-- VARIABLES DEPENDIENTES -->
-    <div class="section-title">Variables dependientes — calculadas en tiempo real</div>
+    <div class="section-title">${I18N.t("p2.dependent")}</div>
     <div class="card mb-24">
       <div class="grid-3" id="vars-dependientes"></div>
     </div>
 
     <!-- IMPACTO POR DRIVER -->
-    <div class="section-title">Descomposición del impacto sobre EBITDA</div>
+    <div class="section-title">${I18N.t("p2.ebitdaDecomp")}</div>
     <div class="card mb-24">
       <div id="impacto-drivers"></div>
     </div>
@@ -71,10 +116,10 @@ function renderEscenarios() {
     <!-- BOTONES -->
     <div style="display:flex; gap:12px; flex-wrap:wrap;">
       <button class="btn btn-primary" onclick="resetEscenarios()">
-        ↺ Restaurar valores base
+        ${I18N.t("label.restore")}
       </button>
       <button class="btn btn-ghost" onclick="exportarSupuestosCSV()">
-        ↓ Exportar supuestos CSV
+        ${I18N.t("label.export")}
       </button>
     </div>
 
@@ -105,13 +150,15 @@ function _renderSliders() {
   el.innerHTML = Object.entries(cfg).map(([key, c]) => {
     const val    = state.vars[key];
     const pct    = ((val - c.min) / (c.max - c.min) * 100).toFixed(1);
+    const label  = getSliderLabel(key, c.label);
+    const sens   = getSliderSensitivity(key, c.sensibilidad);
 
     return `
       <div class="slider-group" id="sg-${key}">
         <div class="slider-header">
           <div class="slider-label">
             <span>${c.icono}</span>
-            <span>${c.label}</span>
+            <span>${label}</span>
           </div>
           <div class="slider-value" id="sv-${key}">${c.formato(val)}</div>
         </div>
@@ -141,7 +188,7 @@ function _renderSliders() {
           ${_escenarioMarkers(key, c)}
         </div>
 
-        <div class="slider-sensitivity">${c.sensibilidad}</div>
+        <div class="slider-sensitivity">${sens}</div>
       </div>
     `;
   }).join("<div class='divider'></div>");
@@ -205,11 +252,12 @@ function _renderEscTable() {
     const b = state.escenarios.base[key];
     const o = state.escenarios.optimista[key];
     const a = state.escenarios.adverso[key];
+    const label = getSliderLabel(key, c.label);
 
     return `
       <tr>
         <td style="font-size:11.5px;">
-          <span>${c.icono}</span> ${c.label}
+          <span>${c.icono}</span> ${label}
         </td>
         <td class="esc-base">
           <span class="editable-val mono"
@@ -250,22 +298,23 @@ window.editEscenarioVal = function(escenario, variable, unidad) {
   const state   = Scenarios.getState();
   const valAct  = state.escenarios[escenario][variable];
   const cfg     = Scenarios.SLIDER_CONFIG[variable];
+  const label   = getSliderLabel(variable, cfg.label);
 
   const nuevo = prompt(
-    `${escenario.toUpperCase()} · ${cfg.label}\n` +
-    `Unidad: ${unidad}\n` +
-    `Valor actual: ${cfg.formato(valAct)}\n\n` +
-    `Ingresa el nuevo valor:`,
+    `${escenario.toUpperCase()} · ${label}\n` +
+    `${I18N.getLocale() === "en" ? "Unit" : "Unidad"}: ${unidad}\n` +
+    `${I18N.getLocale() === "en" ? "Current value" : "Valor actual"}: ${cfg.formato(valAct)}\n\n` +
+    `${I18N.getLocale() === "en" ? "Enter the new value:" : "Ingresa el nuevo valor:"}`,
     valAct
   );
 
   if (nuevo === null || nuevo === "") return;
   const num = parseFloat(nuevo);
-  if (isNaN(num)) { showToast("Valor inválido", "error"); return; }
+  if (isNaN(num)) { showToast(I18N.t("p2.invalidVal"), "error"); return; }
 
   Scenarios.setEscenarioVar(escenario, variable, num);
   _renderEscTable();
-  showToast(`${escenario} · ${cfg.label} → ${cfg.formato(num)}`, "success");
+  showToast(`${escenario} · ${label} → ${cfg.formato(num)}`, "success");
 };
 
 // ─────────────────────────────────────────
@@ -278,9 +327,9 @@ function _renderNarrativa() {
   const esc = Scenarios.getState().escenarios;
 
   const escenarios = [
-    { key: "base",      label: "Escenario Base",      color: "var(--accent)",  icon: "◎" },
-    { key: "optimista", label: "Escenario Optimista",  color: "var(--success)", icon: "▲" },
-    { key: "adverso",   label: "Escenario Adverso",    color: "var(--danger)",  icon: "▼" },
+    { key: "base",      label: I18N.t("p2.esc.base"),      color: "var(--accent)",  icon: "◎" },
+    { key: "optimista", label: I18N.t("p2.esc.optimista"),  color: "var(--success)", icon: "▲" },
+    { key: "adverso",   label: I18N.t("p2.esc.adverso"),    color: "var(--danger)",  icon: "▼" },
   ];
 
   el.innerHTML = escenarios.map(e => {
@@ -296,24 +345,27 @@ function _renderNarrativa() {
           </div>
           <button class="btn btn-ghost btn-sm"
                   onclick="editNarrativa('${e.key}')">
-            Editar
+            ${I18N.t("label.edit")}
           </button>
         </div>
 
         <div id="narrativa-${e.key}">
-          ${vars.map(([key, cfg]) => `
-            <div style="margin-bottom:10px; padding-bottom:10px;
-                        border-bottom:1px solid var(--border);">
-              <div style="font-size:10.5px; font-weight:600;
-                          color:var(--text-muted); margin-bottom:3px;
-                          text-transform:uppercase; letter-spacing:0.4px;">
-                ${cfg.icono} ${cfg.label}
+          ${vars.map(([key, cfg]) => {
+            const vLabel = getSliderLabel(key, cfg.label);
+            return `
+              <div style="margin-bottom:10px; padding-bottom:10px;
+                          border-bottom:1px solid var(--border);">
+                <div style="font-size:10.5px; font-weight:600;
+                            color:var(--text-muted); margin-bottom:3px;
+                            text-transform:uppercase; letter-spacing:0.4px;">
+                  ${cfg.icono} ${vLabel}
+                </div>
+                <div style="font-size:12px; color:var(--text-primary); line-height:1.5;">
+                  ${narrativa[key] || "—"}
+                </div>
               </div>
-              <div style="font-size:12px; color:var(--text-primary); line-height:1.5;">
-                ${narrativa[key] || "—"}
-              </div>
-            </div>
-          `).join("")}
+            `;
+          }).join("")}
         </div>
       </div>`;
   }).join("");
@@ -327,8 +379,11 @@ window.editNarrativa = function(escenario) {
   // Editar variable por variable
   for (const [key, c] of Object.entries(cfg)) {
     const actual = narr[key] || "";
+    const label = getSliderLabel(key, c.label);
     const nuevo  = prompt(
-      `${escenario.toUpperCase()} · Narrativa: ${c.label}\n\nTexto actual:\n${actual}\n\nNueva narrativa (Enter para mantener):`,
+      I18N.getLocale() === "en"
+        ? `${escenario.toUpperCase()} · Narrative: ${label}\n\nCurrent text:\n${actual}\n\nNew narrative (Enter to keep):`
+        : `${escenario.toUpperCase()} · Narrativa: ${label}\n\nTexto actual:\n${actual}\n\nNueva narrativa (Enter para mantener):`,
       actual
     );
     if (nuevo !== null && nuevo !== actual) {
@@ -337,7 +392,7 @@ window.editNarrativa = function(escenario) {
   }
 
   _renderNarrativa();
-  showToast(`Narrativa ${escenario} actualizada`, "success");
+  showToast(I18N.getLocale() === "en" ? `Narrative for ${escenario} updated` : `Narrativa ${escenario} actualizada`, "success");
 };
 
 // ─────────────────────────────────────────
@@ -366,39 +421,39 @@ function _renderVarsDependientes() {
 
   const items = [
     {
-      label: "Ingresos estimados",
+      label: I18N.t("p2.dep.revenues"),
       val:   fmt.usd(ingresosEst),
-      sub:   "Sensible a FX + volumen",
+      sub:   I18N.t("p2.dep.revenues.sub"),
       tipo:  ingresosEst > 322746 ? "success" : "warn",
     },
     {
-      label: "Gasto financiero est.",
+      label: I18N.t("p2.dep.finexp"),
       val:   fmt.usd(costoFinEst),
-      sub:   "SOFR + TIIE sobre deuda variable",
+      sub:   I18N.t("p2.dep.finexp.sub"),
       tipo:  costoFinEst > 42493 ? "danger" : "success",
     },
     {
-      label: "EBITDA estimado",
+      label: I18N.t("p2.dep.ebitda"),
       val:   fmt.usd(ebitdaEst),
-      sub:   `Margen ${margenEst}%`,
+      sub:   `${I18N.getLocale() === "en" ? "Margin" : "Margen"} ${margenEst}%`,
       tipo:  ebitdaEst > 30000 ? "success" : ebitdaEst > 0 ? "warn" : "danger",
     },
     {
-      label: "FCF estimado",
+      label: I18N.t("p2.dep.fcf"),
       val:   fmt.usd(fcfEst),
-      sub:   "EBITDA − gasto fin − capex",
+      sub:   I18N.t("p2.dep.fcf.sub"),
       tipo:  fcfEst > 0 ? "success" : "danger",
     },
     {
-      label: "DSCR estimado",
+      label: I18N.t("p2.dep.dscr"),
       val:   `${dscrEst.toFixed(2)}x`,
-      sub:   "Cobertura servicio de deuda",
+      sub:   I18N.t("p2.dep.dscr.sub"),
       tipo:  dscrEst >= 1 ? "success" : dscrEst >= 0.6 ? "warn" : "danger",
     },
     {
-      label: "TIIE efectiva proy.",
+      label: I18N.t("p2.dep.tiie"),
       val:   fmt.tasa(vars.tiie28),
-      sub:   `Vs floor collar 8.75%`,
+      sub:   I18N.t("p2.dep.tiie.sub"),
       tipo:  vars.tiie28 < 8.75 ? "warn" : "success",
     },
   ];
@@ -436,21 +491,21 @@ function _renderImpactoDrivers() {
   const fmt = Scenarios.fmt;
 
   const drivers = [
-    { label: "💱 Tipo de cambio (FX)", val: imp.fx,     key: "fx"  },
-    { label: "⛏ Precio Manganeso",    val: imp.mn,     key: "mn"  },
-    { label: "🥇 Precio Oro",          val: imp.oro,    key: "oro" },
-    { label: "📈 Tasa TIIE",           val: imp.tiie,   key: "tiie"},
-    { label: "🇺🇸 Tasa SOFR",          val: imp.sofr,   key: "sofr"},
-    { label: "⚡ Gas Natural",          val: imp.gas,    key: "gas" },
-    { label: "🏭 Volumen",             val: imp.volumen,key: "vol" },
+    { label: I18N.t("p2.driver.fx"), val: imp.fx,     key: "fx"  },
+    { label: I18N.t("p2.driver.mn"),    val: imp.mn,     key: "mn"  },
+    { label: I18N.t("p2.driver.oro"),          val: imp.oro,    key: "oro" },
+    { label: I18N.t("p2.driver.tiie"),           val: imp.tiie,   key: "tiie"},
+    { label: I18N.t("p2.driver.sofr"),          val: imp.sofr,   key: "sofr"},
+    { label: I18N.t("p2.driver.gas"),          val: imp.gas,    key: "gas" },
+    { label: I18N.t("p2.driver.vol"),             val: imp.volumen,key: "vol" },
   ];
 
   const maxAbs = Math.max(...drivers.map(d => Math.abs(d.val)), 1);
 
   el.innerHTML = `
     <div style="margin-bottom:8px; font-size:11.5px; color:var(--text-muted);">
-      Impacto sobre EBITDA base (USD ${(31470/1000).toFixed(1)}M) 
-      dado el valor actual de cada slider vs base de referencia.
+      ${I18N.t("p2.impact.sub")} (USD ${(31470/1000).toFixed(1)}M) 
+      ${I18N.t("p2.impact.given")}
     </div>
     ${drivers.map(d => {
       const pct      = Math.abs(d.val) / maxAbs * 100;
@@ -480,7 +535,7 @@ function _renderImpactoDrivers() {
     <div class="divider"></div>
     <div class="flex-between">
       <span style="font-size:12.5px; font-weight:700;">
-        Impacto total sobre EBITDA
+        ${I18N.t("p2.impact.total")}
       </span>
       <span class="mono" style="font-size:14px; font-weight:700;
             color:${imp.total >= 0 ? "var(--success)" : "var(--danger)"};">
@@ -488,7 +543,7 @@ function _renderImpactoDrivers() {
       </span>
     </div>
     <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
-      EBITDA ajustado estimado:
+      ${I18N.t("p2.impact.adj")}
       <strong>${fmt.usd(31470 + imp.total)}</strong>
     </div>
   `;
@@ -498,7 +553,7 @@ function _renderImpactoDrivers() {
 // ACCIONES
 // ─────────────────────────────────────────
 window.resetEscenarios = function() {
-  if (!confirm("¿Restaurar todos los valores a los supuestos base?")) return;
+  if (!confirm(I18N.t("p2.resetConfirm"))) return;
 
   // Restaurar variables actuales
   const defaults = {
@@ -518,21 +573,25 @@ window.resetEscenarios = function() {
     if (sfEl) sfEl.style.width = `${pct}%`;
   }
 
-  showToast("Valores restaurados", "success");
+  showToast(I18N.t("p2.saved"), "success");
 };
 
 window.exportarSupuestosCSV = function() {
   const data = Scenarios.exportarSupuestos();
   const cfg  = Scenarios.SLIDER_CONFIG;
 
-  let csv = "Variable,Unidad,Actual,Base,Optimista,Adverso\n";
+  const headers = I18N.getLocale() === "en"
+    ? "Variable,Unit,Actual,Base,Optimistic,Adverse\n"
+    : "Variable,Unidad,Actual,Base,Optimista,Adverso\n";
+
+  let csv = headers;
   data.supuestos.forEach(s => {
     csv += `"${s.variable}","${s.unidad}","${s.actual}","${s.base}","${s.optimista}","${s.adverso}"\n`;
   });
 
   if (data.overrides.length) {
-    csv += "\nOverrides de datos auditados\n";
-    csv += "Campo,Original,Override,Justificación,Fecha\n";
+    csv += I18N.getLocale() === "en" ? "\nAudited Data Overrides\n" : "\nOverrides de datos auditados\n";
+    csv += I18N.getLocale() === "en" ? "Field,Original,Override,Justification,Date\n" : "Campo,Original,Override,Justificación,Fecha\n";
     data.overrides.forEach(o => {
       csv += `"${o.campo}","${o.original}","${o.override}","${o.justificacion}","${o.fecha}"\n`;
     });
@@ -546,7 +605,7 @@ window.exportarSupuestosCSV = function() {
   a.click();
   URL.revokeObjectURL(url);
 
-  showToast("CSV exportado", "success");
+  showToast(I18N.t("p2.csvExported"), "success");
 };
 
 // Lazy render

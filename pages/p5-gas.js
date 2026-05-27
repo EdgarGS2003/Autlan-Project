@@ -7,16 +7,16 @@ function renderGas() {
   const el = document.getElementById("gas-content");
   if (!el) return;
 
+  const isEn = I18N.getLocale() === "en";
+
   el.innerHTML = `
 
     <div class="alert alert-warn mb-24">
       <span class="alert-icon">⚡</span>
       <span>
-        Gas natural <strong>sin cobertura activa</strong> al 1T26.
-        Smelting es energía-intensivo — cada
-        <strong>USD 1/MMBtu de alza</strong> en el precio del gas
-        incrementa costos operativos <strong>~USD 2-3M anuales</strong>.
-        Precio actual: <strong>USD <span id="gas-precio-live">3.20</span>/MMBtu</strong>
+        ${isEn
+          ? `Natural gas <strong>no active hedging</strong> in 1Q26. Smelting is energy-intensive — each <strong>USD 1/MMBtu shift</strong> in gas price increases operating costs by <strong>~USD 2-3M annually</strong>. Current price: <strong>USD <span id="gas-precio-live">3.20</span>/MMBtu</strong>`
+          : `Gas natural <strong>sin cobertura activa</strong> al 1T26. Smelting es energía-intensivo — cada <strong>USD 1/MMBtu de alza</strong> en el precio del gas incrementa costos operativos <strong>~USD 2-3M anuales</strong>. Precio actual: <strong>USD <span id="gas-precio-live">3.20</span>/MMBtu</strong>`}
       </span>
     </div>
 
@@ -24,40 +24,38 @@ function renderGas() {
     <div class="grid-4 mb-24" id="gas-kpis"></div>
 
     <!-- CONTEXTO DE CONSUMO -->
-    <div class="section-title">Perfil de consumo energético · Autlán</div>
+    <div class="section-title">${isEn ? "Energy Consumption Profile · Autlán" : "Perfil de consumo energético · Autlán"}</div>
     <div class="grid-2 mb-24">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">Fuentes de energía</div>
-          <span class="badge badge-success">25-30% autogenerado</span>
+          <div class="card-title">${isEn ? "Energy Sources" : "Fuentes de energía"}</div>
+          <span class="badge badge-success">${isEn ? "25-30% self-generated" : "25-30% autogenerado"}</span>
         </div>
         ${_gasEnergyProfile()}
       </div>
       <div class="card">
         <div class="card-header">
-          <div class="card-title">Exposición al gas natural</div>
-          <span class="badge badge-warn">Sin cobertura</span>
+          <div class="card-title">${isEn ? "Natural Gas Exposure" : "Exposición al gas natural"}</div>
+          <span class="badge badge-warn">${isEn ? "Unhedged" : "Sin cobertura"}</span>
         </div>
         ${_gasExposureProfile()}
       </div>
     </div>
 
     <!-- TABS INSTRUMENTOS -->
-    <div class="section-title">Evaluar instrumentos de cobertura</div>
+    <div class="section-title">${isEn ? "Evaluate Hedging Instruments" : "Evaluar instrumentos de cobertura"}</div>
     <div class="card mb-24">
       <div style="display:flex; gap:4px; margin-bottom:20px;
                   border-bottom:2px solid var(--border); padding-bottom:0;">
-        ${["Swap Precio Fijo","Call Opción","Collar Gas","Autogeneración"].map((t,i) => `
-          <button class="gas-tab ${i===0?"active":""}"
+        ${[isEn ? "Fixed Price Swap" : "Swap Precio Fijo", isEn ? "Call Option" : "Call Opción", isEn ? "Gas Collar" : "Collar Gas", isEn ? "Self-Generation" : "Autogeneración"].map((t, i) => `
+          <button class="gas-tab ${i === 0 ? "active" : ""}"
                   data-tab="${i}"
                   onclick="switchGasTab(${i})"
                   style="padding:8px 16px; font-size:12px; font-weight:500;
                          border:none; background:none; cursor:pointer;
-                         border-bottom:2px solid ${i===0
-                           ?"var(--gas-green)":"transparent"};
+                         border-bottom:2px solid ${i === 0 ? "var(--gas-green)" : "transparent"};
                          margin-bottom:-2px;
-                         color:${i===0
-                           ?"var(--gas-green)":"var(--text-muted)"};">
+                         color:${i === 0 ? "var(--gas-green)" : "var(--text-muted)"};">
             ${t}
           </button>`).join("")}
       </div>
@@ -68,15 +66,15 @@ function renderGas() {
     </div>
 
     <!-- TABLA COMPARATIVA -->
-    <div class="section-title">Costo operativo gas por escenario</div>
+    <div class="section-title">${isEn ? "Gas Operating Cost by Scenario" : "Costo operativo gas por escenario"}</div>
     <div class="scenario-table-wrap mb-24">
       <table class="scenario-table">
         <thead>
           <tr>
-            <th>Instrumento</th>
+            <th>${isEn ? "Instrument" : "Instrumento"}</th>
             <th class="esc-header-base">Base · $3.20</th>
-            <th class="esc-header-opt">Optimista · $2.50</th>
-            <th class="esc-header-adv">Adverso · $5.00</th>
+            <th class="esc-header-opt">${isEn ? "Optimistic · $2.50" : "Optimista · $2.50"}</th>
+            <th class="esc-header-adv">${isEn ? "Adverse · $5.00" : "Adverso · $5.00"}</th>
           </tr>
         </thead>
         <tbody id="gas-tabla-comparativa"></tbody>
@@ -84,11 +82,12 @@ function renderGas() {
     </div>
 
     <!-- PAYOFF CHART -->
-    <div class="section-title">Diagrama de payoff · Gas natural</div>
+    <div class="section-title">${isEn ? "Payoff Diagram · Natural Gas" : "Diagrama de payoff · Gas natural"}</div>
     <div class="card mb-24">
       <div class="chart-title">
-        Costo neto de gas en función del precio spot al vencimiento
-        (modelo Schwartz mean-reversion)
+        ${isEn
+          ? "Net gas cost as a function of the spot price at maturity (Schwartz mean-reversion model)"
+          : "Costo neto de gas en función del precio spot al vencimiento (modelo Schwartz mean-reversion)"}
       </div>
       <canvas id="gas-payoff-chart" height="200"></canvas>
       <div id="gas-chart-leyenda"
@@ -97,7 +96,7 @@ function renderGas() {
     </div>
 
     <!-- RECOMENDACIÓN -->
-    <div class="section-title">Análisis y recomendación</div>
+    <div class="section-title">${isEn ? "Analysis and Recommendation" : "Análisis y recomendación"}</div>
     <div class="card mb-24" id="gas-recomendacion"></div>
 
   `;
@@ -123,6 +122,7 @@ function _gasRenderKPIs() {
   const el = document.getElementById("gas-kpis");
   if (!el) return;
 
+  const isEn = I18N.getLocale() === "en";
   const precio  = Scenarios.getVar("precioGas");
   const base    = 3.20;
   const consumo = 2500000; // MMBtu anuales estimados
@@ -136,35 +136,35 @@ function _gasRenderKPIs() {
 
   el.innerHTML = [
     {
-      label: "Precio gas actual",
+      label: isEn ? "Current Gas Price" : "Precio gas actual",
       value: `USD ${precio.toFixed(2)}/MMBtu`,
-      sub:   `Henry Hub ref. · Base: $3.20/MMBtu`,
+      sub:   isEn ? "Henry Hub ref. · Base: $3.20/MMBtu" : `Henry Hub ref. · Base: $3.20/MMBtu`,
       tipo:  precio < 2.5 ? "success" : precio < 4.0 ? "warn" : "danger",
-      delta: `${delta >= 0 ? "+" : ""}USD ${(delta/1000).toFixed(1)}M vs base`,
+      delta: isEn ? `${delta >= 0 ? "+" : ""}USD ${(delta/1000).toFixed(1)}M vs base` : `${delta >= 0 ? "+" : ""}USD ${(delta/1000).toFixed(1)}M vs base`,
       dir:   delta <= 0 ? "up" : "down",
     },
     {
-      label: "Costo gas anual est.",
+      label: isEn ? "Est. Annual Gas Cost" : "Costo gas anual est.",
       value: `USD ${(costoAn/1000).toFixed(1)}M`,
-      sub:   `~${(consumo/1e6).toFixed(1)}M MMBtu/año · sin autogeneración`,
+      sub:   isEn ? `~${(consumo/1e6).toFixed(1)}M MMBtu/yr · without self-generation` : `~${(consumo/1e6).toFixed(1)}M MMBtu/año · sin autogeneración`,
       tipo:  "warn",
-      delta: `${(autogen*100).toFixed(0)}% cubierto por autogen`,
+      delta: isEn ? `${(autogen*100).toFixed(0)}% covered by self-gen` : `${(autogen*100).toFixed(0)}% cubierto por autogen`,
       dir:   "up",
     },
     {
-      label: "Ahorro autogeneración",
-      value: `USD ${(2800/1000).toFixed(1)}M/trim`,
-      sub:   `25-30% autosuficiencia · Atexcaco + solar`,
+      label: isEn ? "Self-Generation Savings" : "Ahorro autogeneración",
+      value: `USD ${(2800/1000).toFixed(1)}M/${isEn ? "qtr" : "trim"}`,
+      sub:   isEn ? "25-30% self-sufficiency · Atexcaco + solar" : `25-30% autosuficiencia · Atexcaco + solar`,
       tipo:  "success",
-      delta: "~USD 11.2M anuales",
+      delta: isEn ? "~USD 11.2M annually" : "~USD 11.2M anuales",
       dir:   "up",
     },
     {
-      label: "Exposición sin cubrir",
+      label: isEn ? "Uncovered Exposure" : "Exposición sin cubrir",
       value: `USD ${(costoAn*(1-autogen)/1000).toFixed(1)}M`,
-      sub:   `Gas comprado en mercado · 0% cubierto`,
+      sub:   isEn ? "Gas purchased on market · 0% hedged" : `Gas comprado en mercado · 0% cubierto`,
       tipo:  "danger",
-      delta: "Política permite forwards",
+      delta: isEn ? "Policy allows forwards" : "Política permite forwards",
       dir:   "down",
     },
   ].map(k => `
@@ -183,11 +183,32 @@ function _gasRenderKPIs() {
 // PERFIL ENERGÉTICO
 // ─────────────────────────────────────────
 function _gasEnergyProfile() {
+  const isEn = I18N.getLocale() === "en";
   const fuentes = [
-    { nombre: "Gas natural (comprado)",   pct: 45, color: "var(--warn-mid)",    nota: "Principal insumo smelting" },
-    { nombre: "Autogeneración (Atexcaco + solar)", pct: 27.5, color: "var(--success-mid)", nota: "~USD 2.8M ahorro/trim" },
-    { nombre: "CFE (red eléctrica)",      pct: 20, color: "var(--accent-mid)",  nota: "Tarifa regulada" },
-    { nombre: "Cogeneración",             pct: 7.5, color: "var(--gas-green)",   nota: "Calor residual" },
+    {
+      nombre: isEn ? "Natural gas (purchased)" : "Gas natural (comprado)",
+      pct: 45,
+      color: "var(--warn-mid)",
+      nota: isEn ? "Primary input smelting" : "Principal insumo smelting"
+    },
+    {
+      nombre: isEn ? "Self-Generation (Atexcaco + solar)" : "Autogeneración (Atexcaco + solar)",
+      pct: 27.5,
+      color: "var(--success-mid)",
+      nota: isEn ? "~USD 2.8M savings/qtr" : "~USD 2.8M ahorro/trim"
+    },
+    {
+      nombre: isEn ? "CFE (grid electricity)" : "CFE (red eléctrica)",
+      pct: 20,
+      color: "var(--accent-mid)",
+      nota: isEn ? "Regulated tariff" : "Tarifa regulada"
+    },
+    {
+      nombre: isEn ? "Cogeneration" : "Cogeneración",
+      pct: 7.5,
+      color: "var(--gas-green)",
+      nota: isEn ? "Waste heat recovery" : "Calor residual"
+    },
   ];
 
   return fuentes.map(f => `
@@ -209,29 +230,30 @@ function _gasEnergyProfile() {
 }
 
 function _gasExposureProfile() {
+  const isEn = I18N.getLocale() === "en";
   const precio  = Scenarios.getVar("precioGas");
   const consumo = 2500000;
   const autogen = 0.275;
   const expuesto = consumo * (1 - autogen);
 
   return `
-    ${_resultRow("Consumo total estimado", "~2.5M MMBtu/año")}
-    ${_resultRow("Cubierto por autogeneración", `${(autogen*100).toFixed(0)}% — ~688K MMBtu`)}
-    ${_resultRow("Expuesto a precio mercado", `~${(expuesto/1e6).toFixed(2)}M MMBtu/año`)}
-    ${_resultRow("Costo expuesto a precio actual",
-                  `USD ${(precio * expuesto / 1e6).toFixed(1)}M/año`,
+    ${_resultRow(isEn ? "Estimated Total Consumption" : "Consumo total estimado", isEn ? "~2.5M MMBtu/year" : "~2.5M MMBtu/año")}
+    ${_resultRow(isEn ? "Covered by Self-Generation" : "Cubierto por autogeneración", `${(autogen*100).toFixed(0)}% — ~688K MMBtu`)}
+    ${_resultRow(isEn ? "Exposed to Market Price" : "Expuesto a precio mercado", isEn ? `~${(expuesto/1e6).toFixed(2)}M MMBtu/year` : `~${(expuesto/1e6).toFixed(2)}M MMBtu/año`)}
+    ${_resultRow(isEn ? "Exposed Cost at Current Price" : "Costo expuesto a precio actual",
+                  `USD ${(precio * expuesto / 1e6).toFixed(1)}M/${isEn ? "year" : "año"}`,
                   precio > 4 ? "danger" : "warn")}
-    ${_resultRow("Impacto por $1 alza en gas",
-                  `USD ${(expuesto / 1e6).toFixed(2)}M/año`, "warn")}
-    ${_resultRow("Cobertura gas activa", "0% — Sin instrumento", "danger")}
-    ${_resultRow("Política permite", "Forwards de precio")}
+    ${_resultRow(isEn ? "Impact per $1 rise in gas" : "Impacto por $1 alza en gas",
+                  `USD ${(expuesto / 1e6).toFixed(2)}M/${isEn ? "year" : "año"}`, "warn")}
+    ${_resultRow(isEn ? "Active Gas Hedging" : "Cobertura gas activa", isEn ? "0% — No instrument" : "0% — Sin instrumento", "danger")}
+    ${_resultRow(isEn ? "Policy Allows" : "Política permite", isEn ? "Price forwards" : "Forwards de precio")}
 
     <div class="alert alert-warn" style="margin-top:12px;">
       <span class="alert-icon">⚠</span>
       <span style="font-size:11.5px;">
-        La autogeneración cubre ~27.5% del consumo total.
-        El 72.5% restante está completamente expuesto a precios
-        de mercado sin ningún instrumento de cobertura.
+        ${isEn
+          ? "Self-generation covers ~27.5% of total consumption. The remaining 72.5% is fully exposed to market prices without any hedging instrument."
+          : "La autogeneración cubre ~27.5% del consumo total. El 72.5% restante está completamente expuesto a precios de mercado sin ningún instrumento de cobertura."}
       </span>
     </div>
   `;
@@ -241,170 +263,170 @@ function _gasExposureProfile() {
 // TABS
 // ─────────────────────────────────────────
 function _gasTabSwap() {
+  const isEn = I18N.getLocale() === "en";
   return `
     <div class="grid-2">
       <div>
         <div class="section-title" style="margin-top:0;">
-          Swap de precio fijo · Gas natural
+          ${isEn ? "Natural Gas Fixed Price Swap" : "Swap de precio fijo · Gas natural"}
         </div>
         <div class="alert alert-info" style="margin-bottom:14px;">
           <span class="alert-icon">ℹ</span>
           <span style="font-size:11.5px;">
-            El swap convierte el costo variable de gas en un costo fijo.
-            Autlán paga precio fijo y recibe precio flotante.
-            Si el gas sube, el swap compensa la diferencia.
+            ${isEn
+              ? "The swap converts variable gas cost into a fixed cost. Autlán pays a fixed price and receives a floating price. If gas rises, the swap compensates the difference."
+              : "El swap convierte el costo variable de gas en un costo fijo. Autlán paga precio fijo y recibe precio flotante. Si el gas sube, el swap compensa la diferencia."}
           </span>
         </div>
         <div class="field-group">
-          <label>Precio spot gas (USD/MMBtu)</label>
+          <label>${isEn ? "Natural Gas Spot Price (USD/MMBtu)" : "Precio spot gas (USD/MMBtu)"}</label>
           <input type="number" id="gas-swap-spot" value="3.20" step="0.05"
                  oninput="calcGasSwap()" />
         </div>
         <div class="field-group">
-          <label>Precio fijo pactado (USD/MMBtu)</label>
+          <label>${isEn ? "Contracted Fixed Price (USD/MMBtu)" : "Precio fijo pactado (USD/MMBtu)"}</label>
           <input type="number" id="gas-swap-fijo" value="3.35" step="0.05"
                  oninput="calcGasSwap()" />
         </div>
         <div class="field-group">
-          <label>Volumen a cubrir (MMBtu/mes)</label>
+          <label>${isEn ? "Volume to Hedging (MMBtu/month)" : "Volumen a cubrir (MMBtu/mes)"}</label>
           <input type="number" id="gas-swap-vol" value="150000" step="10000"
                  oninput="calcGasSwap()" />
         </div>
         <div class="field-group">
-          <label>Horizonte (meses)</label>
+          <label>${isEn ? "Horizon (months)" : "Horizonte (meses)"}</label>
           <input type="number" id="gas-swap-T" value="12" min="1" max="24"
                  oninput="calcGasSwap()" />
         </div>
       </div>
       <div id="gas-swap-result">
         <div class="alert alert-info">
-          <span>Ajusta los parámetros para calcular el swap.</span>
+          <span>${isEn ? "Adjust parameters to calculate swap." : "Ajusta los parámetros para calcular el swap."}</span>
         </div>
       </div>
     </div>`;
 }
 
 function _gasTabCall() {
+  const isEn = I18N.getLocale() === "en";
   return `
     <div class="grid-2">
       <div>
         <div class="section-title" style="margin-top:0;">
-          Call sobre gas · Precio máximo
+          ${isEn ? "Gold Call Option · Maximum Price" : "Call sobre gas · Precio máximo"}
         </div>
         <div class="alert alert-info" style="margin-bottom:14px;">
           <span class="alert-icon">ℹ</span>
           <span style="font-size:11.5px;">
-            Compra de call = fija el precio máximo que paga Autlán.
-            Si el gas sube sobre el strike, el call compensa.
-            Mantiene el beneficio si el gas baja.
-            Modelo Schwartz (mean-reversion).
+            ${isEn
+              ? "Call purchase = sets the maximum price Autlán pays. If gas rises above strike, the call compensates. Retains benefit if gas falls. Schwartz model (mean-reversion)."
+              : "Compra de call = fija el precio máximo que paga Autlán. Si el gas sube sobre el strike, el call compensa. Mantiene el beneficio si el gas baja. Modelo Schwartz (mean-reversion)."}
           </span>
         </div>
         <div class="field-group">
-          <label>Precio spot (USD/MMBtu)</label>
+          <label>${isEn ? "Spot Price (USD/MMBtu)" : "Precio spot (USD/MMBtu)"}</label>
           <input type="number" id="gas-call-spot" value="3.20" step="0.05"
                  oninput="calcGasCall()" />
         </div>
         <div class="field-group">
-          <label>Strike — precio máximo (USD/MMBtu)</label>
+          <label>${isEn ? "Strike — Maximum Price (USD/MMBtu)" : "Strike — precio máximo (USD/MMBtu)"}</label>
           <input type="number" id="gas-call-strike" value="4.00" step="0.05"
                  oninput="calcGasCall()" />
         </div>
         <div class="field-group">
-          <label>Volatilidad implícita (%)</label>
+          <label>${isEn ? "Implied Volatility (%)" : "Volatilidad implícita (%)"}</label>
           <input type="number" id="gas-call-vol" value="45" step="1"
                  oninput="calcGasCall()" />
         </div>
         <div class="field-group">
-          <label>Horizonte (meses)</label>
+          <label>${isEn ? "Horizon (months)" : "Horizonte (meses)"}</label>
           <input type="number" id="gas-call-T" value="12" min="1" max="24"
                  oninput="calcGasCall()" />
         </div>
         <div class="field-group">
-          <label>Volumen (MMBtu/mes)</label>
+          <label>${isEn ? "Volume (MMBtu/month)" : "Volumen (MMBtu/mes)"}</label>
           <input type="number" id="gas-call-vol-mmb" value="150000" step="10000"
                  oninput="calcGasCall()" />
         </div>
       </div>
       <div id="gas-call-result">
         <div class="alert alert-info">
-          <span>Ajusta los parámetros para calcular la call.</span>
+          <span>${isEn ? "Adjust parameters to calculate call option." : "Ajusta los parámetros para calcular la call."}</span>
         </div>
       </div>
     </div>`;
 }
 
 function _gasTabCollar() {
+  const isEn = I18N.getLocale() === "en";
   return `
     <div class="grid-2">
       <div>
-        <div class="section-title" style="margin-top:0;">Collar de gas</div>
+        <div class="section-title" style="margin-top:0;">${isEn ? "Natural Gas Collar" : "Collar de gas"}</div>
         <div class="alert alert-info" style="margin-bottom:14px;">
           <span class="alert-icon">ℹ</span>
           <span style="font-size:11.5px;">
-            Compra call (precio máximo) + Vende put (precio mínimo).
-            Autlán paga entre el floor y el cap sin importar el mercado.
-            Si la put se financia con la call → costless collar.
+            ${isEn
+              ? "Buy call (max price) + Sell put (min price). Autlán pays between the floor and the cap regardless of market. If put is financed by call → costless collar."
+              : "Compra call (precio máximo) + Vende put (precio mínimo). Autlán paga entre el floor y el cap sin importar el mercado. Si la put se financia con la call → costless collar."}
           </span>
         </div>
         <div class="field-group">
-          <label>Precio spot (USD/MMBtu)</label>
+          <label>${isEn ? "Spot Price (USD/MMBtu)" : "Precio spot (USD/MMBtu)"}</label>
           <input type="number" id="gas-col-spot" value="3.20" step="0.05"
                  oninput="calcGasCollar()" />
         </div>
         <div class="field-group">
-          <label>Floor — put corto (precio mínimo)</label>
+          <label>${isEn ? "Floor — short put (min price)" : "Floor — put corto (precio mínimo)"}</label>
           <input type="number" id="gas-col-floor" value="2.50" step="0.05"
                  oninput="calcGasCollar()" />
         </div>
         <div class="field-group">
-          <label>Cap — call largo (precio máximo)</label>
+          <label>${isEn ? "Cap — long call (max price)" : "Cap — call largo (precio máximo)"}</label>
           <input type="number" id="gas-col-cap" value="4.50" step="0.05"
                  oninput="calcGasCollar()" />
         </div>
         <div class="field-group">
-          <label>Volatilidad implícita (%)</label>
+          <label>${isEn ? "Implied Volatility (%)" : "Volatilidad implícita (%)"}</label>
           <input type="number" id="gas-col-vol" value="45" step="1"
                  oninput="calcGasCollar()" />
         </div>
         <div class="field-group">
-          <label>Horizonte (meses)</label>
+          <label>${isEn ? "Horizon (months)" : "Horizonte (meses)"}</label>
           <input type="number" id="gas-col-T" value="12" min="1" max="24"
                  oninput="calcGasCollar()" />
         </div>
         <div class="field-group">
-          <label>Volumen (MMBtu/mes)</label>
+          <label>${isEn ? "Volume (MMBtu/month)" : "Volumen (MMBtu/mes)"}</label>
           <input type="number" id="gas-col-vol-mmb" value="150000" step="10000"
                  oninput="calcGasCollar()" />
         </div>
       </div>
       <div id="gas-col-result">
         <div class="alert alert-info">
-          <span>Ajusta los parámetros para calcular el collar.</span>
+          <span>${isEn ? "Adjust parameters to calculate collar." : "Ajusta los parámetros para calcular el collar."}</span>
         </div>
       </div>
     </div>`;
 }
 
 function _gasTabAutogen() {
+  const isEn = I18N.getLocale() === "en";
   return `
     <div class="card" style="background:var(--bg-raised);">
       <div class="card-title" style="margin-bottom:16px;">
-        Autogeneración como cobertura natural
+        ${isEn ? "Self-Generation as a Natural Hedge" : "Autogeneración como cobertura natural"}
       </div>
 
       <div class="grid-2" style="gap:16px;">
         <div>
           <div class="section-title" style="margin-top:0;">
-            Activos de autogeneración · Autlán Energía
+            ${isEn ? "Self-Generation Assets · Autlán Energía" : "Activos de autogeneración · Autlán Energía"}
           </div>
           ${[
-            ["Central Hidroeléctrica Atexcaco (Puebla)", "Principal fuente renovable",
-             "var(--success-mid)"],
-            ["Paneles solares (plantas smelting)", "Complemento diurno",
-             "var(--gold)"],
-            ["Cogeneración (calor residual)", "Aprovechamiento de proceso",
-             "var(--gas-green)"],
+            [isEn ? "Atexcaco Hydroelectric Plant (Puebla)" : "Central Hidroeléctrica Atexcaco (Puebla)", isEn ? "Primary renewable source" : "Principal fuente renovable", "var(--success-mid)"],
+            [isEn ? "Solar panels (smelting plants)" : "Paneles solares (plantas smelting)", isEn ? "Daytime complement" : "Complemento diurno", "var(--gold)"],
+            [isEn ? "Cogeneration (waste heat)" : "Cogeneración (calor residual)", isEn ? "Process energy usage" : "Aprovechamiento de proceso", "var(--gas-green)"],
           ].map(([nombre, desc, color]) => `
             <div style="display:flex; gap:10px; margin-bottom:12px;
                         padding:10px; background:var(--bg-surface);
@@ -419,25 +441,21 @@ function _gasTabAutogen() {
 
         <div>
           <div class="section-title" style="margin-top:0;">
-            Impacto financiero
+            ${isEn ? "Financial Impact" : "Impacto financiero"}
           </div>
-          ${_resultRow("Autosuficiencia actual", "25-30%")}
-          ${_resultRow("Ahorro trimestral", "USD 2.8M", "success")}
-          ${_resultRow("Ahorro anual estimado", "USD 11.2M", "success")}
-          ${_resultRow("MMBtu equivalentes cubiertos",
-                        "~688K MMBtu/año", "success")}
-          ${_resultRow("Reducción exposición gas",
-                        "~27.5% del consumo total", "success")}
-          ${_resultRow("Ventaja CBAM (EU)",
-                        "Menor huella de carbono vs competidores", "accent")}
+          ${_resultRow(isEn ? "Current Self-Sufficiency" : "Autosuficiencia actual", "25-30%")}
+          ${_resultRow(isEn ? "Quarterly Savings" : "Ahorro trimestral", "USD 2.8M", "success")}
+          ${_resultRow(isEn ? "Estimated Annual Savings" : "Ahorro anual estimado", "USD 11.2M", "success")}
+          ${_resultRow(isEn ? "Equivalent MMBtu Covered" : "MMBtu equivalentes cubiertos", "~688K MMBtu/year", "success")}
+          ${_resultRow(isEn ? "Gas Exposure Reduction" : "Reducción exposición gas", "~27.5% of total consumption", "success")}
+          ${_resultRow(isEn ? "CBAM Advantage (EU)" : "Ventaja CBAM (EU)", isEn ? "Lower carbon footprint vs competitors" : "Menor huella de carbono vs competidores", "accent")}
 
           <div class="alert alert-success" style="margin-top:12px;">
             <span class="alert-icon">✓</span>
             <span style="font-size:11.5px;">
-              La autogeneración es la cobertura natural más eficiente.
-              Cada % adicional de autosuficiencia reduce la exposición
-              al precio del gas permanentemente.
-              Meta sugerida: 35-40% para 2027.
+              ${isEn
+                ? "Self-generation is the most efficient natural hedge. Each additional % of self-sufficiency permanently reduces gas price exposure. Suggested target: 35-40% by 2027."
+                : "La autogeneración es la cobertura natural más eficiente. Cada % adicional de autosuficiencia reduce la exposición al precio del gas permanentemente. Meta sugerida: 35-40% para 2027."}
             </span>
           </div>
         </div>
@@ -449,7 +467,7 @@ function _gasTabAutogen() {
 // CÁLCULOS
 // ─────────────────────────────────────────
 window.switchGasTab = function(idx) {
-  [0,1,2,3].forEach(i => {
+  [0, 1, 2, 3].forEach(i => {
     const tab = document.getElementById(`gas-tab-${i}`);
     const btn = document.querySelector(`.gas-tab[data-tab="${i}"]`);
     if (!tab || !btn) return;
@@ -462,13 +480,14 @@ window.switchGasTab = function(idx) {
 };
 
 window.calcGasSwap = function() {
+  const isEn  = I18N.getLocale() === "en";
   const spot  = parseFloat(document.getElementById("gas-swap-spot")?.value  || 3.20);
   const fijo  = parseFloat(document.getElementById("gas-swap-fijo")?.value  || 3.35);
   const vol   = parseFloat(document.getElementById("gas-swap-vol")?.value   || 150000);
   const meses = parseFloat(document.getElementById("gas-swap-T")?.value     || 12);
 
-  const nocAnual      = vol * meses; // MMBtu totales
-  const costoSinSwap  = spot * nocAnual / 1000; // USD miles
+  const nocAnual      = vol * meses;
+  const costoSinSwap  = spot * nocAnual / 1000;
   const costoConSwap  = fijo * nocAnual / 1000;
   const diferencia    = costoSinSwap - costoConSwap;
   const costoFijo12m  = fijo * 12 * vol / 1000;
@@ -477,39 +496,34 @@ window.calcGasSwap = function() {
   if (!el) return;
 
   el.innerHTML = `
-    <div class="section-title" style="margin-top:0;">Resultado del swap</div>
-    ${_resultRow("Precio spot actual", `USD ${spot.toFixed(2)}/MMBtu`)}
-    ${_resultRow("Precio fijo pactado", `USD ${fijo.toFixed(2)}/MMBtu`,
+    <div class="section-title" style="margin-top:0;">${isEn ? "Swap Outcome" : "Resultado del swap"}</div>
+    ${_resultRow(isEn ? "Current Spot Price" : "Precio spot actual", `USD ${spot.toFixed(2)}/MMBtu`)}
+    ${_resultRow(isEn ? "Contracted Fixed Price" : "Precio fijo pactado", `USD ${fijo.toFixed(2)}/MMBtu`,
                   fijo <= spot ? "positive" : "warn")}
-    ${_resultRow("Volumen mensual", `${vol.toLocaleString()} MMBtu`)}
-    ${_resultRow("Horizonte", `${meses} meses`)}
-    ${_resultRow("Costo sin swap (spot)",
-                  `USD ${costoSinSwap.toFixed(1)}M`)}
-    ${_resultRow("Costo con swap (fijo)",
-                  `USD ${costoConSwap.toFixed(1)}M`,
+    ${_resultRow(isEn ? "Monthly Volume" : "Volumen mensual", `${vol.toLocaleString()} MMBtu`)}
+    ${_resultRow(isEn ? "Horizon" : "Horizonte", isEn ? `${meses} months` : `${meses} meses`)}
+    ${_resultRow(isEn ? "Cost without Swap (spot)" : "Costo sin swap (spot)", `USD ${costoSinSwap.toFixed(1)}M`)}
+    ${_resultRow(isEn ? "Cost with Swap (fixed)" : "Costo con swap (fijo)", `USD ${costoConSwap.toFixed(1)}M`,
                   fijo <= spot ? "positive" : "warn")}
-    ${_resultRow("Ahorro / costo adicional",
-                  `USD ${Math.abs(diferencia).toFixed(1)}M ${diferencia >= 0 ? "ahorro" : "costo"}`,
+    ${_resultRow(isEn ? "Savings / Additional Cost" : "Ahorro / costo adicional",
+                  `USD ${Math.abs(diferencia).toFixed(1)}M ${diferencia >= 0 ? (isEn ? "savings" : "ahorro") : (isEn ? "cost" : "costo")}`,
                   diferencia >= 0 ? "positive" : "danger")}
-    ${_resultRow("Costo fijo anualizado",
-                  `USD ${costoFijo12m.toFixed(1)}M/año`)}
+    ${_resultRow(isEn ? "Annualized Fixed Cost" : "Costo fijo anualizado", `USD ${costoFijo12m.toFixed(1)}M/${isEn ? "year" : "año"}`)}
 
-    <div class="alert alert-${fijo <= spot*1.1 ? "success" : "warn"}"
+    <div class="alert alert-${fijo <= spot * 1.1 ? "success" : "warn"}"
          style="margin-top:12px;">
-      <span class="alert-icon">${fijo <= spot*1.1 ? "✓" : "⚠"}</span>
+      <span class="alert-icon">${fijo <= spot * 1.1 ? "✓" : "⚠"}</span>
       <span style="font-size:11.5px;">
-        El swap fija el costo en USD ${fijo.toFixed(2)}/MMBtu.
-        ${fijo <= spot
-          ? "Por debajo del spot actual — swap en plusvalía."
-          : `Prima de USD ${(fijo - spot).toFixed(2)}/MMBtu sobre spot —
-             justificada si se espera que el gas suba a USD ${(fijo*1.2).toFixed(2)}+.`}
-        Ventaja principal: certidumbre en costos para EBITDA.
+        ${isEn
+          ? `The swap locks in the cost at USD ${fijo.toFixed(2)}/MMBtu. ${fijo <= spot ? "Below current spot — swap in positive mark-to-market." : `Premium of USD ${(fijo - spot).toFixed(2)}/MMBtu over spot — justified if gas is expected to rise to USD ${(fijo*1.2).toFixed(2)}+.`} Principal advantage: cost certainty for EBITDA.`
+          : `El swap fija el costo en USD ${fijo.toFixed(2)}/MMBtu. ${fijo <= spot ? "Por debajo del spot actual — swap en plusvalía." : `Prima de USD ${(fijo - spot).toFixed(2)}/MMBtu sobre spot — justificada si se espera que el gas suba a USD ${(fijo*1.2).toFixed(2)}+.`} Ventaja principal: certidumbre en costos para EBITDA.`}
       </span>
     </div>
   `;
 };
 
 window.calcGasCall = function() {
+  const isEn   = I18N.getLocale() === "en";
   const spot   = parseFloat(document.getElementById("gas-call-spot")?.value    || 3.20);
   const strike = parseFloat(document.getElementById("gas-call-strike")?.value  || 4.00);
   const volPct = parseFloat(document.getElementById("gas-call-vol")?.value     || 45) / 100;
@@ -518,45 +532,42 @@ window.calcGasCall = function() {
   const T      = meses / 12;
   const r      = Scenarios.getVar("sofr1m") / 100;
 
-  // Schwartz 1-factor para gas (mean-reversion)
   const kappa  = Models.PARAMS.gas.kappa;
   const mu_eq  = Models.PARAMS.gas.mu_eq;
   const res    = Models.schwartz("call", spot, strike, T, r, kappa, mu_eq, volPct);
 
-  const primaTot = res.precio * volMMB * meses / 1000; // USD miles
+  const primaTot = res.precio * volMMB * meses / 1000;
 
   const el = document.getElementById("gas-call-result");
   if (!el) return;
 
   el.innerHTML = `
     <div class="section-title" style="margin-top:0;">
-      Resultado call · Schwartz mean-reversion
+      ${isEn ? "Call Outcome · Schwartz Mean-Reversion" : "Resultado call · Schwartz mean-reversion"}
     </div>
-    ${_resultRow("Modelo", "Schwartz 1-Factor (mean-reversion)")}
+    ${_resultRow(isEn ? "Model" : "Modelo", "Schwartz 1-Factor (mean-reversion)")}
     ${_resultRow("Spot", `USD ${spot.toFixed(2)}/MMBtu`)}
-    ${_resultRow("Strike (precio máximo)", `USD ${strike.toFixed(2)}/MMBtu`)}
-    ${_resultRow("Forward implícito", `USD ${res.forward.toFixed(2)}/MMBtu`, "accent")}
-    ${_resultRow("Prima call", `USD ${res.precio.toFixed(4)}/MMBtu`, "warn")}
-    ${_resultRow("Prima total", `USD ${primaTot.toFixed(1)}M`, "warn")}
-    ${_resultRow("Prima % del spot", `${(res.precio/spot*100).toFixed(2)}%`)}
+    ${_resultRow(isEn ? "Strike (maximum price)" : "Strike (precio máximo)", `USD ${strike.toFixed(2)}/MMBtu`)}
+    ${_resultRow(isEn ? "Implicit Forward" : "Forward implícito", `USD ${res.forward.toFixed(2)}/MMBtu`, "accent")}
+    ${_resultRow(isEn ? "Call Premium" : "Prima call", `USD ${res.precio.toFixed(4)}/MMBtu`, "warn")}
+    ${_resultRow(isEn ? "Total Premium" : "Prima total", `USD ${primaTot.toFixed(1)}M`, "warn")}
+    ${_resultRow(isEn ? "Premium % of Spot" : "Prima % del spot", `${(res.precio/spot*100).toFixed(2)}%`)}
     ${_resultRow("Kappa (mean-reversion)", kappa.toFixed(2))}
-    ${_resultRow("Precio eq. largo plazo",
-                  `USD ${Math.exp(mu_eq).toFixed(2)}/MMBtu`)}
+    ${_resultRow(isEn ? "Long-Term Eq. Price" : "Precio eq. largo plazo", `USD ${Math.exp(mu_eq).toFixed(2)}/MMBtu`)}
 
     <div class="alert alert-info" style="margin-top:12px;">
       <span class="alert-icon">ℹ</span>
       <span style="font-size:11.5px;">
-        El modelo Schwartz captura la reversión a la media del gas
-        (kappa=${kappa}) — el gas tiende a volver a
-        USD ${Math.exp(mu_eq).toFixed(2)}/MMBtu en el largo plazo.
-        Esto reduce el precio de la call vs Black-Scholes simple.
-        Si el gas supera USD ${strike.toFixed(2)}, la call compensa completamente.
+        ${isEn
+          ? `The Schwartz model captures gas mean-reversion (kappa=${kappa}) — gas tends to return to USD ${Math.exp(mu_eq).toFixed(2)}/MMBtu in the long term. This reduces call price vs standard Black-Scholes. If gas goes above USD ${strike.toFixed(2)}, the call fully compensates.`
+          : `El modelo Schwartz captura la reversión a la media del gas (kappa=${kappa}) — el gas tiende a volver a USD ${Math.exp(mu_eq).toFixed(2)}/MMBtu en el largo plazo. Esto reduce el precio de la call vs Black-Scholes simple. Si el gas supera USD ${strike.toFixed(2)}, la call compensa completamente.`}
       </span>
     </div>
   `;
 };
 
 window.calcGasCollar = function() {
+  const isEn   = I18N.getLocale() === "en";
   const spot   = parseFloat(document.getElementById("gas-col-spot")?.value    || 3.20);
   const floor  = parseFloat(document.getElementById("gas-col-floor")?.value   || 2.50);
   const cap    = parseFloat(document.getElementById("gas-col-cap")?.value     || 4.50);
@@ -566,13 +577,12 @@ window.calcGasCollar = function() {
   const T      = meses / 12;
   const r      = Scenarios.getVar("sofr1m") / 100;
 
-  // Para gas: call comprada (cap precio máximo) + put vendida (floor precio mínimo)
   const call   = Models.schwartz("call", spot, cap,   T, r,
                    Models.PARAMS.gas.kappa, Models.PARAMS.gas.mu_eq, volPct);
   const put    = Models.schwartz("put",  spot, floor, T, r,
                    Models.PARAMS.gas.kappa, Models.PARAMS.gas.mu_eq, volPct);
 
-  const costoNeto = call.precio - put.precio; // call comprada - put vendida
+  const costoNeto = call.precio - put.precio;
   const esCostless = Math.abs(costoNeto) < 0.01;
   const costoTot  = costoNeto * volMMB * meses / 1000;
 
@@ -580,23 +590,22 @@ window.calcGasCollar = function() {
   if (!el) return;
 
   el.innerHTML = `
-    <div class="section-title" style="margin-top:0;">Resultado del collar de gas</div>
+    <div class="section-title" style="margin-top:0;">${isEn ? "Gas Collar Outcome" : "Resultado del collar de gas"}</div>
     ${_resultRow("Spot", `USD ${spot.toFixed(2)}/MMBtu`)}
-    ${_resultRow("Floor (put vendida)", `USD ${floor.toFixed(2)}/MMBtu`, "positive")}
-    ${_resultRow("Cap (call comprada)", `USD ${cap.toFixed(2)}/MMBtu`, "warn")}
-    ${_resultRow("Prima call (cap)", `USD ${call.precio.toFixed(4)}/MMBtu`)}
-    ${_resultRow("Prima put (floor)", `USD ${put.precio.toFixed(4)}/MMBtu`)}
-    ${_resultRow("Costo neto collar",
+    ${_resultRow(isEn ? "Floor (short put)" : "Floor (put vendida)", `USD ${floor.toFixed(2)}/MMBtu`, "positive")}
+    ${_resultRow(isEn ? "Cap (long call)" : "Cap (call comprada)", `USD ${cap.toFixed(2)}/MMBtu`, "warn")}
+    ${_resultRow(isEn ? "Call Premium (cap)" : "Prima call (cap)", `USD ${call.precio.toFixed(4)}/MMBtu`)}
+    ${_resultRow(isEn ? "Put Premium (floor)" : "Prima put (floor)", `USD ${put.precio.toFixed(4)}/MMBtu`)}
+    ${_resultRow(isEn ? "Net Collar Cost" : "Costo neto collar",
                   `USD ${costoNeto.toFixed(4)}/MMBtu`,
                   esCostless ? "positive" : costoNeto < 0 ? "positive" : "warn")}
-    ${_resultRow("Costo total",
+    ${_resultRow(isEn ? "Total Cost" : "Costo total",
                   `USD ${costoTot.toFixed(1)}M`,
                   esCostless ? "positive" : costoNeto < 0 ? "positive" : "warn")}
-    ${_resultRow("¿Costless?",
-                  esCostless ? "✓ Sí" : costoNeto < 0
-                    ? "✓ Prima neta recibida" : "✗ No — ajustar strikes",
+    ${_resultRow(isEn ? "Costless?" : "¿Costless?",
+                  esCostless ? (isEn ? "✓ Yes" : "✓ Sí") : costoNeto < 0 ? (isEn ? "✓ Net premium received" : "✓ Prima neta recibida") : (isEn ? "✗ No — adjust strikes" : "✗ No — ajustar strikes"),
                   esCostless || costoNeto < 0 ? "positive" : "warn")}
-    ${_resultRow("Rango precio efectivo",
+    ${_resultRow(isEn ? "Effective Price Range" : "Rango precio efectivo",
                   `USD ${floor.toFixed(2)} — ${cap.toFixed(2)}/MMBtu`)}
 
     <div class="alert alert-${esCostless || costoNeto <= 0 ? "success" : "info"}"
@@ -604,12 +613,10 @@ window.calcGasCollar = function() {
       <span class="alert-icon">${esCostless || costoNeto <= 0 ? "✓" : "💡"}</span>
       <span style="font-size:11.5px;">
         ${esCostless
-          ? `Costless collar logrado. Autlán paga entre $${floor} y $${cap}/MMBtu siempre.`
-          : costoNeto < 0
-          ? `Prima neta recibida de USD ${Math.abs(costoTot).toFixed(1)}M — 
-             la put vendida financia más que la call comprada.`
-          : `Ajusta el floor hacia arriba o el cap hacia abajo 
-             para aproximar a costless.`}
+          ? (isEn ? `Costless collar achieved. Autlán pays between $${floor} and $${cap}/MMBtu always.` : `Costless collar logrado. Autlán paga entre $${floor} y $${cap}/MMBtu siempre.`)
+          : (costoNeto < 0
+            ? (isEn ? `Net premium received of USD ${Math.abs(costoTot).toFixed(1)}M — the sold put finances more than the purchased call.` : `Prima neta recibida de USD ${Math.abs(costoTot).toFixed(1)}M — la put vendida financia más que la call comprada.`)
+            : (isEn ? "Adjust floor upwards or cap downwards to approximate costless." : "Ajusta el floor hacia arriba o el cap hacia abajo para aproximar a costless."))}
       </span>
     </div>
   `;
@@ -622,8 +629,9 @@ function _gasRenderTablaComparativa() {
   const el = document.getElementById("gas-tabla-comparativa");
   if (!el) return;
 
+  const isEn = I18N.getLocale() === "en";
   const esc    = Scenarios.getState().escenarios;
-  const volMMB = 1800000; // MMBtu anuales expuestos (72.5% del consumo)
+  const volMMB = 1800000;
   const fijo   = 3.35;
   const capG   = 4.50;
   const r      = Scenarios.getVar("sofr1m") / 100;
@@ -642,21 +650,21 @@ function _gasRenderTablaComparativa() {
 
   const filas = [
     {
-      label: "Sin cobertura (costo gas)",
+      label: isEn ? "Unhedged (gas cost)" : "Sin cobertura (costo gas)",
       fn:    (p) => -(p * volMMB / 1000),
     },
     {
-      label: `Swap precio fijo $${fijo}/MMBtu`,
+      label: `Swap fixed price $${fijo}/MMBtu`,
       fn:    ()  => -(fijo * volMMB / 1000),
     },
     {
-      label: `Call cap $${capG} (−prima)`,
+      label: `Call cap $${capG} (${isEn ? "-premium" : "−prima"})`,
       fn:    (p) => -(Math.min(p, capG) * volMMB / 1000
                      + callP * volMMB / 1000),
     },
     {
-      label: "Autogeneración 27.5% (ahorro)",
-      fn:    (p) => 11200, // USD 11.2M ahorro anual fijo
+      label: isEn ? "Self-Generation 27.5% (savings)" : "Autogeneración 27.5% (ahorro)",
+      fn:    ()  => 11200,
     },
   ];
 
@@ -686,6 +694,7 @@ function _gasRenderPayoffChart() {
   const canvas = document.getElementById("gas-payoff-chart");
   if (!canvas) return;
 
+  const isEn = I18N.getLocale() === "en";
   const ctx = canvas.getContext("2d");
   const w   = canvas.offsetWidth || 600;
   const h   = canvas.height      || 200;
@@ -693,7 +702,7 @@ function _gasRenderPayoffChart() {
 
   const r    = Scenarios.getVar("sofr1m") / 100;
   const T    = 1.0;
-  const vol  = 1000000; // MMBtu normalizados
+  const vol  = 1000000;
 
   const precios = [];
   for (let p = 1.0; p <= 8.0; p += 0.1) precios.push(parseFloat(p.toFixed(2)));
@@ -709,12 +718,12 @@ function _gasRenderPayoffChart() {
 
   const series = [
     {
-      label: "Sin cobertura",
+      label: isEn ? "Unhedged" : "Sin cobertura",
       color: "#8A96A8",
       vals:  precios.map(p => -p * vol / 1000),
     },
     {
-      label: `Swap fijo $${fijo}`,
+      label: `Swap fixed $${fijo}`,
       color: "#1B4F8A",
       vals:  precios.map(() => -fijo * vol / 1000),
     },
@@ -756,7 +765,7 @@ function _gasRenderPayoffChart() {
   ctx.setLineDash([]);
   ctx.fillStyle = "#8A96A8";
   ctx.font      = "10px Inter";
-  ctx.fillText(`$${precioAct.toFixed(2)}`, xScale(precioAct)+4, pad+12);
+  ctx.fillText(isEn ? `Current price $${precioAct.toFixed(2)}` : `Precio actual $${precioAct.toFixed(2)}`, xScale(precioAct)+4, pad+12);
 
   series.forEach(s => {
     ctx.strokeStyle = s.color;
@@ -794,12 +803,13 @@ function _gasRenderRecomendacion() {
   const el = document.getElementById("gas-recomendacion");
   if (!el) return;
 
+  const isEn = I18N.getLocale() === "en";
   const precio   = Scenarios.getVar("precioGas");
   const expuesto = 1800000; // MMBtu
 
   el.innerHTML = `
     <div class="card-title" style="margin-bottom:16px;">
-      Análisis de postura · Gas USD ${precio.toFixed(2)}/MMBtu
+      ${isEn ? `Hedging Posture Analysis · Gas USD ${precio.toFixed(2)}/MMBtu` : `Análisis de postura · Gas USD ${precio.toFixed(2)}/MMBtu`}
     </div>
 
     <div class="grid-3" style="gap:16px; margin-bottom:16px;">
@@ -808,14 +818,12 @@ function _gasRenderRecomendacion() {
                   border-left:3px solid var(--accent);">
         <div style="font-size:11px; font-weight:700;
                     color:var(--accent); margin-bottom:6px;">
-          QUÉ RIESGO MITIGA
+          ${isEn ? "RISK MITIGATED" : "QUÉ RIESGO MITIGA"}
         </div>
         <div style="font-size:12px; line-height:1.6;">
-          Alza en el precio del gas natural.
-          Con ~1.8M MMBtu anuales expuestos a mercado,
-          cada USD 1/MMBtu de alza cuesta
-          <strong>USD ${(expuesto/1e6).toFixed(1)}M adicionales</strong>
-          en costos operativos — directamente al EBITDA.
+          ${isEn
+            ? `Rise in the natural gas price. With ~1.8M MMBtu annual market exposure, each USD 1/MMBtu rise costs <strong>an additional USD ${(expuesto/1e6).toFixed(1)}M</strong> in operating expenses — straight to EBITDA.`
+            : `Alza en el precio del gas natural. Con ~1.8M MMBtu anuales expuestos a mercado, cada USD 1/MMBtu de alza cuesta <strong>USD ${(expuesto/1e6).toFixed(1)}M adicionales</strong> en costos operativos — directamente al EBITDA.`}
         </div>
       </div>
       <div style="padding:14px; background:var(--bg-raised);
@@ -823,13 +831,12 @@ function _gasRenderRecomendacion() {
                   border-left:3px solid var(--warn);">
         <div style="font-size:11px; font-weight:700;
                     color:var(--warn); margin-bottom:6px;">
-          QUÉ ACEPTA / SACRIFICA
+          ${isEn ? "RISK ACCEPTED / COST" : "QUÉ ACEPTA / SACRIFICA"}
         </div>
         <div style="font-size:12px; line-height:1.6;">
-          Swap: pierde el beneficio si el gas baja.
-          Call: mantiene el ahorro si baja pero paga prima.
-          Collar: rango de precio fijo — pierde upside si baja mucho.
-          Autogeneración: inversión de capital con retorno de largo plazo.
+          ${isEn
+            ? "Swap: loses benefit if gas drops. Call: maintains savings if gas drops but pays premium. Collar: fixed price range — loses upside if price falls significantly. Self-generation: capital expenditure with long-term return."
+            : "Swap: pierde el beneficio si el gas baja. Call: mantiene el ahorro si baja pero paga prima. Collar: rango de precio fijo — pierde upside si baja mucho. Autogeneración: inversión de capital con retorno de largo plazo."}
         </div>
       </div>
       <div style="padding:14px; background:var(--bg-raised);
@@ -837,14 +844,12 @@ function _gasRenderRecomendacion() {
                   border-left:3px solid var(--success);">
         <div style="font-size:11px; font-weight:700;
                     color:var(--success); margin-bottom:6px;">
-          ESTRATEGIA SUGERIDA
+          ${isEn ? "SUGGESTED STRATEGY" : "ESTRATEGIA SUGERIDA"}
         </div>
         <div style="font-size:12px; line-height:1.6;">
-          <strong>Swap precio fijo 12 meses</strong> sobre
-          50-60% del consumo expuesto (~900K-1.1M MMBtu).
-          Simple, sin prima, certidumbre en costos.
-          Complementar con expansión de autogeneración
-          hacia 35% para 2027.
+          ${isEn
+            ? `<strong>12-month fixed price swap</strong> on 50-60% of exposed consumption (~900K-1.1M MMBtu). Simple, zero premium, cost certainty. Complement with self-generation expansion to 35% by 2027.`
+            : `<strong>Swap precio fijo 12 meses</strong> sobre 50-60% del consumo expuesto (~900K-1.1M MMBtu). Simple, sin prima, certidumbre en costos. Complementar con expansión de autogeneración hacia 35% para 2027.`}
         </div>
       </div>
     </div>
@@ -855,22 +860,43 @@ function _gasRenderRecomendacion() {
         ${precio > 4.0 ? "🚨" : precio > 3.5 ? "⚠" : "ℹ"}
       </span>
       <span style="font-size:12px;">
-        <strong>Postura actual:</strong>
-        ${precio > 4.0
-          ? `Gas en zona de riesgo alto (USD ${precio.toFixed(2)}/MMBtu).
-             Impacto en costos operativos vs base:
-             +USD ${((precio-3.20)*expuesto/1e6).toFixed(1)}M.
-             Contratar swap urgentemente para fijar el precio.`
-          : precio > 3.5
-          ? `Gas elevado (USD ${precio.toFixed(2)}/MMBtu).
-             El swap fijo a ~$${(precio*1.05).toFixed(2)} da certidumbre
-             a un costo razonable sobre la base actual.`
-          : `Gas en niveles favorables (USD ${precio.toFixed(2)}/MMBtu).
-             Buen momento para contratar swap a precio fijo bajo —
-             asegurar el nivel actual para el próximo año.`}
+        <strong>${isEn ? "Current posture:" : "Postura actual:"}</strong>
+        ${isEn
+          ? (precio > 4.0
+            ? `Gas in high risk zone (USD ${precio.toFixed(2)}/MMBtu). Impact on operating costs vs base: +USD ${((precio-3.20)*expuesto/1e6).toFixed(1)}M. Contract swap urgently to lock in the price.`
+            : (precio > 3.5
+              ? `Gas elevated (USD ${precio.toFixed(2)}/MMBtu). Fixed swap at ~$${(precio*1.05).toFixed(2)} gives certainty at a reasonable cost over the current base.`
+              : `Gas at favorable levels (USD ${precio.toFixed(2)}/MMBtu). Good time to enter low fixed price swap — lock in current levels for the next year.`))
+          : (precio > 4.0
+            ? `Gas en zona de riesgo alto (USD ${precio.toFixed(2)}/MMBtu). Impacto en costos operativos vs base: +USD ${((precio-3.20)*expuesto/1e6).toFixed(1)}M. Contratar swap urgentemente para fijar el precio.`
+            : (precio > 3.5
+              ? `Gas elevado (USD ${precio.toFixed(2)}/MMBtu). El swap fijo a ~$${(precio*1.05).toFixed(2)} da certidumbre a un costo razonable sobre la base actual.`
+              : `Gas en niveles favorables (USD ${precio.toFixed(2)}/MMBtu). Buen momento para contratar swap a precio fijo bajo — asegurar el nivel actual para el próximo año.`))}
       </span>
     </div>
   `;
+}
+
+// ─────────────────────────────────────────
+// HELPER
+// ─────────────────────────────────────────
+function _resultRow(label, val, tipo = "") {
+  const colorMap = {
+    positive: "var(--success)",
+    accent:   "var(--accent)",
+    warn:     "var(--warn)",
+    danger:   "var(--danger)",
+    "":       "var(--text-primary)",
+  };
+  return `
+    <div class="flex-between" style="padding:5px 0;
+                border-bottom:1px solid var(--border);">
+      <span style="font-size:11.5px; color:var(--text-secondary);">${label}</span>
+      <span class="mono" style="font-size:12px; font-weight:600;
+            color:${colorMap[tipo] || colorMap[""]};">
+        ${val}
+      </span>
+    </div>`;
 }
 
 // ─────────────────────────────────────────
@@ -884,5 +910,5 @@ function _gasBindCalcs() {
 
 Scenarios.on("page:gas", () => {
   const el = document.getElementById("gas-content");
-  if (el) renderFX();
+  if (el) renderGas();
 });

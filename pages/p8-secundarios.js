@@ -12,33 +12,30 @@ function renderSecundarios() {
     <div class="alert alert-info mb-24">
       <span class="alert-icon">🛡</span>
       <span>
-        Los riesgos secundarios no se cubren con derivados financieros,
-        pero <strong>afectan directamente la efectividad</strong> de
-        cualquier estrategia de cobertura. Ignorarlos es el error
-        más común en una mesa de riesgos real.
+        ${I18N.t("p8.alert")}
       </span>
     </div>
 
     <!-- MATRIZ DE RIESGOS -->
-    <div class="section-title">Matriz de riesgos · Probabilidad vs Impacto</div>
+    <div class="section-title">${I18N.t("p8.matrix")}</div>
     <div class="card mb-24">
       <canvas id="sec-matriz-chart" height="280"></canvas>
     </div>
 
     <!-- RIESGOS DETALLADOS -->
-    <div class="section-title">Análisis detallado por tipo de riesgo</div>
+    <div class="section-title">${I18N.t("p8.detail")}</div>
     <div id="sec-riesgos-detalle" class="mb-24"></div>
 
     <!-- CONCENTRACIÓN DE CLIENTES -->
-    <div class="section-title">Riesgo de concentración · Clientes y canales</div>
+    <div class="section-title">${I18N.t("p8.concentration")}</div>
     <div class="card mb-24" id="sec-concentracion"></div>
 
     <!-- MARCO REGULATORIO -->
-    <div class="section-title">Marco regulatorio · Derivados en México</div>
+    <div class="section-title">${I18N.t("p8.regulatory")}</div>
     <div class="card mb-24" id="sec-regulatorio"></div>
 
     <!-- PLAN DE MITIGACIÓN -->
-    <div class="section-title">Plan de mitigación integral</div>
+    <div class="section-title">${I18N.t("p8.mitigation")}</div>
     <div class="card mb-24" id="sec-mitigacion"></div>
 
   `;
@@ -69,10 +66,10 @@ function _secRenderMatriz() {
 
   // Zonas
   const zonas = [
-    { x: 0,   y: 0.5, w: 0.5, h: 0.5, color: "rgba(234,243,222,0.6)", label: "Baja" },
-    { x: 0.5, y: 0.5, w: 0.5, h: 0.5, color: "rgba(250,238,218,0.6)", label: "Media" },
-    { x: 0,   y: 0,   w: 0.5, h: 0.5, color: "rgba(250,238,218,0.6)", label: "Media" },
-    { x: 0.5, y: 0,   w: 0.5, h: 0.5, color: "rgba(252,237,240,0.7)", label: "Alta"  },
+    { x: 0,   y: 0.5, w: 0.5, h: 0.5, color: "rgba(234,243,222,0.6)", label: I18N.t("p8.low") },
+    { x: 0.5, y: 0.5, w: 0.5, h: 0.5, color: "rgba(250,238,218,0.6)", label: I18N.t("p8.reg.media") },
+    { x: 0,   y: 0,   w: 0.5, h: 0.5, color: "rgba(250,238,218,0.6)", label: I18N.t("p8.reg.media") },
+    { x: 0.5, y: 0,   w: 0.5, h: 0.5, color: "rgba(252,237,240,0.7)", label: I18N.t("p8.high")  },
   ];
 
   zonas.forEach(z => {
@@ -100,16 +97,16 @@ function _secRenderMatriz() {
   ctx.fillStyle = "#8A96A8";
   ctx.font      = "11px Inter";
   ctx.textAlign = "center";
-  ctx.fillText("PROBABILIDAD →", pad + cw/2, h - 8);
+  ctx.fillText(I18N.t("p8.prob"), pad + cw/2, h - 8);
 
   ctx.save();
   ctx.translate(14, pad + ch/2);
   ctx.rotate(-Math.PI/2);
-  ctx.fillText("IMPACTO →", 0, 0);
+  ctx.fillText(I18N.t("p8.impact"), 0, 0);
   ctx.restore();
 
   // Labels de escala
-  ["Baja", "Alta"].forEach((l, i) => {
+  [I18N.t("p8.low"), I18N.t("p8.high")].forEach((l, i) => {
     ctx.fillStyle = "#8A96A8";
     ctx.font      = "10px Inter";
     ctx.textAlign = "center";
@@ -118,15 +115,15 @@ function _secRenderMatriz() {
 
   // Puntos de riesgo
   const riesgos = [
-    { label: "Contraparte",      prob: 0.20, imp: 0.60, color: "#D4870F" },
+    { label: I18N.t("p8.r1.tipo"),      prob: 0.20, imp: 0.60, color: "#D4870F" },
     { label: "Base risk",        prob: 0.50, imp: 0.55, color: "#D4870F" },
-    { label: "Liquidez IFD",     prob: 0.30, imp: 0.70, color: "#D43050" },
-    { label: "Regulatorio",      prob: 0.25, imp: 0.40, color: "#2E6EBE" },
-    { label: "Operativo",        prob: 0.40, imp: 0.50, color: "#D4870F" },
-    { label: "Concentración Cl.",prob: 0.55, imp: 0.80, color: "#D43050" },
+    { label: I18N.t("p8.r3.tipo"),     prob: 0.30, imp: 0.70, color: "#D43050" },
+    { label: I18N.t("p8.r4.tipo"),      prob: 0.25, imp: 0.40, color: "#2E6EBE" },
+    { label: I18N.t("p8.r5.tipo"),        prob: 0.40, imp: 0.50, color: "#D4870F" },
+    { label: I18N.t("p8.concentration"),prob: 0.55, imp: 0.80, color: "#D43050" },
     { label: "USMCA",            prob: 0.45, imp: 0.90, color: "#9B2335" },
-    { label: "Rollover deuda",   prob: 0.35, imp: 0.85, color: "#9B2335" },
-    { label: "Dumping asiático", prob: 0.70, imp: 0.65, color: "#9B2335" },
+    { label: I18N.t("p8.mit.roll"),   prob: 0.35, imp: 0.85, color: "#9B2335" },
+    { label: I18N.t("p8.mit.dump"), prob: 0.70, imp: 0.65, color: "#9B2335" },
   ];
 
   riesgos.forEach(r => {
@@ -159,106 +156,73 @@ function _secRenderRiesgos() {
 
   const riesgos = [
     {
-      tipo:     "Riesgo de contraparte",
+      tipo:     I18N.t("p8.r1.tipo"),
       icono:    "🤝",
-      nivel:    "MEDIO",
+      nivel:    I18N.t("p8.r1.nivel"),
       clase:    "warn",
-      desc:     `Cuando la contraparte de un IFD (banco o institución financiera)
-                 no cumple sus obligaciones. Autlán opera principalmente en
-                 mercados OTC con instituciones internacionales reconocidas
-                 (Santander, BBVA) — reduce pero no elimina el riesgo.`,
-      impacto:  `Si una contraparte falla, Autlán pierde el valor de mercado
-                 positivo del instrumento. Con MtM actuales pequeños (~USD 45K),
-                 el impacto inmediato es limitado. El riesgo crece si se agregan
-                 más instrumentos y el MtM acumula.`,
+      desc:     I18N.t("p8.r1.desc"),
+      impacto:  I18N.t("p8.r1.impacto"),
       mitigacion: [
-        "Operar solo con contrapartes investment grade",
-        "Diversificar contrapartes — no concentrar en un banco",
-        "CSA (Credit Support Annex) para colateral bilateral",
-        "Límites de exposición por contraparte en política interna",
+        I18N.t("p8.r1.mit1"),
+        I18N.t("p8.r1.mit2"),
+        I18N.t("p8.r1.mit3"),
+        I18N.t("p8.r1.mit4"),
       ],
     },
     {
-      tipo:     "Riesgo de base (Basis Risk)",
+      tipo:     I18N.t("p8.r2.tipo"),
       icono:    "📐",
-      nivel:    "MEDIO-ALTO",
+      nivel:    I18N.t("p8.r2.nivel"),
       clase:    "warn",
-      desc:     `El basis risk surge cuando el instrumento de cobertura
-                 no correlaciona perfectamente con la exposición que cubre.
-                 Para Autlán: el precio que recibe de sus clientes (precio
-                 de contrato) puede diferir del índice spot que usa el
-                 derivado como referencia.`,
-      impacto:  `Un forward de manganeso referenciado al CRU puede no
-                 compensar exactamente la caída del precio de contrato con
-                 el cliente. El basis puede ser de USD 50-100/MT — significativo
-                 sobre USD 289M de ingresos. En FX, el basis entre el
-                 tipo de cambio spot y el forward es pequeño pero existe.`,
+      desc:     I18N.t("p8.r2.desc"),
+      impacto:  I18N.t("p8.r2.impacto"),
       mitigacion: [
-        "Elegir índice de referencia del derivado = índice del contrato cliente",
-        "Documentar el basis histórico antes de contratar cobertura",
-        "Preferir cobertura natural (contratos LP) que elimina el basis",
-        "Monitorear efectividad de cobertura trimestralmente (IFRS 9)",
+        I18N.t("p8.r2.mit1"),
+        I18N.t("p8.r2.mit2"),
+        I18N.t("p8.r2.mit3"),
+        I18N.t("p8.r2.mit4"),
       ],
     },
     {
-      tipo:     "Riesgo de liquidez del instrumento",
+      tipo:     I18N.t("p8.r3.tipo"),
       icono:    "💧",
-      nivel:    "MEDIO-ALTO",
+      nivel:    I18N.t("p8.r3.nivel"),
       clase:    "warn",
-      desc:     `El riesgo de no poder salir de una posición de IFD al precio
-                 de mercado justo, o de tener que pagar un spread muy alto
-                 para cerrar la posición anticipadamente. Más relevante
-                 en mercados OTC que en bolsas listadas.`,
-      impacto:  `Si Autlán necesita salir anticipadamente del collar TIIE
-                 o de un forward de manganeso, el costo de liquidación
-                 puede ser significativamente mayor que el MtM teórico.
-                 Con DSCR de 0.6x, la liquidez es crítica.`,
+      desc:     I18N.t("p8.r3.desc"),
+      impacto:  I18N.t("p8.r3.impacto"),
       mitigacion: [
-        "Preferir instrumentos listados (futuros COMEX para oro)",
-        "Negociar cláusulas de liquidación anticipada en contratos OTC",
-        "Mantener cash buffer suficiente para margin calls potenciales",
-        "Limitar horizonte de coberturas OTC a 12 meses (política actual)",
+        I18N.t("p8.r3.mit1"),
+        I18N.t("p8.r3.mit2"),
+        I18N.t("p8.r3.mit3"),
+        I18N.t("p8.r3.mit4"),
       ],
     },
     {
-      tipo:     "Riesgo regulatorio y contable",
+      tipo:     I18N.t("p8.r4.tipo"),
       icono:    "⚖",
-      nivel:    "BAJO",
+      nivel:    I18N.t("p8.r4.nivel"),
       clase:    "accent",
-      desc:     `Riesgo de cambios en regulación que afecten el uso de IFDs
-                 o su tratamiento contable. En México: CNBV regula los
-                 intermediarios, Banxico supervisa el mercado de derivados.
-                 Bajo IFRS 9, las coberturas deben calificar para hedge
-                 accounting o el MtM va directo a resultados.`,
-      impacto:  `Si una cobertura pierde su designación IFRS 9 (por
-                 inefectividad), el MtM va a P&L — amplificando la
-                 volatilidad de utilidades en lugar de reducirla.
-                 Autlán confirma efectividad trimestralmente.`,
+      desc:     I18N.t("p8.r4.desc"),
+      impacto:  I18N.t("p8.r4.impacto"),
       mitigacion: [
-        "Documentación de hedge accounting desde contratación",
-        "Pruebas de efectividad trimestrales (método compensación)",
-        "Asesoría legal especializada en derivados OTC en México",
-        "Cumplimiento EMIR/Dodd-Frank para operaciones cross-border",
+        I18N.t("p8.r4.mit1"),
+        I18N.t("p8.r4.mit2"),
+        I18N.t("p8.r4.mit3"),
+        I18N.t("p8.r4.mit4"),
       ],
     },
     {
-      tipo:     "Riesgo operativo de la mesa de derivados",
+      tipo:     I18N.t("p8.r5.tipo"),
       icono:    "⚙",
-      nivel:    "MEDIO",
+      nivel:    I18N.t("p8.r5.nivel"),
       clase:    "warn",
-      desc:     `Riesgo de errores en ejecución, valuación o reporte de
-                 posiciones de IFD. Include: errores en captura de parámetros,
-                 falta de segregación de funciones, ausencia de sistemas
-                 de valuación independiente.`,
-      impacto:  `Un error en el nocional de un forward o en el strike de
-                 un collar puede resultar en una cobertura incorrecta o
-                 en pérdidas no anticipadas. Autlán usa valuación de
-                 contrapartes + verificación interna.`,
+      desc:     I18N.t("p8.r5.desc"),
+      impacto:  I18N.t("p8.r5.impacto"),
       mitigacion: [
-        "Segregación: quien contrata ≠ quien valúa ≠ quien reporta",
-        "Reconciliación mensual de valuaciones con contrapartes",
-        "Sistema de registro independiente (no solo el del banco)",
-        "Capacitación continua del equipo de tesorería",
+        I18N.t("p8.r5.mit1"),
+        I18N.t("p8.r5.mit2"),
+        I18N.t("p8.r5.mit3"),
+        I18N.t("p8.r5.mit4"),
       ],
     },
   ];
@@ -271,7 +235,7 @@ function _secRenderRiesgos() {
           <div>
             <div class="card-title">${r.tipo}</div>
             <div class="card-sub">
-              Nivel de riesgo Autlán Q1 2026
+              ${I18N.t("p8.riskLevel")}
             </div>
           </div>
         </div>
@@ -280,7 +244,7 @@ function _secRenderRiesgos() {
 
       <div class="grid-3" style="gap:16px;">
         <div>
-          <div class="section-title" style="margin-top:0;">Descripción</div>
+          <div class="section-title" style="margin-top:0;">${I18N.t("label.description")}</div>
           <p style="font-size:12px; color:var(--text-secondary);
                     line-height:1.6;">
             ${r.desc}
@@ -288,7 +252,7 @@ function _secRenderRiesgos() {
         </div>
         <div>
           <div class="section-title" style="margin-top:0;">
-            Impacto en Autlán
+            ${I18N.t("label.impact")}
           </div>
           <p style="font-size:12px; color:var(--text-secondary);
                     line-height:1.6;">
@@ -296,7 +260,7 @@ function _secRenderRiesgos() {
           </p>
         </div>
         <div>
-          <div class="section-title" style="margin-top:0;">Mitigación</div>
+          <div class="section-title" style="margin-top:0;">${I18N.t("label.mitigation")}</div>
           ${r.mitigacion.map(m => `
             <div style="font-size:11.5px; color:var(--text-secondary);
                         margin-bottom:5px; display:flex; gap:6px;">
@@ -321,24 +285,21 @@ function _secRenderConcentracion() {
 
       <div>
         <div class="section-title" style="margin-top:0;">
-          Concentración de clientes · Autlán 2025
+          ${I18N.t("p8.conc.title")}
         </div>
 
         <div class="alert alert-danger" style="margin-bottom:14px;">
           <span class="alert-icon">⚠</span>
           <span style="font-size:11.5px;">
-            <strong>Top 6 clientes = 61% de receivables</strong> (XBRL Q4 2025).
-            Todos los exports USA via <strong>CCMA LLC</strong> —
-            una sola relación comercial concentra el canal de exportación
-            más importante.
+            ${I18N.t("p8.conc.alert")}
           </span>
         </div>
 
         ${[
-          { cliente: "CCMA LLC (canal USA)", pct: 35, nota: "Single channel — todos exports USA" },
-          { cliente: "Clientes domésticos top 3", pct: 18, nota: "Acereras mexicanas — ciclo bajo" },
-          { cliente: "Clientes europeos top 2", pct: 8,  nota: "Cuotas de importación EU" },
-          { cliente: "Resto de clientes",      pct: 39, nota: "Diversificado" },
+          { cliente: I18N.t("p8.conc.ccma"), pct: 35, nota: I18N.t("p8.conc.nota1") },
+          { cliente: I18N.t("p8.conc.domestic"), pct: 18, nota: I18N.t("p8.conc.nota2") },
+          { cliente: I18N.t("p8.conc.europe"), pct: 8,  nota: I18N.t("p8.conc.nota3") },
+          { cliente: I18N.t("p8.conc.rest"),      pct: 39, nota: I18N.t("p8.conc.nota4") },
         ].map(c => `
           <div style="margin-bottom:12px;">
             <div class="flex-between" style="margin-bottom:5px;">
@@ -362,34 +323,23 @@ function _secRenderConcentracion() {
 
       <div>
         <div class="section-title" style="margin-top:0;">
-          Implicaciones para cobertura
+          ${I18N.t("p8.impl.title")}
         </div>
 
         ${[
           {
-            titulo: "CCMA LLC — riesgo canal único",
-            desc:   `Si CCMA falla o renegocia términos, Autlán pierde
-                     acceso al mercado USA. La cobertura FX está diseñada
-                     para flujos que asumen la continuidad de CCMA.
-                     Una interrupción elimina la exposición que se cubre.`,
+            titulo: I18N.t("p8.impl.ccma.t"),
+            desc:   I18N.t("p8.impl.ccma.d"),
             tipo:   "danger",
           },
           {
-            titulo: "Concentración amplifica el basis risk",
-            desc:   `Si el top 6 negocia precios que difieren
-                     significativamente del índice spot, el basis risk
-                     de cualquier derivado se amplifica. Las coberturas
-                     deben basarse en el precio de contrato real,
-                     no en el índice de referencia del mercado.`,
+            titulo: I18N.t("p8.impl.basis.t"),
+            desc:   I18N.t("p8.impl.basis.d"),
             tipo:   "warn",
           },
           {
-            titulo: "Contratos LP reducen el riesgo de concentración",
-            desc:   `Irónicamente, los contratos LP con los top 6 clientes
-                     reducen simultáneamente el riesgo de precio (cobertura
-                     natural) y el riesgo de concentración (fidelizan la
-                     relación comercial). Son la solución más eficiente
-                     para ambos riesgos.`,
+            titulo: I18N.t("p8.impl.lp.t"),
+            desc:   I18N.t("p8.impl.lp.d"),
             tipo:   "success",
           },
         ].map(i => `
@@ -421,39 +371,39 @@ function _secRenderRegulatorio() {
 
       <div>
         <div class="section-title" style="margin-top:0;">
-          Marco legal · Derivados en México
+          ${I18N.t("p8.reg.legal")}
         </div>
 
         ${[
           {
             org:   "Banxico",
-            rol:   "Regula el mercado de derivados OTC en México",
-            norma: "Circular 4/2012 — requisitos de operación con IFD",
-            imp:   "Media",
+            rol:   I18N.t("p8.reg.banxico.rol"),
+            norma: I18N.t("p8.reg.banxico.norma"),
+            imp:   I18N.t("p8.reg.media"),
           },
           {
             org:   "CNBV",
-            rol:   "Supervisa intermediarios financieros que ofrecen IFD",
-            norma: "Disposiciones aplicables a casas de bolsa y bancos",
-            imp:   "Media",
+            rol:   I18N.t("p8.reg.cnbv.rol"),
+            norma: I18N.t("p8.reg.cnbv.norma"),
+            imp:   I18N.t("p8.reg.media"),
           },
           {
             org:   "BMV / MexDer",
-            rol:   "Mercado listado — futuros y opciones sobre TIIE, IPC",
-            norma: "Reglamento interior MexDer",
-            imp:   "Baja (Autlán usa principalmente OTC)",
+            rol:   I18N.t("p8.reg.mexder.rol"),
+            norma: I18N.t("p8.reg.mexder.norma"),
+            imp:   I18N.t("p8.reg.bajause"),
           },
           {
             org:   "IFRS 9",
-            rol:   "Tratamiento contable de coberturas",
-            norma: "Hedge accounting — efectividad mínima 80-125%",
-            imp:   "Alta — afecta P&L directamente",
+            rol:   I18N.t("p8.reg.ifrs.rol"),
+            norma: I18N.t("p8.reg.ifrs.norma"),
+            imp:   I18N.t("p8.reg.altapl"),
           },
           {
             org:   "SAT / ISR",
-            rol:   "Tratamiento fiscal de ganancias/pérdidas en IFD",
-            norma: "Arts. 20-22 LISR — acumulación de ingresos por derivados",
-            imp:   "Media",
+            rol:   I18N.t("p8.reg.sat.rol"),
+            norma: I18N.t("p8.reg.sat.norma"),
+            imp:   I18N.t("p8.reg.media"),
           },
         ].map(r => `
           <div style="padding:10px; border-bottom:1px solid var(--border);">
@@ -461,8 +411,8 @@ function _secRenderRegulatorio() {
               <span style="font-size:12px; font-weight:700;
                            color:var(--accent);">${r.org}</span>
               <span class="badge ${
-                r.imp === "Alta" ? "badge-danger"
-                : r.imp === "Media" ? "badge-warn"
+                r.imp.includes("Alta") || r.imp.includes("High") ? "badge-danger"
+                : r.imp.includes("Media") || r.imp.includes("Medium") ? "badge-warn"
                 : "badge-neutral"}">
                 ${r.imp}
               </span>
@@ -478,21 +428,21 @@ function _secRenderRegulatorio() {
 
       <div>
         <div class="section-title" style="margin-top:0;">
-          Cumplimiento actual de Autlán
+          ${I18N.t("p8.reg.compliance")}
         </div>
 
         ${[
-          ["Política formal de IFD documentada",         "✓", "positive"],
-          ["Objetivo exclusivo de cobertura (no especul.)", "✓", "positive"],
-          ["Contrapartes de alta calidad crediticia",    "✓", "positive"],
-          ["Documentación IFRS 9 hedge accounting",      "✓", "positive"],
-          ["Pruebas de efectividad trimestrales",        "✓", "positive"],
-          ["Valuación independiente verificada",         "✓", "positive"],
-          ["Revelación en XBRL BMV (transparencia)",     "✓", "positive"],
-          ["Comité de riesgos activo",                   "✓", "positive"],
-          ["Sin llamadas de margen pendientes 1T26",     "✓", "positive"],
-          ["Cobertura FX al 60% de política",            "✗", "danger",
-           "Solo 3% cubierto actualmente"],
+          [I18N.t("p8.reg.c1"),         "✓", "positive"],
+          [I18N.t("p8.reg.c2"), "✓", "positive"],
+          [I18N.t("p8.reg.c3"),    "✓", "positive"],
+          [I18N.t("p8.reg.c4"),      "✓", "positive"],
+          [I18N.t("p8.reg.c5"),        "✓", "positive"],
+          [I18N.t("p8.reg.c6"),         "✓", "positive"],
+          [I18N.t("p8.reg.c7"),     "✓", "positive"],
+          [I18N.t("p8.reg.c8"),                   "✓", "positive"],
+          [I18N.t("p8.reg.c9"),     "✓", "positive"],
+          [I18N.t("p8.reg.c10"),            "✗", "danger",
+           I18N.t("p8.reg.c10.nota")],
         ].map(([item, estado, tipo, nota]) => `
           <div class="flex-between"
                style="padding:7px 0; border-bottom:1px solid var(--border);">
@@ -509,9 +459,7 @@ function _secRenderRegulatorio() {
         <div class="alert alert-success" style="margin-top:12px;">
           <span class="alert-icon">✓</span>
           <span style="font-size:11.5px;">
-            Autlán cumple con todos los requisitos regulatorios y
-            de governance para el uso de IFD. El único gap es
-            el nivel de cobertura FX vs política interna.
+            ${I18N.t("p8.reg.compAlert")}
           </span>
         </div>
       </div>
@@ -529,71 +477,71 @@ function _secRenderMitigacion() {
 
   el.innerHTML = `
     <div class="section-title" style="margin-top:0;">
-      Acciones de mitigación · Prioridad y horizonte
+      ${I18N.t("p8.mit.actions")}
     </div>
 
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>Riesgo</th>
-            <th>Acción de mitigación</th>
-            <th>Responsable</th>
-            <th>Horizonte</th>
-            <th>Prioridad</th>
-            <th>Costo estimado</th>
+            <th>${I18N.t("p8.mit.risk")}</th>
+            <th>${I18N.t("p8.mit.action")}</th>
+            <th>${I18N.t("p8.mit.responsible")}</th>
+            <th>${I18N.t("p8.mit.horizon")}</th>
+            <th>${I18N.t("p8.mit.priority")}</th>
+            <th>${I18N.t("p8.mit.cost")}</th>
           </tr>
         </thead>
         <tbody>
           ${[
-            ["Concentración FX",
-             "Ampliar coberturas FX hasta 40-60% de ingresos USD",
-             "Tesorería",
-             "Inmediato (Q2 2026)",
-             "CRÍTICA",
-             "Prima collar ~0.1-0.3% nocional"],
-            ["Rollover deuda",
-             "Refinanciar créditos SOFR que vencen 2027 antes de USMCA",
-             "CFO / Bancos",
-             "Q2-Q3 2026",
-             "ALTA",
-             "Fee de refinanciamiento 0.5-1%"],
-            ["Concentración clientes",
-             "Diversificar canal USA — no solo CCMA LLC",
-             "Dirección Comercial",
-             "12-18 meses",
-             "ALTA",
-             "Costo de desarrollo comercial"],
-            ["Collar TIIE OTM",
-             "Evaluar reestructura si TIIE < 7% por 2+ trimestres",
-             "Tesorería",
-             "Q3 2026",
-             "MEDIA",
-             "Costo de reestructura ~USD 20-40K"],
-            ["Exposición oro sin cubrir",
-             "Contratar costless collar $2,700-$3,300 sobre 50% producción",
-             "Tesorería",
-             "Inmediato",
-             "ALTA",
-             "Costless — prima neta ~0"],
-            ["Exposición gas sin cubrir",
-             "Swap precio fijo 12 meses sobre 50% consumo expuesto",
-             "Operaciones / Tesorería",
-             "Q2 2026",
-             "MEDIA",
-             "Prima implícita ~USD 200-400K"],
-            ["Basis risk manganeso",
-             "Asegurar índice de referencia = precio de contrato cliente",
-             "Comercial / Tesorería",
-             "Al contratar",
-             "MEDIA",
-             "Sin costo adicional"],
-            ["Riesgo contraparte IFD",
-             "CSA bilateral y límites de exposición por contraparte",
-             "Tesorería / Legal",
-             "En próxima renovación",
-             "BAJA",
-             "Costo legal ~USD 10-20K"],
+            [I18N.t("p8.mit.r1"),
+             I18N.t("p8.mit.a1"),
+             I18N.t("p8.mit.resp1"),
+             I18N.t("p8.mit.h1"),
+             I18N.t("p8.mit.prio1"),
+             I18N.t("p8.mit.cost1")],
+            [I18N.t("p8.mit.r2"),
+             I18N.t("p8.mit.a2"),
+             I18N.t("p8.mit.resp2"),
+             I18N.t("p8.mit.h2"),
+             I18N.t("p8.mit.prio2"),
+             I18N.t("p8.mit.cost2")],
+            [I18N.t("p8.mit.r3"),
+             I18N.t("p8.mit.a3"),
+             I18N.t("p8.mit.resp3"),
+             I18N.t("p8.mit.h3"),
+             I18N.t("p8.mit.prio3"),
+             I18N.t("p8.mit.cost3")],
+            [I18N.t("p8.mit.r4"),
+             I18N.t("p8.mit.a4"),
+             I18N.t("p8.mit.resp4"),
+             I18N.t("p8.mit.h4"),
+             I18N.t("p8.mit.prio4"),
+             I18N.t("p8.mit.cost4")],
+            [I18N.t("p8.mit.r5"),
+             I18N.t("p8.mit.a5"),
+             I18N.t("p8.mit.resp5"),
+             I18N.t("p8.mit.h5"),
+             I18N.t("p8.mit.prio5"),
+             I18N.t("p8.mit.cost5")],
+            [I18N.t("p8.mit.r6"),
+             I18N.t("p8.mit.a6"),
+             I18N.t("p8.mit.resp6"),
+             I18N.t("p8.mit.h6"),
+             I18N.t("p8.mit.prio6"),
+             I18N.t("p8.mit.cost6")],
+            [I18N.t("p8.mit.r7"),
+             I18N.t("p8.mit.a7"),
+             I18N.t("p8.mit.resp7"),
+             I18N.t("p8.mit.h7"),
+             I18N.t("p8.mit.prio7"),
+             I18N.t("p8.mit.cost7")],
+            [I18N.t("p8.mit.r8"),
+             I18N.t("p8.mit.a8"),
+             I18N.t("p8.mit.resp8"),
+             I18N.t("p8.mit.h8"),
+             I18N.t("p8.mit.prio8"),
+             I18N.t("p8.mit.cost8")],
           ].map(([riesgo, accion, resp, horizonte, prio, costo]) => `
             <tr>
               <td style="font-size:12px; font-weight:500;">${riesgo}</td>
@@ -604,8 +552,8 @@ function _secRenderMitigacion() {
               <td style="font-size:11.5px;" class="mono">${horizonte}</td>
               <td>
                 <span class="badge ${
-                  prio === "CRÍTICA" ? "badge-danger"
-                  : prio === "ALTA"  ? "badge-warn"
+                  prio === "CRÍTICA" || prio === "CRITICAL" ? "badge-danger"
+                  : prio === "ALTA" || prio === "HIGH"  ? "badge-warn"
                   : "badge-neutral"}">
                   ${prio}
                 </span>
@@ -624,12 +572,7 @@ function _secRenderMitigacion() {
          color:var(--accent-dark);">
       <span class="alert-icon">💡</span>
       <span style="font-size:12px;">
-        <strong>Perspectiva de mesa de riesgos:</strong>
-        Los riesgos secundarios no se eliminan — se gestionan.
-        La diferencia entre una empresa que pierde en derivados y una que
-        gana no es el instrumento elegido, sino la calidad de la
-        documentación, el monitoreo continuo y la disciplina para
-        actuar cuando los parámetros cambian.
+        ${I18N.t("p8.mit.perspectiva")}
       </span>
     </div>
   `;

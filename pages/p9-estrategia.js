@@ -7,6 +7,8 @@ function renderEstrategia() {
   const el = document.getElementById("estrategia-content");
   if (!el) return;
 
+  const isEn = I18N.getLocale() === "en";
+
   el.innerHTML = `
 
     <div class="alert alert-accent mb-24"
@@ -15,34 +17,36 @@ function renderEstrategia() {
                 color:var(--accent-dark);">
       <span class="alert-icon">★</span>
       <span>
-        Esta página integra todos los riesgos y coberturas analizados
-        en un <strong>portafolio de cobertura óptimo</strong> para Autlán.
-        Respeta la política interna (60% máximo), cuantifica el costo total
-        y muestra el P&L en cada escenario.
-        <strong>Esta es la recomendación final de la mesa de riesgos.</strong>
+        ${isEn
+          ? `This page integrates all analyzed risks and hedges into an <strong>optimal hedging portfolio</strong> for Autlán. It respects internal policy (60% maximum), quantifies the total cost, and shows the P&L under each scenario. <strong>This is the final recommendation of the risk desk.</strong>`
+          : `Esta página integra todos los riesgos y coberturas analizados en un <strong>portafolio de cobertura óptimo</strong> para Autlán. Respeta la política interna (60% máximo), cuantifica el costo total y muestra el P&L en cada escenario. <strong>Esta es la recomendación final de la mesa de riesgos.</strong>`}
       </span>
     </div>
 
     <!-- RESUMEN EJECUTIVO -->
-    <div class="section-title">Resumen ejecutivo · Posición actual vs recomendada</div>
+    <div class="section-title">
+      ${isEn ? "Executive Summary · Current vs Recommended Position" : "Resumen ejecutivo · Posición actual vs recomendada"}
+    </div>
     <div class="card mb-24" id="est-resumen"></div>
 
     <!-- PORTAFOLIO DE COBERTURAS -->
-    <div class="section-title">Portafolio de coberturas recomendado</div>
+    <div class="section-title">
+      ${isEn ? "Recommended Hedging Portfolio" : "Portafolio de coberturas recomendado"}
+    </div>
     <div class="card mb-24" id="est-portafolio"></div>
 
     <!-- TABLA MAESTRA DE ESCENARIOS -->
     <div class="section-title">
-      Tabla maestra · Flujo sin cobertura vs con estrategia completa
+      ${isEn ? "Master Table · Unhedged Cash Flow vs Complete Strategy" : "Tabla maestra · Flujo sin cobertura vs con estrategia completa"}
     </div>
     <div class="scenario-table-wrap mb-24">
       <table class="scenario-table">
         <thead>
           <tr>
-            <th>Concepto</th>
-            <th class="esc-header-base">Base</th>
-            <th class="esc-header-opt">Optimista</th>
-            <th class="esc-header-adv">Adverso</th>
+            <th>${isEn ? "Concept" : "Concepto"}</th>
+            <th class="esc-header-base">${isEn ? "Base" : "Base"}</th>
+            <th class="esc-header-opt">${isEn ? "Optimistic" : "Optimista"}</th>
+            <th class="esc-header-adv">${isEn ? "Adverse" : "Adverso"}</th>
           </tr>
         </thead>
         <tbody id="est-tabla-maestra"></tbody>
@@ -50,23 +54,26 @@ function renderEstrategia() {
     </div>
 
     <!-- COSTO DE LA ESTRATEGIA -->
-    <div class="section-title">Costo total de la estrategia</div>
+    <div class="section-title">
+      ${isEn ? "Total Cost of the Strategy" : "Costo total de la estrategia"}
+    </div>
     <div class="card mb-24" id="est-costo"></div>
 
     <!-- TRADEOFF EXPLÍCITO -->
     <div class="section-title">
-      Tradeoff explícito · Qué eliminé · Qué acepté · Qué sacrifiqué
+      ${isEn ? "Explicit Tradeoff · What I Eliminated · What I Accepted · What I Sacrificed" : "Tradeoff explícito · Qué eliminé · Qué acepté · Qué sacrifiqué"}
     </div>
     <div class="card mb-24" id="est-tradeoff"></div>
 
     <!-- PAYOFF INTEGRADO -->
     <div class="section-title">
-      Payoff integrado · EBITDA con y sin estrategia de cobertura
+      ${isEn ? "Integrated Payoff · EBITDA With and Without Hedging Strategy" : "Payoff integrado · EBITDA con y sin estrategia de cobertura"}
     </div>
     <div class="card mb-24">
       <div class="chart-title">
-        Impacto en EBITDA proyectado bajo diferentes niveles de USD/MXN
-        — con y sin portafolio de cobertura completo
+        ${isEn
+          ? "Impact on projected EBITDA under different USD/MXN levels — with and without complete hedging portfolio"
+          : "Impacto en EBITDA proyectado bajo diferentes niveles de USD/MXN — con y sin portafolio de cobertura completo"}
       </div>
       <canvas id="est-payoff-chart" height="220"></canvas>
       <div id="est-chart-leyenda"
@@ -75,16 +82,18 @@ function renderEstrategia() {
     </div>
 
     <!-- CONCLUSIÓN FINAL -->
-    <div class="section-title">Conclusión de la mesa de riesgos</div>
+    <div class="section-title">
+      ${isEn ? "Risk Desk Conclusion" : "Conclusión de la mesa de riesgos"}
+    </div>
     <div class="card mb-24" id="est-conclusion"></div>
 
     <!-- BOTÓN EXPORTAR -->
     <div style="display:flex; gap:12px; flex-wrap:wrap;">
       <button class="btn btn-primary" onclick="exportarEstrategia()">
-        ↓ Exportar estrategia completa (CSV)
+        ${isEn ? "↓ Export Complete Strategy (CSV)" : "↓ Exportar estrategia completa (CSV)"}
       </button>
       <button class="btn btn-ghost" onclick="window.print()">
-        🖨 Imprimir / PDF
+        ${isEn ? "🖨 Print / PDF" : "🖨 Imprimir / PDF"}
       </button>
     </div>
 
@@ -107,6 +116,7 @@ function renderEstrategia() {
 // PORTAFOLIO RECOMENDADO — definición central
 // ─────────────────────────────────────────
 function _getPortafolio() {
+  const isEn = I18N.getLocale() === "en";
   const tc   = Scenarios.getVar("usdmxn");
   const tiie = Scenarios.getVar("tiie28");
   const sofr = Scenarios.getVar("sofr1m");
@@ -116,17 +126,17 @@ function _getPortafolio() {
   return [
     {
       id:          "COB-FX-01",
-      riesgo:      "Tipo de cambio",
-      instrumento: "Collar USD/MXN (costless)",
-      descripcion: "4 collares mensuales adicionales · USD 4M/mes",
+      riesgo:      isEn ? "Exchange rate" : "Tipo de cambio",
+      instrumento: isEn ? "USD/MXN Collar (costless)" : "Collar USD/MXN (costless)",
+      descripcion: isEn ? "4 additional monthly collars · USD 4M/month" : "4 collares mensuales adicionales · USD 4M/mes",
       floor:       17.40,
       cap:         18.40,
       nocional:    48000,   // USD miles — 12 meses × USD 4M/mes
       pctExposicion: 14.5, // % de ingresos anualizados
       costoNeto:   0,       // costless
-      horizonte:   "12 meses",
+      horizonte:   isEn ? "12 months" : "12 meses",
       mercado:     "OTC",
-      estado:      "RECOMENDADO",
+      estado:      isEn ? "RECOMMENDED" : "RECOMENDADO",
       color:       "var(--accent)",
       payoff: (tcFinal) => {
         // Collar: protege si TC < floor, limita si TC > cap
@@ -140,16 +150,16 @@ function _getPortafolio() {
     },
     {
       id:          "COB-FX-02",
-      riesgo:      "Tipo de cambio",
-      instrumento: "Forward USD/MXN complementario",
-      descripcion: "Forward para meses 7-12 · USD 2M/mes",
+      riesgo:      isEn ? "Exchange rate" : "Tipo de cambio",
+      instrumento: isEn ? "Complementary USD/MXN Forward" : "Forward USD/MXN complementario",
+      descripcion: isEn ? "Forward for months 7-12 · USD 2M/month" : "Forward para meses 7-12 · USD 2M/mes",
       strikeForward: Models.forwardPrice(tc, tiie/100, sofr/100, 0.75).forward,
       nocional:    24000,   // USD 2M × 12 meses
       pctExposicion: 7.3,
       costoNeto:   0,
-      horizonte:   "6-12 meses",
+      horizonte:   isEn ? "6-12 months" : "6-12 meses",
       mercado:     "OTC",
-      estado:      "RECOMENDADO",
+      estado:      isEn ? "RECOMMENDED" : "RECOMENDADO",
       color:       "var(--accent-mid)",
       payoff: (tcFinal) => {
         const fwd = Models.forwardPrice(tc, tiie/100, sofr/100, 0.75).forward;
@@ -158,18 +168,18 @@ function _getPortafolio() {
     },
     {
       id:          "COB-ORO-01",
-      riesgo:      "Precio del Oro",
-      instrumento: "Costless Collar oro",
-      descripcion: "Collar $2,700–$3,300/oz · 260K oz (~50% prod.)",
+      riesgo:      isEn ? "Gold Price" : "Precio del Oro",
+      instrumento: isEn ? "Gold Costless Collar" : "Costless Collar oro",
+      descripcion: isEn ? "Collar $2,700–$3,300/oz · 260K oz (~50% prod.)" : "Collar $2,700–$3,300/oz · 260K oz (~50% prod.)",
       floor:       2700,
       cap:         3300,
       nocional:    260000,  // oz
       nocionalUSD: 260000 * oro / 1000, // USD miles
       pctExposicion: 50,
       costoNeto:   0,
-      horizonte:   "12 meses",
+      horizonte:   isEn ? "12 months" : "12 meses",
       mercado:     "OTC",
-      estado:      "RECOMENDADO",
+      estado:      isEn ? "RECOMMENDED" : "RECOMENDADO",
       color:       "var(--gold)",
       payoff: (oroFinal) => {
         const ef = Math.min(Math.max(oroFinal, 2700), 3300);
@@ -178,49 +188,49 @@ function _getPortafolio() {
     },
     {
       id:          "COB-GAS-01",
-      riesgo:      "Gas Natural",
-      instrumento: "Swap precio fijo gas",
-      descripcion: "Swap 12 meses · 900K MMBtu · $3.35/MMBtu",
+      riesgo:      isEn ? "Natural Gas" : "Gas Natural",
+      instrumento: isEn ? "Fixed price gas swap" : "Swap precio fijo gas",
+      descripcion: isEn ? "12-month swap · 900K MMBtu · $3.35/MMBtu" : "Swap 12 meses · 900K MMBtu · $3.35/MMBtu",
       precioFijo:  3.35,
       nocional:    900000, // MMBtu
       nocionalUSD: 3.35 * 900000 / 1000, // USD miles
       pctExposicion: 50,  // % consumo expuesto
       costoNeto:   (gas - 3.35) * 900000 / 1000, // positivo si gas > fijo
-      horizonte:   "12 meses",
+      horizonte:   isEn ? "12 months" : "12 meses",
       mercado:     "OTC",
-      estado:      "RECOMENDADO",
+      estado:      isEn ? "RECOMMENDED" : "RECOMENDADO",
       color:       "var(--gas-green)",
       payoff: (gasFinal) => (gasFinal - 3.35) * 900000 / 1000, // ahorro si gas sube
     },
     {
       id:          "COB-TASA-01",
-      riesgo:      "Tasa de interés (SOFR)",
-      instrumento: "IRS SOFR — variable a fija",
-      descripcion: "Swap 50% deuda SOFR · USD 67M · fija 4.50%",
+      riesgo:      isEn ? "Interest rate (SOFR)" : "Tasa de interés (SOFR)",
+      instrumento: isEn ? "IRS SOFR — variable to fixed" : "IRS SOFR — variable a fija",
+      descripcion: isEn ? "Swap 50% SOFR debt · USD 67M · fixed 4.50%" : "Swap 50% deuda SOFR · USD 67M · fija 4.50%",
       tasaFija:    4.50,
       nocional:    67000,  // USD miles
       pctExposicion: 49.4, // % deuda SOFR cubierta
       costoNeto:   (sofr - 4.50) * 67000 / 100, // positivo si SOFR > fija
-      horizonte:   "3 años",
+      horizonte:   isEn ? "3 years" : "3 años",
       mercado:     "OTC",
-      estado:      "RECOMENDADO",
+      estado:      isEn ? "RECOMMENDED" : "RECOMENDADO",
       color:       "var(--warn-mid)",
       payoff: (sofrFinal) => (sofrFinal - 4.50) * 67000 / 100,
     },
     {
       id:          "COB-TASA-02",
-      riesgo:      "Tasa de interés (TIIE)",
-      instrumento: "Collar TIIE existente (mantener)",
-      descripcion: "Collar 8.75%–11% · MXN 157.6M · Vence 2028",
+      riesgo:      isEn ? "Interest rate (TIIE)" : "Tasa de interés (TIIE)",
+      instrumento: isEn ? "Active TIIE Collar (maintain)" : "Collar TIIE existente (mantener)",
+      descripcion: isEn ? "Collar 8.75%–11% · MXN 157.6M · Matures 2028" : "Collar 8.75%–11% · MXN 157.6M · Vence 2028",
       floor:       8.75,
       cap:         11.00,
       nocionalMXN: 157584,
       nocionalUSD: 157584 / tc,
       pctExposicion: 50,
       costoNeto:   -AUTLAN.derivadosVigentes.collarTasa.mtm.minusvalia1T26.valor,
-      horizonte:   "Hasta jun-2028",
+      horizonte:   isEn ? "Until Jun 2028" : "Hasta jun-2028",
       mercado:     "OTC",
-      estado:      "EXISTENTE — MANTENER",
+      estado:      isEn ? "EXISTING — MAINTAIN" : "EXISTENTE — MANTENER",
       color:       "var(--warn)",
       payoff: (tiieFinal) => {
         const ef     = Math.min(Math.max(tiieFinal, 8.75), 11.0);
@@ -238,11 +248,12 @@ function _estRenderResumen() {
   const el = document.getElementById("est-resumen");
   if (!el) return;
 
+  const isEn = I18N.getLocale() === "en";
   const exp = AUTLAN.derivadosVigentes.exposicionVsCobertura;
   const port = _getPortafolio();
 
   const nocFX = port
-    .filter(p => p.riesgo === "Tipo de cambio")
+    .filter(p => p.riesgo === (isEn ? "Exchange rate" : "Tipo de cambio"))
     .reduce((s, p) => s + p.nocional, 0);
   const pctFXTotal = (exp.coberturaFX_nocional.valor + nocFX) /
                      exp.ingresosFX_anualizado.valor * 100;
@@ -251,25 +262,25 @@ function _estRenderResumen() {
     <div class="grid-4" style="gap:16px; margin-bottom:20px;">
       ${[
         {
-          label: "Cobertura FX actual",
+          label: isEn ? "Current FX Hedging" : "Cobertura FX actual",
           value: `${exp.pctCubierto_FX.valor}%`,
           nuevo: `${Math.min(pctFXTotal, 60).toFixed(0)}%`,
           tipo:  "danger",
         },
         {
-          label: "Cobertura Oro",
+          label: isEn ? "Gold Hedging" : "Cobertura Oro",
           value: "0%",
           nuevo: "50%",
           tipo:  "danger",
         },
         {
-          label: "Cobertura Gas",
+          label: isEn ? "Gas Hedging" : "Cobertura Gas",
           value: "0%",
           nuevo: "50%",
           tipo:  "danger",
         },
         {
-          label: "Cobertura SOFR",
+          label: isEn ? "SOFR Hedging" : "Cobertura SOFR",
           value: "0%",
           nuevo: "49%",
           tipo:  "warn",
@@ -289,7 +300,7 @@ function _estRenderResumen() {
               ${k.nuevo}
             </span>
           </div>
-          <div class="kpi-sub">Actual → Con estrategia</div>
+          <div class="kpi-sub">${isEn ? "Current → With Strategy" : "Actual → Con estrategia"}</div>
         </div>
       `).join("")}
     </div>
@@ -297,8 +308,13 @@ function _estRenderResumen() {
     <div class="grid-3" style="gap:16px;">
       ${[
         {
-          titulo: "Objetivo de la estrategia",
-          items: [
+          titulo: isEn ? "Strategy Objective" : "Objetivo de la estrategia",
+          items: isEn ? [
+            "Protect cash flows in adverse scenarios",
+            "Respect internal policy (60% max per risk)",
+            "Minimize total hedging cost",
+            "Maintain moderate upside in optimistic scenarios",
+          ] : [
             "Proteger flujos de caja en escenario adverso",
             "Respetar política interna (máx 60% por riesgo)",
             "Minimizar costo total de cobertura",
@@ -307,18 +323,28 @@ function _estRenderResumen() {
           color: "var(--accent)",
         },
         {
-          titulo: "Principios de diseño",
-          items: [
+          titulo: isEn ? "Design Principles" : "Principios de diseño",
+          items: isEn ? [
+            "Prioritize costless collars — zero premium",
+            "Horizons aligned with business cycles",
+            "Only investment grade counterparties",
+            "IFRS 9 hedge accounting from inception",
+          ] : [
             "Priorizar costless collars — prima cero",
             "Horizontes alineados con ciclo de negocio",
             "Solo contrapartes investment grade",
-            "Tratamiento IFRS 9 desde contratación",
+            "Tratamiento contable IFRS 9 desde contratación",
           ],
           color: "var(--success)",
         },
         {
-          titulo: "Restricciones respetadas",
-          items: [
+          titulo: isEn ? "Respected Constraints" : "Restricciones respetadas",
+          items: isEn ? [
+            "FX: max 60% USD revenues (formal policy)",
+            "Horizon: max 12 months in FX (formal policy)",
+            "Only permitted instruments in policy",
+            "DSCR 0.6x — no significant liquidity impact",
+          ] : [
             "FX: máx 60% ingresos USD (política formal)",
             "Horizonte máx 12 meses en FX (política formal)",
             "Solo instrumentos permitidos en política",
@@ -335,7 +361,7 @@ function _estRenderResumen() {
           ${s.items.map(i => `
             <div style="font-size:11.5px; color:var(--text-secondary);
                         margin-bottom:5px; display:flex; gap:6px;">
-              <span style="color:${s.color}; flex-shrink:0;">◎</span>
+              <span style="color:${s.color}; flex-shrink:0;">${isEn ? "•" : "◎"}</span>
               <span>${i}</span>
             </div>`).join("")}
         </div>
@@ -351,6 +377,7 @@ function _estRenderPortafolio() {
   const el = document.getElementById("est-portafolio");
   if (!el) return;
 
+  const isEn = I18N.getLocale() === "en";
   const port = _getPortafolio();
   const tc   = Scenarios.getVar("usdmxn");
 
@@ -360,14 +387,14 @@ function _estRenderPortafolio() {
         <thead>
           <tr>
             <th>ID</th>
-            <th>Riesgo</th>
-            <th>Instrumento</th>
-            <th>Descripción</th>
-            <th style="text-align:right;">Nocional (USD M)</th>
-            <th style="text-align:right;">% Exposición</th>
-            <th style="text-align:right;">Costo neto</th>
-            <th>Horizonte</th>
-            <th>Estado</th>
+            <th>${isEn ? "Risk" : "Riesgo"}</th>
+            <th>${isEn ? "Instrument" : "Instrumento"}</th>
+            <th>${isEn ? "Description" : "Descripción"}</th>
+            <th style="text-align:right;">${isEn ? "Notional (USD M)" : "Nocional (USD M)"}</th>
+            <th style="text-align:right;">${isEn ? "% Exposure" : "% Exposición"}</th>
+            <th style="text-align:right;">${isEn ? "Net cost" : "Costo neto"}</th>
+            <th>${isEn ? "Horizon" : "Horizonte"}</th>
+            <th>${isEn ? "Status" : "Estado"}</th>
           </tr>
         </thead>
         <tbody>
@@ -379,6 +406,13 @@ function _estRenderPortafolio() {
               : p.nocional / 1000;
             const costo = p.costoNeto || 0;
 
+            let netCostStr = "Costless";
+            if (costo !== 0) {
+              netCostStr = isEn
+                ? `USD ${Math.abs(costo/1000).toFixed(1)}M ${costo > 0 ? "saving" : "premium"}`
+                : `USD ${Math.abs(costo/1000).toFixed(1)}M ${costo > 0 ? "ahorro" : "prima"}`;
+            }
+
             return `
               <tr>
                 <td class="mono text-muted" style="font-size:10.5px;">
@@ -386,8 +420,8 @@ function _estRenderPortafolio() {
                 </td>
                 <td>
                   <span style="display:inline-block; width:8px; height:8px;
-                               border-radius:50%; background:${p.color};
-                               margin-right:6px;"></span>
+                                border-radius:50%; background:${p.color};
+                                margin-right:6px;"></span>
                   ${p.riesgo}
                 </td>
                 <td style="font-size:12px; font-weight:500;">
@@ -404,16 +438,14 @@ function _estRenderPortafolio() {
                 </td>
                 <td class="mono ${costo >= 0 ? "positive" : "warn"}"
                     style="text-align:right;">
-                  ${costo === 0
-                    ? "Costless"
-                    : `USD ${Math.abs(costo/1000).toFixed(1)}M ${costo > 0 ? "ahorro" : "prima"}`}
+                  ${netCostStr}
                 </td>
                 <td style="font-size:11.5px;">${p.horizonte}</td>
                 <td>
                   <span class="badge ${
-                    p.estado.includes("EXISTENTE") ? "badge-warn"
+                    p.estado.includes("EXISTENTE") || p.estado.includes("EXISTING") ? "badge-warn"
                     : "badge-success"}">
-                    ${p.estado.includes("EXISTENTE") ? "EXISTENTE" : "NUEVO"}
+                    ${p.estado.includes("EXISTENTE") || p.estado.includes("EXISTING") ? (isEn ? "EXISTING" : "EXISTENTE") : (isEn ? "NEW" : "NUEVO")}
                   </span>
                 </td>
               </tr>`;
@@ -423,9 +455,9 @@ function _estRenderPortafolio() {
     </div>
 
     <div style="margin-top:12px; font-size:11px; color:var(--text-muted);">
-      * Nocionales en USD equivalente al tipo de cambio actual
-      ($${tc.toFixed(2)}). Los costless collars no tienen costo de prima —
-      la prima del call vendido financia el put comprado.
+      ${isEn
+        ? `* Notionals in USD equivalent at current exchange rate ($${tc.toFixed(2)}). Costless collars have no premium cost — the premium of the sold call finances the purchased put.`
+        : `* Nocionales en USD equivalente al tipo de cambio actual ($${tc.toFixed(2)}). Los costless collars no tienen costo de prima — la prima del call vendido financia el put comprado.`}
     </div>
   `;
 }
@@ -437,6 +469,7 @@ function _estRenderTablaMaestra() {
   const el = document.getElementById("est-tabla-maestra");
   if (!el) return;
 
+  const isEn = I18N.getLocale() === "en";
   const cache = Scenarios.getCache();
   if (!cache.escenarios) return;
 
@@ -452,15 +485,15 @@ function _estRenderTablaMaestra() {
     let total = 0;
     for (const p of port) {
       if (p.payoff) {
-        if (p.riesgo === "Tipo de cambio") {
+        if (p.riesgo === (isEn ? "Exchange rate" : "Tipo de cambio")) {
           total += p.payoff(escVars.usdmxn);
-        } else if (p.riesgo === "Precio del Oro") {
+        } else if (p.riesgo === (isEn ? "Gold Price" : "Precio del Oro")) {
           total += p.payoff(escVars.precioOro);
-        } else if (p.riesgo === "Gas Natural") {
+        } else if (p.riesgo === (isEn ? "Natural Gas" : "Gas Natural")) {
           total += p.payoff(escVars.precioGas);
-        } else if (p.riesgo === "Tasa de interés (SOFR)") {
+        } else if (p.riesgo.includes("SOFR")) {
           total += p.payoff(escVars.sofr1m);
-        } else if (p.riesgo === "Tasa de interés (TIIE)") {
+        } else if (p.riesgo.includes("TIIE")) {
           total += p.payoff(escVars.tiie28);
         }
       }
@@ -506,11 +539,11 @@ function _estRenderTablaMaestra() {
       fmt.fx(esc.base.usdmxn),
       fmt.fx(esc.optimista.usdmxn),
       fmt.fx(esc.adverso.usdmxn)),
-    row("Precio manganeso",
+    row(isEn ? "Manganese price" : "Precio manganeso",
       fmt.mn(esc.base.precioMn),
       fmt.mn(esc.optimista.precioMn),
       fmt.mn(esc.adverso.precioMn)),
-    row("Precio oro",
+    row(isEn ? "Gold price" : "Precio oro",
       fmt.oro(esc.base.precioOro),
       fmt.oro(esc.optimista.precioOro),
       fmt.oro(esc.adverso.precioOro)),
@@ -519,7 +552,7 @@ function _estRenderTablaMaestra() {
       fmt.tasa(esc.optimista.tiie28),
       fmt.tasa(esc.adverso.tiie28)),
     divider(),
-    row("EBITDA sin cobertura",
+    row(isEn ? "EBITDA without hedging" : "EBITDA sin cobertura",
       fmt.usd(B.resultados.ebitda),
       fmt.usd(O.resultados.ebitda),
       fmt.usd(A.resultados.ebitda),
@@ -527,25 +560,25 @@ function _estRenderTablaMaestra() {
       cls(B.resultados.ebitda),
       cls(O.resultados.ebitda),
       cls(A.resultados.ebitda)),
-    row("Protección coberturas",
+    row(isEn ? "Hedging protection" : "Protección coberturas",
       fmt.usd(protB),
       fmt.usd(protO),
       fmt.usd(protA),
       false,
       cls(protB), cls(protO), cls(protA)),
-    row("Costo estrategia",
+    row(isEn ? "Strategy cost" : "Costo estrategia",
       fmt.usd(costoTotal),
       fmt.usd(costoTotal),
       fmt.usd(costoTotal),
       false, "warn", "warn", "warn"),
-    row("EBITDA con estrategia",
+    row(isEn ? "EBITDA with strategy" : "EBITDA con estrategia",
       fmt.usd(ebitdaConB),
       fmt.usd(ebitdaConO),
       fmt.usd(ebitdaConA),
       true,
       cls(ebitdaConB), cls(ebitdaConO), cls(ebitdaConA)),
     divider(),
-    row("FCF sin cobertura",
+    row(isEn ? "FCF without hedging" : "FCF sin cobertura",
       fmt.usd(B.resultados.fcf),
       fmt.usd(O.resultados.fcf),
       fmt.usd(A.resultados.fcf),
@@ -553,14 +586,14 @@ function _estRenderTablaMaestra() {
       cls(B.resultados.fcf),
       cls(O.resultados.fcf),
       cls(A.resultados.fcf)),
-    row("FCF con estrategia",
+    row(isEn ? "FCF with strategy" : "FCF con estrategia",
       fmt.usd(fcfConB),
       fmt.usd(fcfConO),
       fmt.usd(fcfConA),
       true,
       cls(fcfConB), cls(fcfConO), cls(fcfConA)),
     divider(),
-    row("DSCR sin cobertura",
+    row(isEn ? "DSCR without hedging" : "DSCR sin cobertura",
       B.resultados.dscr.toFixed(2) + "x",
       O.resultados.dscr.toFixed(2) + "x",
       A.resultados.dscr.toFixed(2) + "x",
@@ -568,7 +601,7 @@ function _estRenderTablaMaestra() {
       B.resultados.dscr >= 1 ? "positive" : "negative",
       O.resultados.dscr >= 1 ? "positive" : "negative",
       A.resultados.dscr >= 1 ? "positive" : "negative"),
-    row("DSCR con estrategia",
+    row(isEn ? "DSCR with strategy" : "DSCR con estrategia",
       (ebitdaConB / B.resultados.gastoFin).toFixed(2) + "x",
       (ebitdaConO / O.resultados.gastoFin).toFixed(2) + "x",
       (ebitdaConA / A.resultados.gastoFin).toFixed(2) + "x",
@@ -586,6 +619,7 @@ function _estRenderCosto() {
   const el = document.getElementById("est-costo");
   if (!el) return;
 
+  const isEn = I18N.getLocale() === "en";
   const port     = _getPortafolio();
   const ebitda   = 31470; // USD K base
   const tc       = Scenarios.getVar("usdmxn");
@@ -612,47 +646,54 @@ function _estRenderCosto() {
 
       <div>
         <div class="section-title" style="margin-top:0;">
-          Desglose de costos por instrumento
+          ${isEn ? "Cost Breakdown by Instrument" : "Desglose de costos por instrumento"}
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Instrumento</th>
-                <th style="text-align:right;">Nocional</th>
-                <th style="text-align:right;">Costo / Ahorro anual</th>
+                <th>${isEn ? "Instrument" : "Instrumento"}</th>
+                <th style="text-align:right;">${isEn ? "Notional" : "Nocional"}</th>
+                <th style="text-align:right;">${isEn ? "Annual Cost / Saving" : "Costo / Ahorro anual"}</th>
                 <th style="text-align:right;">% EBITDA</th>
               </tr>
             </thead>
             <tbody>
-              ${items.map(i => `
-                <tr>
-                  <td style="font-size:12px;">${i.instrumento}</td>
-                  <td class="mono" style="text-align:right;">
-                    USD ${i.nocM.toFixed(1)}M
-                  </td>
-                  <td class="mono ${i.costo >= 0 ? "positive" : "warn"}"
-                      style="text-align:right;">
-                    ${i.costo === 0
-                      ? "Costless"
-                      : `${i.costo > 0 ? "+" : ""}USD ${(i.costo/1000).toFixed(1)}M`}
-                  </td>
-                  <td class="mono" style="text-align:right;
-                      color:var(--text-muted);">
-                    ${i.costo === 0
-                      ? "0%"
-                      : `${(Math.abs(i.costo)/ebitda*100).toFixed(1)}%`}
-                  </td>
-                </tr>
-              `).join("")}
+              ${items.map(i => {
+                let instCostStr = "Costless";
+                if (i.costo !== 0) {
+                  instCostStr = isEn
+                    ? `${i.costo > 0 ? "+" : ""}USD ${(i.costo/1000).toFixed(1)}M`
+                    : `${i.costo > 0 ? "+" : ""}USD ${(i.costo/1000).toFixed(1)}M`;
+                }
+
+                return `
+                  <tr>
+                    <td style="font-size:12px;">${i.instrumento}</td>
+                    <td class="mono" style="text-align:right;">
+                      USD ${i.nocM.toFixed(1)}M
+                    </td>
+                    <td class="mono ${i.costo >= 0 ? "positive" : "warn"}"
+                        style="text-align:right;">
+                      ${instCostStr}
+                    </td>
+                    <td class="mono" style="text-align:right;
+                        color:var(--text-muted);">
+                      ${i.costo === 0
+                        ? "0%"
+                        : `${(Math.abs(i.costo)/ebitda*100).toFixed(1)}%`}
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
               <tr style="background:var(--bg-raised); font-weight:700;">
-                <td>TOTAL ESTRATEGIA</td>
+                <td>${isEn ? "TOTAL STRATEGY" : "TOTAL ESTRATEGIA"}</td>
                 <td class="mono" style="text-align:right;">—</td>
                 <td class="mono ${costoNeto >= 0 ? "positive" : "warn"}"
                     style="text-align:right;">
                   ${costoNeto >= 0
-                    ? `+USD ${(costoNeto/1000).toFixed(1)}M ahorro`
-                    : `USD ${(Math.abs(costoNeto)/1000).toFixed(1)}M costo`}
+                    ? `+USD ${(costoNeto/1000).toFixed(1)}M ${isEn ? "saving" : "ahorro"}`
+                    : `USD ${(Math.abs(costoNeto)/1000).toFixed(1)}M ${isEn ? "cost" : "costo"}`}
                 </td>
                 <td class="mono" style="text-align:right;">
                   ${pctEBITDA}% EBITDA
@@ -665,30 +706,30 @@ function _estRenderCosto() {
 
       <div>
         <div class="section-title" style="margin-top:0;">
-          Resumen de costo
+          ${isEn ? "Cost Summary" : "Resumen de costo"}
         </div>
 
-        ${_resultRow("Instrumentos costless", `${items.filter(i => i.costo === 0).length} de ${items.length}`)}
-        ${_resultRow("Costo de primas pagadas",
+        ${_resultRow(isEn ? "Costless instruments" : "Instrumentos costless", isEn ? `${items.filter(i => i.costo === 0).length} of ${items.length}` : `${items.filter(i => i.costo === 0).length} de ${items.length}`)}
+        ${_resultRow(isEn ? "Paid premium costs" : "Costo de primas pagadas",
                       `USD ${(Math.abs(costoTotal)/1000).toFixed(1)}M`,
                       Math.abs(costoTotal) > 5000 ? "danger" : "warn")}
-        ${_resultRow("Ahorro por posiciones en dinero",
+        ${_resultRow(isEn ? "Savings from ITM positions" : "Ahorro por posiciones en dinero",
                       `+USD ${(ahorroTotal/1000).toFixed(1)}M`, "positive")}
-        ${_resultRow("Costo neto total",
+        ${_resultRow(isEn ? "Total net cost" : "Costo neto total",
                       costoNeto >= 0
-                        ? `+USD ${(costoNeto/1000).toFixed(1)}M (ahorro neto)`
+                        ? `+USD ${(costoNeto/1000).toFixed(1)}M (${isEn ? "net saving" : "ahorro neto"})`
                         : `USD ${(Math.abs(costoNeto)/1000).toFixed(1)}M`,
                       costoNeto >= 0 ? "positive" : "warn")}
-        ${_resultRow("Como % del EBITDA base",
-                      `${pctEBITDA}% — umbral aceptable < 5%`,
+        ${_resultRow(isEn ? "As % of base EBITDA" : "Como % del EBITDA base",
+                      `${pctEBITDA}% — ${isEn ? "acceptable threshold < 5%" : "umbrial aceptable < 5%"}`,
                       parseFloat(pctEBITDA) < 5 ? "positive" : "warn")}
 
         <div class="alert alert-success" style="margin-top:14px;">
           <span class="alert-icon">✓</span>
           <span style="font-size:11.5px;">
-            La estrategia prioriza instrumentos costless (collares sin prima).
-            El costo neto es mínimo como % del EBITDA y dentro del
-            umbral aceptable para una política de cobertura corporativa.
+            ${isEn
+              ? "The strategy prioritizes costless instruments (premium-free collars). The net cost is minimal as a % of EBITDA and well within the acceptable threshold for a corporate hedging policy."
+              : "La estrategia prioriza instrumentos costless (collares sin prima). El costo neto es mínimo como % del EBITDA y dentro del umbral aceptable para una política de cobertura corporativa."}
           </span>
         </div>
       </div>
@@ -704,6 +745,78 @@ function _estRenderTradeoff() {
   const el = document.getElementById("est-tradeoff");
   if (!el) return;
 
+  const isEn = I18N.getLocale() === "en";
+
+  const data = isEn ? {
+    elim: {
+      title: "✓ WHAT RISK I ELIMINATED",
+      items: [
+        "USD/MXN drop < $17.40 — FX collar protects completely",
+        "Gold price drop < $2,700/oz — gold collar triggers",
+        "Natural gas spike > $3.35/MMBtu — swap locks in the cost",
+        "SOFR rise > 4.50% — IRS locks rate on USD 67M debt",
+        "TIIE rise > 11% — active collar cap limits the ceiling",
+        "Extreme EBITDA volatility in the adverse scenario",
+      ]
+    },
+    accept: {
+      title: "⚠ WHAT RISK I ACCEPT",
+      items: [
+        "Manganese without formal financial hedging — inefficient OTC market",
+        "40-50% of FX revenues still unhedged (up to policy limit)",
+        "OTC counterparty risk — mitigated with IG banks",
+        "Basis risk between derivative index and actual client price",
+        "TIIE between 8.75% and floor — collar OTM until rate rises",
+        "July 2026 USMCA risk — not covered with derivatives (political tail risk)",
+      ]
+    },
+    sacr: {
+      title: "✗ WHAT UPSIDE I SACRIFICE",
+      items: [
+        "USD/MXN > $18.40 — FX collar limits additional revenues",
+        "Gold > $3,300/oz — gold collar yields extra gain",
+        "Natural gas < $3.35/MMBtu — swap pays fixed even if spot is lower",
+        "SOFR < 4.50% — IRS pays fixed rate even if SOFR drops",
+        "Full benefit of a weaker peso in the optimistic scenario",
+        "Implicit premium paid in gas swap (~USD 0.15/MMBtu over spot)",
+      ]
+    }
+  } : {
+    elim: {
+      title: "✓ QUÉ RIESGO ELIMINÉ",
+      items: [
+        "Caída de USD/MXN < $17.40 — collar FX protege completamente",
+        "Caída del oro < $2,700/oz — collar oro actúa",
+        "Alza de gas > $3.35/MMBtu — swap fija el costo",
+        "Alza SOFR > 4.50% — IRS fija la tasa de USD 67M",
+        "TIIE > 11% — cap del collar existente limita el techo",
+        "Volatilidad extrema de EBITDA en escenario adverso",
+      ]
+    },
+    accept: {
+      title: "⚠ QUÉ RIESGO ACEPTO",
+      items: [
+        "Manganeso sin cobertura financiera formal — mercado OTC ineficiente",
+        "40-50% de ingresos FX aún sin cubrir (hasta límite de política)",
+        "Riesgo de contraparte OTC — mitigado con bancos IG",
+        "Basis risk entre índice del derivado y precio real de cliente",
+        "TIIE entre 8.75% y floor — collar OTM hasta que suba la tasa",
+        "Riesgo USMCA julio 2026 — no cubierto con derivado (tail risk político)",
+      ]
+    },
+    sacr: {
+      title: "✗ QUÉ UPSIDE SACRIFICO",
+      items: [
+        "USD/MXN > $18.40 — collar FX limita el ingreso adicional",
+        "Oro > $3,300/oz — collar oro cede la ganancia extra",
+        "Gas < $3.35/MMBtu — swap paga el precio fijo aunque mercado esté más bajo",
+        "SOFR < 4.50% — IRS paga tasa fija aunque SOFR baje",
+        "Beneficio total de un peso más débil en escenario optimista",
+        "Prima pagada en swap gas (~USD 0.15/MMBtu sobre spot)",
+      ]
+    }
+  };
+
   el.innerHTML = `
     <div class="grid-3" style="gap:16px;">
 
@@ -712,16 +825,9 @@ function _estRenderTradeoff() {
                   border:1px solid rgba(45,125,78,0.2);">
         <div style="font-size:13px; font-weight:700;
                     color:var(--success); margin-bottom:12px;">
-          ✓ QUÉ RIESGO ELIMINÉ
+          ${data.elim.title}
         </div>
-        ${[
-          "Caída de USD/MXN < $17.40 — collar FX protege completamente",
-          "Caída del oro < $2,700/oz — collar oro actúa",
-          "Alza de gas > $3.35/MMBtu — swap fija el costo",
-          "Alza SOFR > 4.50% — IRS fija la tasa de USD 67M",
-          "TIIE > 11% — cap del collar existente limita el techo",
-          "Volatilidad extrema de EBITDA en escenario adverso",
-        ].map(i => `
+        ${data.elim.items.map(i => `
           <div style="font-size:11.5px; color:var(--success);
                       margin-bottom:6px; display:flex; gap:6px;">
             <span style="flex-shrink:0;">◎</span>
@@ -734,16 +840,9 @@ function _estRenderTradeoff() {
                   border:1px solid rgba(139,94,10,0.2);">
         <div style="font-size:13px; font-weight:700;
                     color:var(--warn); margin-bottom:12px;">
-          ⚠ QUÉ RIESGO ACEPTO
+          ${data.accept.title}
         </div>
-        ${[
-          "Manganeso sin cobertura financiera formal — mercado OTC ineficiente",
-          "40-50% de ingresos FX aún sin cubrir (hasta límite de política)",
-          "Riesgo de contraparte OTC — mitigado con bancos IG",
-          "Basis risk entre índice del derivado y precio real de cliente",
-          "TIIE entre 8.75% y floor — collar OTM hasta que suba la tasa",
-          "Riesgo USMCA julio 2026 — no cubierto con derivado (tail risk político)",
-        ].map(i => `
+        ${data.accept.items.map(i => `
           <div style="font-size:11.5px; color:var(--warn);
                       margin-bottom:6px; display:flex; gap:6px;">
             <span style="flex-shrink:0;">△</span>
@@ -756,16 +855,9 @@ function _estRenderTradeoff() {
                   border:1px solid rgba(155,35,53,0.2);">
         <div style="font-size:13px; font-weight:700;
                     color:var(--danger); margin-bottom:12px;">
-          ✗ QUÉ UPSIDE SACRIFICO
+          ${data.sacr.title}
         </div>
-        ${[
-          "USD/MXN > $18.40 — collar FX limita el ingreso adicional",
-          "Oro > $3,300/oz — collar oro cede la ganancia extra",
-          "Gas < $3.35/MMBtu — swap paga el precio fijo aunque mercado esté más bajo",
-          "SOFR < 4.50% — IRS paga tasa fija aunque SOFR baje",
-          "Beneficio total de un peso más débil en escenario optimista",
-          "Prima pagada en swap gas (~USD 0.15/MMBtu sobre spot)",
-        ].map(i => `
+        ${data.sacr.items.map(i => `
           <div style="font-size:11.5px; color:var(--danger);
                       margin-bottom:6px; display:flex; gap:6px;">
             <span style="flex-shrink:0;">✗</span>
@@ -784,6 +876,7 @@ function _estRenderPayoffChart() {
   const canvas = document.getElementById("est-payoff-chart");
   if (!canvas) return;
 
+  const isEn = I18N.getLocale() === "en";
   const ctx = canvas.getContext("2d");
   const w   = canvas.offsetWidth || 600;
   const h   = canvas.height      || 220;
@@ -811,7 +904,7 @@ function _estRenderPayoffChart() {
   const protFX = (tc) => {
     let total = 0;
     for (const p of port) {
-      if (p.riesgo === "Tipo de cambio" && p.payoff) {
+      if (p.riesgo === (isEn ? "Exchange rate" : "Tipo de cambio") && p.payoff) {
         total += p.payoff(tc);
       }
     }
@@ -822,9 +915,9 @@ function _estRenderPayoffChart() {
   const protOtros = (() => {
     let total = 0;
     for (const p of port) {
-      if (p.riesgo !== "Tipo de cambio" && p.payoff) {
-        if (p.riesgo === "Precio del Oro") total += p.payoff(oro);
-        if (p.riesgo === "Gas Natural")    total += p.payoff(gas);
+      if (p.riesgo !== (isEn ? "Exchange rate" : "Tipo de cambio") && p.payoff) {
+        if (p.riesgo === (isEn ? "Gold Price" : "Precio del Oro")) total += p.payoff(oro);
+        if (p.riesgo === (isEn ? "Natural Gas" : "Gas Natural"))    total += p.payoff(gas);
         if (p.riesgo.includes("SOFR"))     total += p.payoff(sofr);
         if (p.riesgo.includes("TIIE"))     total += p.payoff(tiie);
       }
@@ -837,20 +930,20 @@ function _estRenderPayoffChart() {
 
   const series = [
     {
-      label: "EBITDA sin cobertura",
+      label: isEn ? "EBITDA without hedging" : "EBITDA sin cobertura",
       color: "#8A96A8",
       dash:  [5, 3],
       vals:  tcs.map(tc => ebitdaSin(tc)),
     },
     {
-      label: "EBITDA con estrategia completa",
+      label: isEn ? "EBITDA with complete strategy" : "EBITDA con estrategia completa",
       color: "#1B4F8A",
       dash:  [],
       vals:  tcs.map(tc =>
         ebitdaSin(tc) + protFX(tc) + protOtros + costoTotal),
     },
     {
-      label: "Zona objetivo (EBITDA > 0)",
+      label: isEn ? "Target zone (EBITDA > 0)" : "Zona objetivo (EBITDA > 0)",
       color: "#2D7D4E",
       dash:  [2, 4],
       vals:  tcs.map(() => 0),
@@ -899,7 +992,7 @@ function _estRenderPayoffChart() {
   ctx.fillStyle = "#8A96A8";
   ctx.font      = "9.5px Inter";
   ctx.textAlign = "left";
-  ctx.fillText(`TC actual $${tcAct.toFixed(2)}`, xScale(tcAct) + 4, pad + 14);
+  ctx.fillText(isEn ? `Current FX $${tcAct.toFixed(2)}` : `TC actual $${tcAct.toFixed(2)}`, xScale(tcAct) + 4, pad + 14);
 
   // Series
   series.forEach(s => {
@@ -952,61 +1045,117 @@ function _estRenderConclusion() {
   const el = document.getElementById("est-conclusion");
   if (!el) return;
 
+  const isEn = I18N.getLocale() === "en";
   const tiie = Scenarios.getVar("tiie28");
   const tc   = Scenarios.getVar("usdmxn");
   const oro  = Scenarios.getVar("precioOro");
+
+  const decs = isEn ? [
+    {
+      dec: "Costless collars in FX and gold (no forwards)",
+      just: `With USD/MXN at $${tc.toFixed(2)} and gold at USD ${oro.toLocaleString()}/oz, the company is in a range where keeping moderate upside makes sense. A forward would eliminate benefits if the peso continues to weaken or gold rises further. The collar protects without sacrificing all upside.`,
+    },
+    {
+      dec: "Fixed-price swap for natural gas (no collar)",
+      just: `With a DSCR of 0.6x, certainty in operating costs is more valuable than keeping the upside of a gas price drop. The fixed swap guarantees that EBITDA is not eroded by a gas spike — especially in the adverse scenario where all drivers press simultaneously.`,
+    },
+    {
+      dec: "IRS SOFR on 50% (not 100%)",
+      just: `The Fed's cycle suggests SOFR might decrease. Hedging 100% at the current fixed rate would sacrifice those potential future savings. The 50% hedges balance certainty with the possibility of capturing future cuts on the unhedged half.`,
+    },
+    {
+      dec: "Maintain TIIE collar (no unwinding)",
+      just: `Although it is out of the money today (TIIE ${tiie.toFixed(2)}% vs floor 8.75%), the exit cost does not justify unwinding. The collar serves as tail risk protection if USMCA fails and Banxico reverses the rate-cut cycle. It is cheap insurance for a real risk.`,
+    },
+  ] : [
+    {
+      dec: "Collares costless en FX y oro (no forwards)",
+      just: `Con USD/MXN en $${tc.toFixed(2)} y oro en USD ${oro.toLocaleString()}/oz, la empresa está en un rango donde tiene sentido mantener el upside moderado. Un forward eliminaría el beneficio si el peso sigue depreciándose o si el oro sube más. El collar da protección sin sacrificar todo el upside.`,
+    },
+    {
+      dec: "Swap fijo para gas (no collar)",
+      just: `Con DSCR de 0.6x, la certidumbre en costos operativos es más valiosa que mantener el upside de una baja de gas. El swap fijo garantiza que el EBITDA no se vea erosionado por un spike de gas — especialmente en el escenario adverso donde todos los drivers presionan al mismo tiempo.`,
+    },
+    {
+      dec: "IRS SOFR sobre 50% (no 100%)",
+      just: `El ciclo de la Fed sugiere que SOFR podría bajar. Cubrir el 100% a la tasa fija actual sacrificaría ese potencial ahorro. El 50% balancea la certidumbre con la posibilidad de capturar recortes futuros en la mitad no cubierta.`,
+    },
+    {
+      dec: "Mantener collar TIIE (no liquidar)",
+      just: `Aunque está fuera del dinero hoy (TIIE ${tiie.toFixed(2)}% vs floor 8.75%), el costo de salida no justifica la liquidación. El collar sirve como protección de tail risk si el USMCA falla y Banxico revierte el ciclo de recortes. Es un seguro barato para un riesgo real.`,
+    },
+  ];
+
+  const conds = isEn ? [
+    {
+      cond: "USD/MXN drops < $16.50",
+      accion: "Expand FX coverage to policy maximum (60%) — very strong peso erodes EBITDA rapidly.",
+      urgencia: "IMMEDIATE",
+    },
+    {
+      cond: "USMCA fails in July 2026",
+      accion: "Activate TIIE swaption — Banxico could reverse cutting cycle. Extend FX hedging horizons.",
+      urgencia: "IMMEDIATE",
+    },
+    {
+      cond: "Gold drops below $2,700/oz",
+      accion: "Verify that the collar is exercising. Evaluate additional put if the trend is prolonged.",
+      urgencia: "HIGH",
+    },
+    {
+      cond: "SOFR drops below 3.50%",
+      accion: "Evaluate canceling the SOFR IRS — opportunity cost exceeds the benefit of certainty.",
+      urgencia: "MEDIUM",
+    },
+    {
+      cond: "TIIE rises above 8.75%",
+      accion: "TIIE collar enters the money — monitor that execution is carrying out correctly.",
+      urgencia: "MONITORING",
+    },
+  ] : [
+    {
+      cond: "USD/MXN cae a < $16.50",
+      accion: "Ampliar cobertura FX al máximo de política (60%) — peso muy fuerte erosiona EBITDA aceleradamente.",
+      urgencia: "INMEDIATA",
+    },
+    {
+      cond: "USMCA falla en julio 2026",
+      accion: "Activar swaption TIIE — Banxico puede revertir ciclo. Ampliar horizontes de cobertura FX.",
+      urgencia: "INMEDIATA",
+    },
+    {
+      cond: "Oro baja de $2,700/oz",
+      accion: "Verificar que el collar esté ejerciéndose. Evaluar put adicional si la tendencia es prolongada.",
+      urgencia: "ALTA",
+    },
+    {
+      cond: "SOFR baja de 3.50%",
+      accion: "Evaluar cancelar el IRS SOFR — el costo de oportunidad supera el beneficio de certidumbre.",
+      urgencia: "MEDIA",
+    },
+    {
+      cond: "TIIE sube sobre 8.75%",
+      accion: "Collar TIIE entra en el dinero — monitorear que se esté ejecutando correctamente.",
+      urgencia: "MONITOREO",
+    },
+  ];
 
   el.innerHTML = `
     <div style="max-width:800px;">
 
       <div style="font-size:15px; font-weight:700; color:var(--text-primary);
                   margin-bottom:16px; line-height:1.4;">
-        "Bajo los escenarios modelados, esta estrategia maximiza
-        el valor esperado de los flujos de Autlán y reduce la
-        volatilidad del EBITDA en el escenario adverso de forma
-        significativa — a un costo neto cercano a cero."
+        ${isEn
+          ? `"Under the modeled scenarios, this strategy maximizes Autlán's expected cash flows and significantly reduces EBITDA volatility in the adverse scenario — at a net cost close to zero."`
+          : `"Bajo los escenarios modelados, esta estrategia maximiza el valor esperado de los flujos de Autlán y reduce la volatilidad del EBITDA en el escenario adverso de forma significativa — a un costo neto cercano a cero."`}
       </div>
 
       <div class="grid-2" style="gap:20px; margin-bottom:20px;">
         <div>
           <div class="section-title" style="margin-top:0;">
-            Justificación de cada decisión
+            ${isEn ? "Rationale for Each Decision" : "Justificación de cada decisión"}
           </div>
-          ${[
-            {
-              dec: "Collares costless en FX y oro (no forwards)",
-              just: `Con USD/MXN en $${tc.toFixed(2)} y oro en
-                     USD ${oro.toLocaleString()}/oz, la empresa está en
-                     un rango donde tiene sentido mantener el upside moderado.
-                     Un forward eliminaría el beneficio si el peso sigue
-                     depreciándose o si el oro sube más. El collar da
-                     protección sin sacrificar todo el upside.`,
-            },
-            {
-              dec: "Swap fijo para gas (no collar)",
-              just: `Con DSCR de 0.6x, la certidumbre en costos operativos
-                     es más valiosa que mantener el upside de una baja de gas.
-                     El swap fijo garantiza que el EBITDA no se vea erosionado
-                     por un spike de gas — especialmente en el escenario adverso
-                     donde todos los drivers presionan al mismo tiempo.`,
-            },
-            {
-              dec: "IRS SOFR sobre 50% (no 100%)",
-              just: `El ciclo de la Fed sugiere que SOFR podría bajar.
-                     Cubrir el 100% a la tasa fija actual sacrificaría
-                     ese potencial ahorro. El 50% balancea la certidumbre
-                     con la posibilidad de capturar recortes futuros
-                     en la mitad no cubierta.`,
-            },
-            {
-              dec: "Mantener collar TIIE (no liquidar)",
-              just: `Aunque está fuera del dinero hoy (TIIE ${tiie.toFixed(2)}%
-                     vs floor 8.75%), el costo de salida no justifica la
-                     liquidación. El collar sirve como protección de tail risk
-                     si el USMCA falla y Banxico revierte el ciclo de recortes.
-                     Es un seguro barato para un riesgo real.`,
-            },
-          ].map(d => `
+          ${decs.map(d => `
             <div style="margin-bottom:14px; padding:10px 12px;
                         background:var(--bg-raised);
                         border-radius:var(--radius-md);
@@ -1025,56 +1174,33 @@ function _estRenderConclusion() {
 
         <div>
           <div class="section-title" style="margin-top:0;">
-            Condiciones para revisar la estrategia
+            ${isEn ? "Conditions to Review the Strategy" : "Condiciones para revisar la estrategia"}
           </div>
-          ${[
-            {
-              cond: "USD/MXN cae a < $16.50",
-              accion: "Ampliar cobertura FX al máximo de política (60%) — peso muy fuerte erosiona EBITDA aceleradamente.",
-              urgencia: "INMEDIATA",
-            },
-            {
-              cond: "USMCA falla en julio 2026",
-              accion: "Activar swaption TIIE — Banxico puede revertir ciclo. Ampliar horizontes de cobertura FX.",
-              urgencia: "INMEDIATA",
-            },
-            {
-              cond: "Oro baja de $2,700/oz",
-              accion: "Verificar que el collar esté ejerciéndose. Evaluar put adicional si la tendencia es prolongada.",
-              urgencia: "ALTA",
-            },
-            {
-              cond: "SOFR baja de 3.50%",
-              accion: "Evaluar cancelar el IRS SOFR — el costo de oportunidad supera el beneficio de certidumbre.",
-              urgencia: "MEDIA",
-            },
-            {
-              cond: "TIIE sube sobre 8.75%",
-              accion: "Collar TIIE entra en el dinero — monitorear que se esté ejecutando correctamente.",
-              urgencia: "MONITOREO",
-            },
-          ].map(c => `
-            <div style="margin-bottom:10px; padding:10px 12px;
-                        background:var(--bg-raised);
-                        border-radius:var(--radius-md);">
-              <div class="flex-between" style="margin-bottom:4px;">
-                <span style="font-size:12px; font-weight:600;">
-                  Si: ${c.cond}
-                </span>
-                <span class="badge ${
-                  c.urgencia === "INMEDIATA" ? "badge-danger"
-                  : c.urgencia === "ALTA"    ? "badge-warn"
-                  : c.urgencia === "MEDIA"   ? "badge-accent"
-                  : "badge-neutral"}">
-                  ${c.urgencia}
-                </span>
+          ${conds.map(c => {
+            let badgeClass = "badge-neutral";
+            if (c.urgencia === "IMMEDIATE" || c.urgencia === "INMEDIATA") badgeClass = "badge-danger";
+            else if (c.urgencia === "HIGH" || c.urgencia === "ALTA") badgeClass = "badge-warn";
+            else if (c.urgencia === "MEDIUM" || c.urgencia === "MEDIA") badgeClass = "badge-accent";
+
+            return `
+              <div style="margin-bottom:10px; padding:10px 12px;
+                          background:var(--bg-raised);
+                          border-radius:var(--radius-md);">
+                <div class="flex-between" style="margin-bottom:4px;">
+                  <span style="font-size:12px; font-weight:600;">
+                    ${isEn ? "If:" : "Si:"} ${c.cond}
+                  </span>
+                  <span class="badge ${badgeClass}">
+                    ${c.urgencia}
+                  </span>
+                </div>
+                <div style="font-size:11.5px; color:var(--text-secondary);
+                            line-height:1.5;">
+                  → ${c.accion}
+                </div>
               </div>
-              <div style="font-size:11.5px; color:var(--text-secondary);
-                          line-height:1.5;">
-                → ${c.accion}
-              </div>
-            </div>
-          `).join("")}
+            `;
+          }).join("")}
         </div>
       </div>
 
@@ -1084,15 +1210,9 @@ function _estRenderConclusion() {
                   color:var(--accent-dark);">
         <span class="alert-icon">★</span>
         <span style="font-size:12.5px; line-height:1.6;">
-          <strong>Veredicto final de la mesa de riesgos:</strong>
-          Autlán enfrenta 2026 con exposiciones significativas en FX, oro y gas
-          completamente descubiertas, y un collar de tasa fuera del dinero.
-          La estrategia propuesta corrige estos gaps a un costo cercano a cero
-          vía costless collars. El costo real de <em>no cubrir</em> en el
-          escenario adverso — pérdida adicional de EBITDA vs estrategia cubierta —
-          justifica con creces el costo de implementación.
-          <strong>La cobertura no es un costo — es una inversión en
-          certidumbre financiera.</strong>
+          ${isEn
+            ? `<strong>Final verdict of the risk desk:</strong> Autlán enters 2026 with significant exposures in FX, gold, and gas completely unhedged, and a TIIE rate collar out of the money. The proposed strategy corrects these gaps at a net cost close to zero via costless collars. The real cost of <em>not hedging</em> in the adverse scenario — additional EBITDA loss vs the hedged strategy — more than justifies the implementation cost. <strong>Hedging is not a cost — it is an investment in financial certainty.</strong>`
+            : `<strong>Veredicto final de la mesa de riesgos:</strong> Autlán enfrenta 2026 con exposiciones significativas en FX, oro y gas completamente descubiertas, y un collar de tasa fuera del dinero. La estrategia propuesta corrige estos gaps a un costo cercano a cero vía costless collares. El costo real de <em>no cubrir</em> en el escenario adverso — pérdida adicional de EBITDA vs estrategia cubierta — justifica con creces el costo de implementación. <strong>La cobertura no es un costo — es una inversión en certidumbre financiera.</strong>`}
         </span>
       </div>
 
@@ -1104,46 +1224,58 @@ function _estRenderConclusion() {
 // EXPORTAR
 // ─────────────────────────────────────────
 window.exportarEstrategia = function() {
+  const isEn = I18N.getLocale() === "en";
   const port  = _getPortafolio();
   const cache = Scenarios.getCache();
   const esc   = Scenarios.getState().escenarios;
   const fmt   = Scenarios.fmt;
 
-  let csv = "ESTRATEGIA ÓPTIMA DE COBERTURA — AUTLÁN\n";
-  csv    += `Generado: ${new Date().toLocaleString("es-MX")}\n\n`;
+  let csv = isEn ? "OPTIMAL HEDGING STRATEGY — AUTLÁN\n" : "ESTRATEGIA ÓPTIMA DE COBERTURA — AUTLÁN\n";
+  csv    += `${isEn ? "Generated" : "Generado"}: ${new Date().toLocaleString(isEn ? "en-US" : "es-MX")}\n\n`;
 
-  csv += "PORTAFOLIO DE COBERTURAS\n";
-  csv += "ID,Riesgo,Instrumento,Descripción,Nocional USD M,% Exposición,Costo Neto,Horizonte\n";
+  csv += isEn ? "HEDGING PORTFOLIO\n" : "PORTAFOLIO DE COBERTURAS\n";
+  csv += isEn
+    ? "ID,Risk,Instrument,Description,Notional USD M,% Exposure,Net Cost,Horizon\n"
+    : "ID,Riesgo,Instrumento,Descripción,Nocional USD M,% Exposición,Costo Neto,Horizonte\n";
 
   const tc = Scenarios.getVar("usdmxn");
   port.forEach(p => {
     const noc = p.nocionalUSD ? p.nocionalUSD/1000
               : p.nocionalMXN ? (p.nocionalMXN/tc)/1000
               : p.nocional/1000;
+    
+    let costText = "Costless";
+    if ((p.costoNeto||0) !== 0) {
+      costText = isEn
+        ? `${Math.abs(p.costoNeto/1000).toFixed(1)}M ${p.costoNeto > 0 ? "saving" : "premium"}`
+        : `${Math.abs(p.costoNeto/1000).toFixed(1)}M ${p.costoNeto > 0 ? "ahorro" : "prima"}`;
+    }
+
     csv += `"${p.id}","${p.riesgo}","${p.instrumento}","${p.descripcion}",`;
     csv += `${noc.toFixed(1)},${p.pctExposicion.toFixed(1)},`;
-    csv += `${(p.costoNeto||0) === 0 ? "Costless" : (p.costoNeto/1000).toFixed(1)+"M"},`;
-    csv += `"${p.horizonte}"\n`;
+    csv += `"${costText}","${p.horizonte}"\n`;
   });
 
-  csv += "\nESCENARIOS\n";
-  csv += "Variable,Base,Optimista,Adverso\n";
+  csv += isEn ? "\nSCENARIOS\n" : "\nESCENARIOS\n";
+  csv += isEn ? "Variable,Base,Optimistic,Adverse\n" : "Variable,Base,Optimista,Adverso\n";
   const vars = Scenarios.SLIDER_CONFIG;
   Object.entries(vars).forEach(([k, c]) => {
-    csv += `"${c.label}",${esc.base[k]},${esc.optimista[k]},${esc.adverso[k]}\n`;
+    const label = isEn ? (I18N.t(`p2.driver.${k}`) || c.label) : c.label;
+    csv += `"${label}",${esc.base[k]},${esc.optimista[k]},${esc.adverso[k]}\n`;
   });
 
   if (cache.escenarios) {
-    csv += "\nRESULTADOS FINANCIEROS\n";
-    csv += "Métrica,Base,Optimista,Adverso\n";
+    csv += isEn ? "\nFINANCIAL OUTCOMES\n" : "\nRESULTADOS FINANCIEROS\n";
+    csv += isEn ? "Metric,Base,Optimistic,Adverse\n" : "Métrica,Base,Optimista,Adverso\n";
     const B = cache.escenarios.base;
     const O = cache.escenarios.optimista;
     const A = cache.escenarios.adverso;
-    csv += `"EBITDA sin cobertura",${(B.resultados.ebitda/1000).toFixed(1)},`;
+    
+    csv += `"${isEn ? "EBITDA without hedging" : "EBITDA sin cobertura"}",${(B.resultados.ebitda/1000).toFixed(1)},`;
     csv += `${(O.resultados.ebitda/1000).toFixed(1)},${(A.resultados.ebitda/1000).toFixed(1)}\n`;
-    csv += `"FCF sin cobertura",${(B.resultados.fcf/1000).toFixed(1)},`;
+    csv += `"${isEn ? "FCF without hedging" : "FCF sin cobertura"}",${(B.resultados.fcf/1000).toFixed(1)},`;
     csv += `${(O.resultados.fcf/1000).toFixed(1)},${(A.resultados.fcf/1000).toFixed(1)}\n`;
-    csv += `"DSCR sin cobertura",${B.resultados.dscr.toFixed(2)},`;
+    csv += `"${isEn ? "DSCR without hedging" : "DSCR sin cobertura"}",${B.resultados.dscr.toFixed(2)},`;
     csv += `${O.resultados.dscr.toFixed(2)},${A.resultados.dscr.toFixed(2)}\n`;
   }
 
@@ -1151,11 +1283,13 @@ window.exportarEstrategia = function() {
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement("a");
   a.href     = url;
-  a.download = `autlan-estrategia-${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `autlan-${isEn ? "strategy" : "estrategia"}-${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 
-  showToast("Estrategia exportada", "success");
+  if (window.showToast) {
+    showToast(isEn ? "Strategy exported" : "Estrategia exportada", "success");
+  }
 };
 
 // ─────────────────────────────────────────
