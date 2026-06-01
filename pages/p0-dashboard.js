@@ -466,7 +466,7 @@ function _renderEscenarios() {
     return `<span class="dash-tooltip-wrap">
       <span class="dash-tooltip-icon">ⓘ</span>
       <span class="dash-tooltip-box">${text}</span>
-    </span>`;
+    </span>`; 
   }
 
   // ─────────────────────────────────────────────────────────────
