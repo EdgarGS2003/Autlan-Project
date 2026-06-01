@@ -111,7 +111,7 @@ window.I18N = (() => {
     // ── PAGE 1: PERFIL
     "p1.title":                { es: "Perfil Financiero Autlán",     en: "Autlán Financial Profile" },
     "p1.sub":                  { es: "Datos financieros auditados · XBRL 1T26 BMV", en: "Audited Financial Data · XBRL 1Q26 BMV" },
-    "p1.alert":                { es: "Datos precargados desde <strong>XBRL 4T25 y 1T26 BMV</strong> — auditados bajo IFRS. Para sobreescribir un valor, haz clic en <strong>Editar</strong> e ingresa la justificación.", en: "Data preloaded from <strong>XBRL 4Q25 & 1Q26 BMV</strong> — audited under IFRS. To override a value, click <strong>Edit</strong> and enter the justification." },
+    "p1.alert":                { es: "Datos precargados desde <strong>XBRL 4T25 y 1T26 BMV</strong> — auditados", en: "Data preloaded from <strong>XBRL 4Q25 & 1Q26 BMV</strong> — audited" },
     "p1.keyResults":           { es: "Resultados financieros clave", en: "Key Financial Results" },
     "p1.kpi.rev2025":          { es: "Ingresos 2025",               en: "Revenues 2025" },
     "p1.kpi.rev2025.sub":      { es: "+3.1% vs 2024 · USD 312.9M",  en: "+3.1% vs 2024 · USD 312.9M" },
