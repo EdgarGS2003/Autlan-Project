@@ -9,26 +9,26 @@
 /* ── VARIABLES ───────────────────────────────────────── */
 :root {
   /* Fondos */
-  --bg-base:       #F7F8FA;   /* fondo principal — blanco roto */
-  --bg-surface:    #FFFFFF;   /* cards, panels */
-  --bg-raised:     #EEF0F5;   /* inputs, hover */
-  --bg-sidebar:    #1A2440;   /* sidebar oscuro para contraste */
-  --bg-sidebar-hover: #243054;
+  --bg-base:       #F8F7FB;   /* blanco con toque lila muy suave */
+  --bg-surface:    #FFFFFF;
+  --bg-raised:     #EEEbF5;   /* gris-lavanda para inputs y hover */
+  --bg-sidebar:    #2D1B5E;   /* morado oscuro Autlán */
+  --bg-sidebar-hover: #3D2870;
 
   /* Texto */
-  --text-primary:   #0D1526;
-  --text-secondary: #4A5568;
-  --text-muted:     #8A96A8;
-  --text-sidebar:   #C8D0DE;
+  --text-primary:   #1A1028;   /* casi negro con tinte morado */
+  --text-secondary: #4A4060;
+  --text-muted:     #8A82A0;
+  --text-sidebar:   #C8C0DE;
   --text-sidebar-active: #FFFFFF;
 
-  /* Acento principal — azul marino */
-  --accent:         #1B4F8A;
-  --accent-light:   #E8F0FA;
-  --accent-mid:     #2E6EBE;
-  --accent-dark:    #0F3360;
+  /* Acento principal — morado Autlán */
+  --accent:         #5B2D8E;
+  --accent-light:   #EDE8F7;
+  --accent-mid:     #7B4DB8;
+  --accent-dark:    #3D1A6B;
 
-  /* Semáforo */
+  /* Semáforo — sin cambios */
   --success:        #2D7D4E;
   --success-light:  #E6F5EC;
   --success-mid:    #3DAB6A;
@@ -39,7 +39,7 @@
   --danger-light:   #FCEDF0;
   --danger-mid:     #D43050;
 
-  /* Commodities */
+  /* Commodities — sin cambios */
   --gold:           #B8860B;
   --gold-light:     #FBF5E0;
   --mn-brown:       #6B4226;
@@ -47,15 +47,15 @@
   --gas-green:      #2E6B3E;
   --gas-light:      #E8F5EC;
 
-  /* Bordes */
-  --border:         #E2E6ED;
-  --border-strong:  #C8CDD8;
+  /* Bordes — plata con tinte lila */
+  --border:         #DDD8EB;
+  --border-strong:  #BDB5D4;
 
   /* Tipografía */
   --font-sans:  'Inter', system-ui, sans-serif;
   --font-mono:  'DM Mono', 'Courier New', monospace;
 
-  /* Espaciado */
+  /* Espaciado — sin cambios */
   --sidebar-w:       220px;
   --sidebar-w-col:    64px;
   --topbar-h:         52px;
@@ -64,15 +64,13 @@
   --radius-lg:        12px;
   --radius-xl:        16px;
 
-  /* Sombras */
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06);
-  --shadow-md:  0 4px 12px rgba(0,0,0,0.08);
-  --shadow-lg:  0 8px 24px rgba(0,0,0,0.10);
+  /* Sombras con tinte morado */
+  --shadow-sm:  0 1px 3px rgba(91,45,142,0.07);
+  --shadow-md:  0 4px 12px rgba(91,45,142,0.10);
+  --shadow-lg:  0 8px 24px rgba(91,45,142,0.13);
 
-  /* Transiciones */
   --transition: 0.18s ease;
 }
-
 /* ── RESET ───────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
