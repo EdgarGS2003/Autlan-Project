@@ -463,8 +463,6 @@ function _renderEscenarios() {
   // Helper: render tooltip ⓘ
   // ─────────────────────────────────────────────────────────────
   function tooltip(text) {
-    const safe = text.replace(/"/g, "&quot;").replace(/
-/g, " ");
     return `<span class="dash-tooltip-wrap">
       <span class="dash-tooltip-icon">ⓘ</span>
       <span class="dash-tooltip-box">${text}</span>
