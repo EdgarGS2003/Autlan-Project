@@ -1220,7 +1220,7 @@ canvas {
 /* Tooltip para optimista */
 .dash-tt-opt  { left: -60px; }
 /* Tooltip adverso — abre hacia la izquierda */
-.dash-tt-adv  { left: auto; right: 0; }
+.dash-tt-adv  { left: -200px; right: auto; }
 
 .dash-tooltip-wrap:hover .dash-tooltip-box {
   display: block;
