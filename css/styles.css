@@ -12,8 +12,8 @@
   --bg-base:       #F8F7FB;   /* blanco con toque lila muy suave */
   --bg-surface:    #FFFFFF;
   --bg-raised:     #EEEbF5;   /* gris-lavanda para inputs y hover */
-  --bg-sidebar:    #2D1B5E;   /* morado oscuro Autlán */
-  --bg-sidebar-hover: #3D2870;
+  --bg-sidebar:    #3A2152;   /* morado oscuro Autlán */
+  --bg-sidebar-hover: #4D2870;
 
   /* Texto */
   --text-primary:   #1A1028;   /* casi negro con tinte morado */
