@@ -362,77 +362,77 @@ function _renderEscenarios() {
   // ─────────────────────────────────────────────────────────────
   const JUST_MACRO = {
     usdmxn: {
-      base: "Peso estable post-ciclo de recortes Banxico. DXY ~99 con tendencia bajista modera apreciación. Nearshoring sostiene flujos. Rango macro: $17.5–18.5 (análisis macro, may-2026). Probabilidad base elevada por ancla institucional de Banxico y diferencial TIIE–SOFR positivo (~2.8pp).",
-      opt:  "Peso se deprecia por Fed hawkish o shock geopolítico. DXY sube a 103+, capital sale de EM. Beneficia ingresos Autlán: cada $1 MXN de depreciación = ~+USD 18M en ingresos equivalentes. Prob. baja (20%) pues consenso espera estabilidad en 2026.",
-      adv:  "Apreciación fuerte del peso. Nearshoring acelera flujos USD→MXN. DXY cae a 90. Caso adverso: peso <$16.5 comprime EBITDA ~8–12% por estructura de costos MXN vs ingresos USD. DSCR <0.5x. Mayor riesgo binario: resultado USMCA julio 2026.",
+      base: "Escenario base: el peso mexicano se mantiene estable, alrededor de $18 pesos por dólar. Banxico (el banco central de México) ha bajado sus tasas de interés 13 veces desde 2024, lo que estabiliza el tipo de cambio. Para Autlán esto es neutral: sus ingresos son en dólares pero sus costos son en pesos, así que un peso estable no les ayuda ni les perjudica.",
+      opt:  "Escenario optimista: el peso se debilita y el dólar vale más pesos (ej. $19.50). Esto le conviene a Autlán porque sus ingresos en dólares 'valen más' cuando los convierte a pesos para pagar sus costos. Cada peso de depreciación equivale a aproximadamente USD 18M adicionales en ingresos para la empresa.",
+      adv:  "Escenario adverso: el peso se fortalece y el dólar vale menos pesos (ej. $16.00). Esto perjudica a Autlán porque sus ingresos en dólares 'valen menos' al convertirlos, pero sus costos en pesos no bajan. El principal riesgo es la renegociación del tratado comercial USMCA en julio 2026, que podría causar una apreciación fuerte del peso.",
     },
     precioMn: {
-      base: "Precio Mn en máximo 17 meses en Q1 2026 (~USD 1,309/MT). Recuperación frágil: China restocking moderado + India +6.3% acero. Rango base USD 1,200–1,400/MT (Análisis macro, IMARC 2026). Probabilidad mayor al promedio por soporte de inventarios bajos.",
-      opt:  "China stimulus fiscal fuerte o ban Gabón adelanta efectos (2029). Australia retrasa producción. India acero supera +8%. Precio >USD 1,450/MT abre margen operativo significativo. Prob. baja (20%): requiere catalizador chino que no está en el escenario base.",
-      adv:  "China decepción de demanda + oversupply australiano + dumping asiático en México. Precio colapsa a USD 850–1,100/MT. Impacto directo: –USD 30–50M en ingresos Autlán. FCF profundamente negativo. Acero global contrae. AHMSA sigue inactiva.",
+      base: "Escenario base: el precio del manganeso se mantiene en recuperación moderada (~USD 1,300/tonelada). El manganeso es la materia prima principal de Autlán — lo minan, procesan y venden a fábricas de acero. China, el mayor comprador mundial, está reabasteciendo inventarios gradualmente, lo que sostiene el precio sin grandes subidas.",
+      opt:  "Escenario optimista: el precio sube a más de USD 1,600/tonelada. Esto ocurriría si China lanza un gran estímulo económico, o si Gabón (uno de los mayores productores mundiales) adelanta su prohibición de exportar mineral sin procesar prevista para 2029. Un precio mayor significa más ingresos directos para Autlán por cada tonelada que vende.",
+      adv:  "Escenario adverso: el precio colapsa a USD 850–1,100/tonelada. Esto pasaría si China reduce su producción de acero más de lo esperado, o si productores asiáticos venden manganeso a precios artificialmente bajos en México (dumping). Para Autlán significaría perder entre USD 25–40M en ingresos anuales.",
     },
     precioOro: {
-      base: "Oro en máximos históricos (~USD 3,000/oz) en may-2026. Corrección moderada esperada por DXY recuperación parcial. Demanda bancos centrales sostiene piso. Metallorum duplicó producción 1T26. Rango base USD 2,750–3,100. Prob. media pues oro en zona de máximos históricos tiende a corregir.",
-      opt:  "Risk-off global intensifica (USMCA breakdown, tensiones geopolíticas). Bancos centrales aceleran compras. Fed dovish debilita USD. Oro >USD 3,300 amplifica ingresos Metallorum — segmento contra-cíclico al acero. Prob. media-alta (35%): correlación negativa con escenario adverso de ferroaleaciones.",
-      adv:  "Fortaleza USD (DXY >105). Fed hawkish sorpresa. ETFs de oro liquidan posiciones. Precio cae a USD 2,200–2,500. Segmento Metallorum pierde su rol de cobertura natural. Prob. baja (20%): requiere reversión simultánea de múltiples soportes estructurales del oro.",
+      base: "Escenario base: el precio del oro baja moderadamente desde sus máximos históricos actuales (~USD 3,000/oz) hasta ~USD 2,900/oz. El oro está muy alto históricamente y suele corregir. Autlán produce oro a través de su división Metallorum, que duplicó su producción en el primer trimestre de 2026. Una corrección moderada no afecta gravemente sus ingresos.",
+      opt:  "Escenario optimista: el oro sube a más de USD 3,300/oz. El oro sube cuando hay incertidumbre global — guerras, crisis financieras, o cuando el dólar se debilita. Lo interesante para Autlán es que este escenario suele ocurrir justo cuando el negocio de acero y manganeso va mal, así que el oro actúa como un 'seguro natural' que compensa las pérdidas del negocio principal.",
+      adv:  "Escenario adverso: el oro baja a USD 2,200–2,500/oz. Esto ocurriría si la Reserva Federal de EE.UU. sube sus tasas de interés inesperadamente, fortaleciendo el dólar. Un dólar fuerte hace que el oro (que cotiza en dólares) sea más caro para compradores de otros países, reduciendo la demanda. Autlán perdería el beneficio de su división aurífera justo cuando más la necesita.",
     },
     tiie28: {
-      base: "Banxico completó 13 recortes desde 2024; tasa terminal 6.50% para fin de 2026 (Banxico, Q1 2026). TIIE 28d ~7.10% en mar-2026 y en trayectoria bajista. Inflación 4.45% dentro de banda 2–4%. Rango base: 6.90–7.10%. Prob. alta (55%): ciclo de recortes bien comunicado por Banxico.",
-      opt:  "Inflación converge a 3.5%, Banxico acelera recortes (3–4 adicionales). TIIE llega a 6.4–6.6% a fin de año. Reduce costo deuda MXN Autlán (~USD 440K por cada –100bps). Prob. media (25%): requiere inflación por debajo del objetivo sostenidamente.",
-      adv:  "IPC rebota >5%, Banxico pausa o sube. Shocks externos (FX, energía). TIIE sube a 7.4–7.9%. Aumenta costo financiero MXN ~USD 440K por 100bps adicionales. Riesgo: covenant breach si se combina con caída en ingresos. Prob. baja (20%) pero con impacto alto.",
+      base: "Escenario base: la TIIE (la tasa de interés de referencia en México, similar a lo que cobra un banco por prestar dinero) baja gradualmente de 7.10% a ~6.95%. Banxico ha estado bajando tasas consistentemente y se espera que continúe. Autlán tiene deuda en pesos ligada a esta tasa, así que tasas más bajas reducen lo que paga de intereses cada mes.",
+      opt:  "Escenario optimista: la TIIE baja más rápido a ~6.50%. Si la inflación en México baja más rápido de lo esperado, Banxico puede acelerar los recortes. Para Autlán, cada 1% que baja la TIIE representa aproximadamente USD 440K menos de gasto financiero al año.",
+      adv:  "Escenario adverso: la TIIE sube a ~7.75%. Si la inflación rebota por encima del 5%, Banxico tendría que subir tasas en lugar de bajarlas. Esto aumentaría los pagos de intereses de Autlán. El riesgo es mayor porque la empresa ya tiene un DSCR de 0.6x, lo que significa que sus ingresos operativos apenas cubren su deuda — cualquier incremento en costos financieros presiona aún más.",
     },
     sofr1m: {
-      base: "Fed con 1–2 recortes en 2026 según consenso de mercado (may-2026). SOFR 1m ~4.30%. Economía USA modera sin recesión. Rango base: 4.0–4.5%. Cada 100bps en SOFR impacta gasto financiero Autlán ~USD 1.35M (sobre USD 135M deuda SOFR). Prob. media (50%).",
-      opt:  "Fed recorta agresivamente ante desaceleración USA. Inflación baja rápido. SOFR cae a 3.25–3.75%. Reduce costo deuda principal Autlán ~USD 1.35–2M/año. Positivo para todas las empresas con deuda USD flotante. Prob. media (25%): sujeto a datos de empleo USA.",
-      adv:  "Inflación USA persistente (tariff-driven). Fed mantiene o sube. SOFR 4.6–5.2%. Aumenta costo financiero USD ~USD 1.35M por +100bps. Combinado con FX adverso: doble presión sobre DSCR ya en 0.6x. Prob. media (25%): mercados futuros descuentan 1–2 recortes pero hay incertidumbre.",
+      base: "Escenario base: el SOFR (la tasa de interés de referencia en EE.UU., equivalente a la TIIE pero en dólares) baja ligeramente a ~4.10%. La Reserva Federal se espera que haga 1 o 2 recortes en 2026. Autlán tiene USD 135M de deuda en dólares ligada a esta tasa — la más grande de su portafolio — así que esto impacta directamente su gasto financiero.",
+      opt:  "Escenario optimista: el SOFR baja a ~3.50% si la economía de EE.UU. se desacelera y la Fed recorta agresivamente. Para Autlán, bajar el SOFR 1% significa pagar ~USD 1.35M menos de intereses al año sobre su deuda principal.",
+      adv:  "Escenario adverso: el SOFR sube a ~4.80% si la inflación en EE.UU. no baja como se espera, en parte por los nuevos aranceles comerciales. Esto elevaría el gasto financiero de Autlán en USD 1.35M adicionales por cada 1% que suba. Combinado con un peso fuerte y manganeso barato, sería una presión triple simultánea sobre sus finanzas.",
     },
   };
-
+  
   // ─────────────────────────────────────────────────────────────
   // JUSTIFICACIONES — resultados (dependientes, con fórmula)
   // ─────────────────────────────────────────────────────────────
   const JUST_RESULT = {
     ebitda: {
-      formula: "FÓRMULA: EBITDA = EBITDA_base(USD 31.5M) + ΔFX + ΔMn + ΔOro + ΔTIIE + ΔSOFR + ΔGas + ΔVol",
-      base: "Con variables en rango base: FX neutral (+/- USD 5M), Mn recuperación parcial (+USD 2M), tasas ligeramente menores (–USD 0.5M). EBITDA ~USD 30–35M. Margen ~9–11%. Deuda serviceable con apoyo de líneas de crédito.",
-      opt:  "FX favorable (+USD 15–20M por depreciación peso) + Mn alcista (+USD 8–12M) + Oro fuerte (+USD 2M). EBITDA puede superar USD 50M. Margen >15%. FCF positivo. DSCR podría superar 1.0x por primera vez desde 2023.",
-      adv:  "FX adverso (–USD 25–30M) + Mn colapsa (–USD 30–50M) + tasas suben (–USD 3M). EBITDA <USD 10M o negativo. Margen <5%. FCF profundamente negativo. DSCR <0.4x. Riesgo de covenant breach según HR Ratings (dic-2025).",
+      formula: "FÓRMULA: EBITDA = Ingresos − Costos operativos. Representa cuánto genera la empresa con su operación antes de pagar deuda, impuestos y depreciación. Base de partida: USD 31.5M (resultado auditado 2025). Se ajusta sumando o restando el impacto de cada variable macro.",
+      base: "Con las variables en niveles moderados, el EBITDA se mantiene en un rango de USD 30–35M. La empresa cubre su operación pero no genera suficiente para pagar toda su deuda sola — necesita apoyo de líneas de crédito bancarias. Margen de utilidad operativa de ~9–11%.",
+      opt:  "Si el peso se debilita, el manganeso sube y el oro se mantiene fuerte, el EBITDA podría superar USD 50M. Sería la primera vez desde 2023 que la empresa genera suficiente flujo para cubrir autónomamente su deuda. El margen subiría por encima del 15%.",
+      adv:  "Si el peso se fortalece, el manganeso cae y las tasas suben al mismo tiempo, el EBITDA podría caer por debajo de USD 10M o volverse negativo. La empresa entraría en zona de riesgo: no podría pagar su deuda sin vender activos o renegociar condiciones con los bancos.",
     },
     margen: {
-      formula: "FÓRMULA: Margen EBITDA = EBITDA_escenario / Ingresos_escenario × 100. Ingresos ajustados por variación en precio Mn (60% base), FX (85% sensible), y Oro.",
-      base: "Margen comprimido vs pico histórico ~38% (2022). 2025 cerró en ~9.7% (auditado). Estructura de costos fijos alta en minería/fundición limita recuperación rápida de margen aunque mejore el precio.",
-      opt:  "Mejora de precio Mn + depreciación peso expanden margen. Operativo favorable. Economías de escala si volumen doméstico se recupera (+12% con AHMSA partial restart).",
-      adv:  "Margen puede colapsar por debajo de 5%. Costos fijos de minería son irrecuperables (sunk). Empresa obligada a exportar más a precios menores para cubrir fijos. Efecto tijera: ingresos caen, costos MXN se mantienen en USD.",
+      formula: "FÓRMULA: Margen EBITDA = EBITDA ÷ Ingresos totales × 100. Indica qué porcentaje de cada peso vendido queda como utilidad operativa. En 2022 llegó a 38% — hoy está en ~10%, lo que refleja la compresión por peso fuerte y precios bajos de manganeso.",
+      base: "Margen de ~9–11%. La empresa opera con márgenes históricamente bajos. Los costos fijos de operar minas y plantas de fundición son muy altos y no bajan aunque caigan los ingresos, lo que limita la recuperación del margen.",
+      opt:  "Margen podría subir a 15–18% si mejoran simultáneamente el tipo de cambio y el precio del manganeso. La recuperación del mercado doméstico de acero en México (+12% si AHMSA reinicia operaciones) también ayudaría a mejorar el margen al diluir los costos fijos.",
+      adv:  "Margen podría caer por debajo del 5%. Cuando los ingresos caen pero los costos fijos se mantienen, el margen colapsa desproporcionadamente. Es el llamado 'efecto tijera': ingresos bajan, costos no.",
     },
     fcf: {
-      formula: "FÓRMULA: FCF = EBITDA_escenario – Gasto_financiero_escenario – CAPEX_mantenimiento(USD 30M). Gasto financiero ajustado por cambios en TIIE y SOFR vs base.",
-      base: "FCF negativo o breakeven. Gasto financiero 2025: USD 42.5M (auditado). CAPEX mínimo ~USD 30M. Se requiere EBITDA >USD 72M para FCF positivo — actualmente no alcanzado. Líneas de crédito cubren el gap.",
-      opt:  "EBITDA >USD 70M en escenario optimista permite FCF ligeramente positivo. Reducción de deuda inicia. Mejora perfil crediticio para 2027.",
-      adv:  "FCF profundamente negativo (–USD 40–60M estimado). Empresa forzada a usar líneas de crédito y diferir CAPEX. Riesgo de aceleración de covenants si ratio deuda/EBITDA supera umbrales del crédito Santander.",
+      formula: "FÓRMULA: FCF (Flujo de Caja Libre) = EBITDA − Intereses de deuda − Inversiones mínimas en activos (CAPEX). Representa el dinero real que queda disponible después de pagar deuda y mantener las operaciones. Si es negativo, la empresa necesita pedir prestado más dinero para sobrevivir.",
+      base: "FCF negativo o en cero. La empresa necesita ~USD 42M para pagar intereses y ~USD 30M para mantener sus activos, pero su EBITDA base es de ~USD 31M. El déficit lo cubre con líneas de crédito bancarias ya contratadas.",
+      opt:  "FCF ligeramente positivo si el EBITDA supera USD 72M. Sería la primera vez que Autlán genera efectivo libre desde 2023, permitiéndole empezar a reducir su deuda.",
+      adv:  "FCF de entre –USD 40M y –USD 60M. La empresa tendría que usar todas sus líneas de crédito disponibles y probablemente diferir inversiones de mantenimiento, lo que deterioraría sus activos a mediano plazo.",
     },
     dscr: {
-      formula: "FÓRMULA: DSCR = EBITDA_escenario / Gasto_financiero_escenario. Referencia auditada: HR Ratings proyecta 0.6x para 2026–2028. Un DSCR <1.0x significa que el flujo operativo NO cubre autónomamente el servicio de deuda.",
-      base: "DSCR ~0.6–0.8x. Consistente con proyección HR Ratings (dic-2025). Empresa en rating watch negativo (HR A-, Fitch BBB+/mex, PCR A-/M). No hay covenant breach inmediato pero hay presión estructural.",
-      opt:  "DSCR podría superar 1.0x si EBITDA >USD 42M y gasto financiero se reduce por recortes de SOFR/TIIE. Trigger para revisión positiva de outlook por calificadoras.",
-      adv:  "DSCR <0.4x en escenario adverso combinado. Riesgo de breach en covenants de ratio de apalancamiento. Posible downgrade a grado especulativo. HR Ratings señaló este escenario como riesgo crítico en reporte dic-2025.",
+      formula: "FÓRMULA: DSCR = EBITDA ÷ Gasto financiero total. Mide cuántas veces los ingresos operativos cubren los pagos de deuda. Un DSCR de 1.0x significa que la empresa gana exactamente lo que necesita para pagar su deuda. Por debajo de 1.0x significa que no alcanza y necesita financiamiento externo. HR Ratings proyecta 0.6x para 2026–2028.",
+      base: "DSCR de ~0.6–0.8x. La empresa genera solo el 60–80% de lo que necesita para pagar su deuda con su operación. Las tres calificadoras de riesgo (HR Ratings, Fitch, PCR Verum) mantienen calificación de grado de inversión pero con perspectiva negativa, lo que significa que podrían bajar la calificación si la situación no mejora.",
+      opt:  "DSCR podría superar 1.0x, significando que la empresa por primera vez cubriría su deuda sin ayuda externa. Esto triggearía una revisión positiva de las calificadoras y mejoraría las condiciones de refinanciamiento.",
+      adv:  "DSCR por debajo de 0.4x. La empresa estaría en riesgo de incumplir las condiciones de sus contratos de deuda (covenants), lo que podría obligar a los bancos a exigir el pago anticipado de los créditos. HR Ratings identificó este escenario como el principal riesgo en su reporte de diciembre 2025.",
     },
     impFX: {
-      formula: "FÓRMULA: ΔFX = Ingresos_base × ΔTC/TC_base × 0.85. Donde 0.85 = 85% de ingresos sensibles a FX; ΔTC = (TC_escenario – 18.0) / 18.0 (base USD/MXN = $18.0).",
-      base:  "TC ~$18.0: impacto FX neutro vs base de cálculo. El 85% de ingresos USD son sensibles a FX (costos en MXN). Coberturas actuales (4 collares, ~3% de exposición) no mitigan significativamente.",
-      opt:   "TC >$19.5: depreciación del peso genera impacto FX positivo de ~+USD 15–25M. Refleja mayor valor MXN de costos relativos a ingresos USD. Principal driver del escenario optimista.",
-      adv:   "TC <$16.0: apreciación del peso genera impacto FX negativo de –USD 20–30M. Principal driver del escenario adverso. Gap de cobertura FX (57pp) deja desprotegida la mayor parte de esta exposición.",
+      formula: "FÓRMULA: Impacto FX = Ingresos base × Cambio % en tipo de cambio × 0.85. El 0.85 refleja que el 85% de los ingresos de Autlán son sensibles al tipo de cambio (el 15% restante son ingresos en pesos que no se ven afectados). Tipo de cambio base de referencia: $18.00 pesos por dólar.",
+      base:  "Con el dólar a ~$18 pesos, el impacto es casi neutro. Las coberturas actuales de Autlán (4 contratos de tipo collar que cubren solo el 3% de su exposición) prácticamente no mitigan este riesgo.",
+      opt:   "Con el dólar a $19.50: impacto positivo de ~USD 15–25M. El peso débil hace que los ingresos en dólares 'valgan más' cuando se convierten a pesos para pagar costos locales. Es el principal driver del escenario optimista.",
+      adv:   "Con el dólar a $16.00: impacto negativo de –USD 20–30M. El peso fuerte es el principal riesgo para Autlán. El gap de cobertura (57 puntos porcentuales sin protección) significa que la gran mayoría de esta pérdida no está cubierta con derivados.",
     },
     impMn: {
-      formula: "FÓRMULA: ΔMn = Ingresos_base × 0.60 × ΔPrecio/Precio_base. Donde 0.60 = ~60% de ingresos provienen de ferroaleaciones manganeso; precio base = USD 1,309/MT.",
-      base:  "Precio Mn ~USD 1,300/MT: impacto marginal vs base. Recuperación frágil ya descontada. Sin upside significativo pero tampoco caída adicional en este escenario.",
-      opt:   "Precio Mn >USD 1,600/MT: impacto positivo ~+USD 15–25M en ingresos. Requiere China stimulus o reducción de oferta global. Ban Gabón (2029) podría anticipar efectos.",
-      adv:   "Precio Mn <USD 900/MT: impacto negativo –USD 25–40M. Dumping asiático + débil demanda china + AHMSA inactiva = peor combinación para Autlán. Mayor riesgo individual de la empresa.",
+      formula: "FÓRMULA: Impacto Mn = Ingresos base × 0.60 × Cambio % en precio. El 0.60 refleja que aproximadamente el 60% de los ingresos provienen de la venta de ferroaleaciones de manganeso. Precio base de referencia: USD 1,309 por tonelada métrica.",
+      base:  "Con el precio estable en ~USD 1,300/ton, el impacto es marginal. La recuperación reciente del precio ya está descontada en los números base.",
+      opt:   "Con el precio en USD 1,600/ton: impacto positivo de ~USD 15–25M adicionales en ingresos. Equivale aproximadamente a la ganancia de vender las mismas toneladas pero a USD 291 más por cada una.",
+      adv:   "Con el precio en USD 900/ton: impacto negativo de –USD 25–40M. Es el mayor riesgo individual de la empresa porque el manganeso representa ~90% de sus ingresos y no existe un mercado organizado de derivados para cubrirse contra esta caída de precio.",
     },
     impTasa: {
-      formula: "FÓRMULA: ΔTIIE = –USD 29.7M × (TIIE_esc – 7.10%)/100 | ΔSOFR = –USD 135.5M × (SOFR_esc – 4.30%)/100. Impacto total = ΔTIIE + ΔSOFR. Deuda TIIE: USD 29.7M equiv. | Deuda SOFR: USD 135.5M.",
-      base:  "Tasas ligeramente a la baja: ahorro neto ~USD 0.5–2M vs 2025. Collar TIIE (floor 8.75%/cap 11%) fuera del dinero (TIIE ~7.1%) — empresa paga tasa de mercado sin beneficio del instrumento. Pérdida acumulada USD 45.6K.",
-      opt:   "Banxico + Fed recortan agresivamente: ahorro financiero ~USD 2–4M anuales. Reduce presión sobre DSCR. Parcialmente compensado por collar TIIE OTM que no genera beneficio incluso con recortes adicionales.",
-      adv:   "Tasas suben: costo adicional ~USD 3–5M anuales (combinado TIIE+SOFR). Se suma a compresión de ingresos por FX y Mn. Triple presión: ingresos bajan + costos MXN suben + gasto financiero crece.",
+      formula: "FÓRMULA: Impacto TIIE = –USD 29.7M × (TIIE nueva − 7.10%) ÷ 100. Impacto SOFR = –USD 135.5M × (SOFR nuevo − 4.30%) ÷ 100. El signo negativo indica que cuando las tasas suben, el impacto es un costo mayor (negativo para la empresa). Deuda en pesos (TIIE): USD 29.7M equivalente. Deuda en dólares (SOFR): USD 135.5M.",
+      base:  "Tasas bajando ligeramente: ahorro neto de ~USD 0.5–2M vs 2025. Sin embargo, el collar de tasa de interés que tiene Autlán (un contrato que debería protegerlos si la TIIE sube mucho) está 'fuera del dinero' porque la TIIE actual está por debajo del nivel mínimo del contrato. Esto significa que están pagando por una póliza de seguro que actualmente no les da beneficio.",
+      opt:   "Banxico y la Fed recortan agresivamente: ahorro combinado de ~USD 2–4M al año. Reduce la presión sobre el flujo de caja aunque no resuelve el problema central de ingresos insuficientes.",
+      adv:   "Tasas suben: costo adicional de ~USD 3–5M al año. Se suma a la presión de ingresos bajos. Es la 'triple presión': ingresos caen por FX y manganeso, y al mismo tiempo los pagos de deuda aumentan.",
     },
   };
 
