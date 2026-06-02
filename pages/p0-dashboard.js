@@ -158,7 +158,7 @@ function _renderAlerts() {
   const collar = AUTLAN.derivadosVigentes.collarTasa;
   alerts.push({
     tipo: "warn",
-    icono: "📈",
+    icono: "🏦",
     texto: `Collar TIIE (floor ${collar.floor}% / cap ${collar.cap}%) fuera del dinero — 
             TIIE actual <strong>${collar.tiieActual}%</strong> está por debajo del floor. 
             Empresa paga prima sin beneficio. Pérdida acumulada: 
