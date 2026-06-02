@@ -474,7 +474,7 @@ function _renderEscenarios() {
   // ─────────────────────────────────────────────────────────────
   function cell(val, cls, probKey, escName) {
     return `<td class="${cls}" style="vertical-align:top; padding:8px 10px;">
-      <div class="mono" style="font-size:12.5px; font-weight:600;">${val}</div>
+      <div class="mono" style="font-size:12.5px; font-weight:400;">${val}</div>
       ${probPill(probKey, escName)}
     </td>`;
   }
