@@ -138,7 +138,7 @@ function _renderAlerts() {
   // Alert 1 — gap FX crítico
   alerts.push({
     tipo: "danger",
-    icono: "⚠",
+    icono: "💱",
     texto: `Cobertura FX activa: solo <strong>${exp.pctCubierto_FX.valor}%</strong> de exposición cubierta 
             vs límite de política de <strong>60%</strong>. 
             Gap de <strong>${exp.gapCobertura_FX.valor} pp</strong> sin protección 
