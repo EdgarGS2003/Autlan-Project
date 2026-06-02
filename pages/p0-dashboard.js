@@ -148,7 +148,7 @@ function _renderAlerts() {
   // Alert 2 — oro sin cobertura en máximos
   alerts.push({
     tipo: "warn",
-    icono: "🥇",
+    icono: "🪙",
     texto: `Precio del oro en máximos históricos (~USD ${AUTLAN.mercado.precioOro.valor}/oz) 
             y <strong>sin cobertura activa</strong>. Metallorum duplicó producción en 1T26 — 
             exposición al downside sin protección.`,
