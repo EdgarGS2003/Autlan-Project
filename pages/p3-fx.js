@@ -36,7 +36,7 @@ function renderFX() {
       <!-- Tab headers -->
       <div style="display:flex; gap:4px; margin-bottom:20px;
                   border-bottom:2px solid var(--border); padding-bottom:0;">
-        ${["Collar", "Forward", isEn ? "Put Option" : "Put Opción", isEn ? "Currency Swap" : "Swap Divisas"].map((t, i) => `
+        ${["Collar", "Forward", isEn ? "Put Option" : "Put Opción", isEn ? "Currency Swap" : "Swap Divisas", "Knock-out", "Seagull", "Strangle"].map((t, i) => `
           <button class="fx-tab ${i === 0 ? "active" : ""}"
                   data-tab="${i}"
                   onclick="switchFXTab(${i})"
@@ -54,6 +54,9 @@ function renderFX() {
       <div id="fx-tab-1" style="display:none;">${_fxTabForward()}</div>
       <div id="fx-tab-2" style="display:none;">${_fxTabPut()}</div>
       <div id="fx-tab-3" style="display:none;">${_fxTabSwap()}</div>
+      <div id="fx-tab-4" style="display:none;">${_fxTabKnockOut()}</div>
+      <div id="fx-tab-5" style="display:none;">${_fxTabSeagull()}</div>
+      <div id="fx-tab-6" style="display:none;">${_fxTabStrangle()}</div>
 
     </div>
 
@@ -413,7 +416,7 @@ function _fxTabSwap() {
 // CÁLCULOS POR INSTRUMENTO
 // ─────────────────────────────────────────
 window.switchFXTab = function(idx) {
-  [0, 1, 2, 3].forEach(i => {
+  [0, 1, 2, 3, 4, 5, 6].forEach(i => {
     const tab     = document.getElementById(`fx-tab-${i}`);
     const btn     = document.querySelector(`.fx-tab[data-tab="${i}"]`);
     if (!tab || !btn) return;
@@ -869,11 +872,373 @@ function _resultRow(label, val, tipo = "") {
       </span>
     </div>`;
 }
+function _fxTabKnockOut() {
+  const isEn = I18N.getLocale() === "en";
+  const tc = Scenarios.getVar("usdmxn");
+  return `
+    <div class="grid-2">
+      <div>
+        <div class="section-title" style="margin-top:0;">
+          ${isEn ? "Knock-out Forward — Barrier" : "Forward Knock-out — Barrera"}
+        </div>
+        <div class="alert alert-info" style="margin-bottom:14px;">
+          <span class="alert-icon">ℹ</span>
+          <span style="font-size:11.5px;">
+            ${isEn
+              ? "A forward that <strong>cancels automatically</strong> if USD/MXN touches the barrier. Offers a better strike than a plain forward — but if the barrier is hit, all protection disappears. Common in Mexico for FX hedging."
+              : "Un forward que se <strong>cancela automáticamente</strong> si USD/MXN toca la barrera. Ofrece un strike mejor que un forward normal — pero si la barrera se toca, toda la protección desaparece. Muy común en México para cobertura FX."}
+          </span>
+        </div>
+        <div class="field-group">
+          <label>Spot actual (USD/MXN)</label>
+          <input type="number" id="fx-ko-spot" value="${tc.toFixed(2)}" step="0.05"
+                 oninput="calcFXKnockOut()" />
+        </div>
+        <div class="field-group">
+          <label>${isEn ? "Strike (contracted rate)" : "Strike (tipo de cambio pactado)"}</label>
+          <input type="number" id="fx-ko-strike" value="${(tc * 0.99).toFixed(2)}" step="0.05"
+                 oninput="calcFXKnockOut()" />
+        </div>
+        <div class="field-group">
+          <label>${isEn ? "Knock-out Barrier (cancellation level)" : "Barrera knock-out (nivel de cancelación)"}</label>
+          <input type="number" id="fx-ko-barrera" value="${(tc * 1.08).toFixed(2)}" step="0.05"
+                 oninput="calcFXKnockOut()" />
+        </div>
+        <div class="field-group">
+          <label>${isEn ? "Notional (USD thousands)" : "Nocional (USD miles)"}</label>
+          <input type="number" id="fx-ko-noc" value="10000" step="1000"
+                 oninput="calcFXKnockOut()" />
+        </div>
+        <div class="field-group">
+          <label>${isEn ? "Horizon (months)" : "Horizonte (meses)"}</label>
+          <input type="number" id="fx-ko-T" value="6" min="1" max="12"
+                 oninput="calcFXKnockOut()" />
+        </div>
+        <div class="field-group">
+          <label>${isEn ? "Implied Volatility (%)" : "Volatilidad implícita (%)"}</label>
+          <input type="number" id="fx-ko-vol" value="12" step="0.5"
+                 oninput="calcFXKnockOut()" />
+        </div>
+      </div>
+      <div id="fx-ko-result">
+        <div class="alert alert-info">
+          <span>${isEn ? "Adjust parameters to calculate knock-out." : "Ajusta los parámetros para calcular el knock-out."}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function _fxTabSeagull() {
+  const isEn = I18N.getLocale() === "en";
+  const tc = Scenarios.getVar("usdmxn");
+  return `
+    <div class="grid-2">
+      <div>
+        <div class="section-title" style="margin-top:0;">Seagull</div>
+        <div class="alert alert-info" style="margin-bottom:14px;">
+          <span class="alert-icon">ℹ</span>
+          <span style="font-size:11.5px;">
+            ${isEn
+              ? "Collar + extra sold put. <strong>Buy put K1</strong> (floor) + <strong>sell call K2</strong> (cap) + <strong>sell put K3</strong> (K3 &lt; K1). The extra sold put reduces cost — sometimes achieves zero premium. Risk: if spot falls below K3, protection starts eroding."
+              : "Collar + put vendida adicional. <strong>Compra put K1</strong> (piso) + <strong>vende call K2</strong> (techo) + <strong>vende put K3</strong> (K3 &lt; K1). La put adicional vendida reduce el costo — a veces logra prima cero. Riesgo: si el spot cae bajo K3, la protección se erosiona."}
+          </span>
+        </div>
+        <div class="field-group">
+          <label>Spot (USD/MXN)</label>
+          <input type="number" id="fx-sg-spot" value="${tc.toFixed(2)}" step="0.05"
+                 oninput="calcFXSeagull()" />
+        </div>
+        <div class="field-group">
+          <label>K1 — ${isEn ? "Floor put (bought)" : "Put piso (comprada)"}</label>
+          <input type="number" id="fx-sg-K1" value="${(tc * 0.97).toFixed(2)}" step="0.05"
+                 oninput="calcFXSeagull()" />
+        </div>
+        <div class="field-group">
+          <label>K2 — ${isEn ? "Cap call (sold)" : "Call techo (vendida)"}</label>
+          <input type="number" id="fx-sg-K2" value="${(tc * 1.06).toFixed(2)}" step="0.05"
+                 oninput="calcFXSeagull()" />
+        </div>
+        <div class="field-group">
+          <label>K3 — ${isEn ? "Extra put (sold, K3 < K1)" : "Put adicional (vendida, K3 < K1)"}</label>
+          <input type="number" id="fx-sg-K3" value="${(tc * 0.90).toFixed(2)}" step="0.05"
+                 oninput="calcFXSeagull()" />
+        </div>
+        <div class="field-group">
+          <label>${isEn ? "Notional (USD thousands)" : "Nocional (USD miles)"}</label>
+          <input type="number" id="fx-sg-noc" value="10000" step="1000"
+                 oninput="calcFXSeagull()" />
+        </div>
+        <div class="field-group">
+          <label>${isEn ? "Horizon (months)" : "Horizonte (meses)"}</label>
+          <input type="number" id="fx-sg-T" value="6" min="1" max="12"
+                 oninput="calcFXSeagull()" />
+        </div>
+        <div class="field-group">
+          <label>${isEn ? "Volatility (%)" : "Volatilidad (%)"}</label>
+          <input type="number" id="fx-sg-vol" value="12" step="0.5"
+                 oninput="calcFXSeagull()" />
+        </div>
+      </div>
+      <div id="fx-sg-result">
+        <div class="alert alert-info">
+          <span>${isEn ? "Adjust parameters to calculate seagull." : "Ajusta los parámetros para calcular el seagull."}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function _fxTabStrangle() {
+  const isEn = I18N.getLocale() === "en";
+  const tc = Scenarios.getVar("usdmxn");
+  return `
+    <div class="grid-2">
+      <div>
+        <div class="section-title" style="margin-top:0;">Strangle</div>
+        <div class="alert alert-warn" style="margin-bottom:14px;">
+          <span class="alert-icon">⚠</span>
+          <span style="font-size:11.5px;">
+            ${isEn
+              ? "Buys OTM put + OTM call simultaneously. Profits if USD/MXN moves sharply in <strong>either direction</strong>. Relevant for Autlán in July 2026 (USMCA binary event) — if the outcome is extreme, the strangle pays off."
+              : "Compra put OTM + call OTM simultáneamente. Gana si USD/MXN se mueve fuertemente en <strong>cualquier dirección</strong>. Relevante para Autlán en julio 2026 (evento binario USMCA) — si el resultado es extremo, el strangle paga."}
+          </span>
+        </div>
+        <div class="field-group">
+          <label>Spot (USD/MXN)</label>
+          <input type="number" id="fx-st-spot" value="${tc.toFixed(2)}" step="0.05"
+                 oninput="calcFXStrangle()" />
+        </div>
+        <div class="field-group">
+          <label>K put — ${isEn ? "OTM put strike (below spot)" : "Strike put OTM (bajo el spot)"}</label>
+          <input type="number" id="fx-st-Kput" value="${(tc * 0.93).toFixed(2)}" step="0.05"
+                 oninput="calcFXStrangle()" />
+        </div>
+        <div class="field-group">
+          <label>K call — ${isEn ? "OTM call strike (above spot)" : "Strike call OTM (sobre el spot)"}</label>
+          <input type="number" id="fx-st-Kcall" value="${(tc * 1.07).toFixed(2)}" step="0.05"
+                 oninput="calcFXStrangle()" />
+        </div>
+        <div class="field-group">
+          <label>${isEn ? "Notional (USD thousands)" : "Nocional (USD miles)"}</label>
+          <input type="number" id="fx-st-noc" value="10000" step="1000"
+                 oninput="calcFXStrangle()" />
+        </div>
+        <div class="field-group">
+          <label>${isEn ? "Horizon (months)" : "Horizonte (meses)"}</label>
+          <input type="number" id="fx-st-T" value="6" min="1" max="12"
+                 oninput="calcFXStrangle()" />
+        </div>
+        <div class="field-group">
+          <label>${isEn ? "Volatility (%)" : "Volatilidad (%)"}</label>
+          <input type="number" id="fx-st-vol" value="12" step="0.5"
+                 oninput="calcFXStrangle()" />
+        </div>
+      </div>
+      <div id="fx-st-result">
+        <div class="alert alert-info">
+          <span>${isEn ? "Adjust parameters to calculate strangle." : "Ajusta los parámetros para calcular el strangle."}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+window.calcFXKnockOut = function() {
+  const isEn   = I18N.getLocale() === "en";
+  const S      = parseFloat(document.getElementById("fx-ko-spot")?.value    || Scenarios.getVar("usdmxn"));
+  const K      = parseFloat(document.getElementById("fx-ko-strike")?.value  || S * 0.99);
+  const H      = parseFloat(document.getElementById("fx-ko-barrera")?.value || S * 1.08);
+  const noc    = parseFloat(document.getElementById("fx-ko-noc")?.value     || 10000);
+  const meses  = parseFloat(document.getElementById("fx-ko-T")?.value       || 6);
+  const volPct = parseFloat(document.getElementById("fx-ko-vol")?.value     || 12);
+  const T      = meses / 12;
+  const r_d    = Scenarios.getVar("tiie28") / 100;
+  const r_f    = Scenarios.getVar("sofr1m") / 100;
+  const sigma  = volPct / 100;
+
+  const res     = Models.knockOutForward(S, K, H, T, r_d, r_f, sigma);
+  const vanilla = Models.forwardPrice(S, r_d, r_f, T).forward;
+  const mejora  = ((vanilla - K) / vanilla * 100).toFixed(2);
+
+  const el = document.getElementById("fx-ko-result");
+  if (!el) return;
+
+  el.innerHTML = `
+    <div class="section-title" style="margin-top:0;">
+      ${isEn ? "Knock-out Forward Result" : "Resultado Knock-out Forward"}
+    </div>
+    ${_resultRow("Spot", `$${S.toFixed(4)} MXN/USD`)}
+    ${_resultRow(isEn ? "Plain forward (ref.)" : "Forward normal (ref.)", `$${vanilla.toFixed(4)}`, "accent")}
+    ${_resultRow(isEn ? "KO strike (better rate)" : "Strike KO (mejor tasa)", `$${K.toFixed(4)}`,
+                  K < vanilla ? "positive" : "warn")}
+    ${_resultRow(isEn ? "Knock-out barrier" : "Barrera knock-out", `$${H.toFixed(4)}`,
+                  H > S ? "warn" : "danger")}
+    ${_resultRow(isEn ? "Improvement vs plain forward" : "Mejora vs forward normal",
+                  `${mejora}% ${isEn ? "better rate" : "mejor tasa"}`,
+                  parseFloat(mejora) > 0 ? "positive" : "warn")}
+    ${_resultRow(isEn ? "Premium" : "Prima", isEn ? "Zero — no upfront cost" : "Cero — sin costo inicial", "positive")}
+    ${_resultRow(isEn ? "Notional" : "Nocional", `USD ${noc.toLocaleString()}K`)}
+    ${_resultRow(isEn ? "Model" : "Modelo", "Reiner-Rubinstein")}
+
+    <div class="divider"></div>
+    <div style="font-size:11px; font-weight:700; color:var(--text-muted);
+                margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">
+      ${isEn ? "Payoff by scenario" : "Payoff por escenario"}
+    </div>
+    ${[
+      { label: isEn ? "Base · $"+Scenarios.getState().escenarios.base.usdmxn : "Base · $"+Scenarios.getState().escenarios.base.usdmxn,
+        spot: Scenarios.getState().escenarios.base.usdmxn },
+      { label: isEn ? "Optimistic · $"+Scenarios.getState().escenarios.optimista.usdmxn : "Optimista · $"+Scenarios.getState().escenarios.optimista.usdmxn,
+        spot: Scenarios.getState().escenarios.optimista.usdmxn },
+      { label: isEn ? "Adverse · $"+Scenarios.getState().escenarios.adverso.usdmxn : "Adverso · $"+Scenarios.getState().escenarios.adverso.usdmxn,
+        spot: Scenarios.getState().escenarios.adverso.usdmxn },
+    ].map(sc => {
+      const p = res.payoff(sc.spot);
+      const tocaBarrera = (H > S && sc.spot >= H) || (H < S && sc.spot <= H);
+      return _resultRow(sc.label,
+        tocaBarrera
+          ? (isEn ? "⚠ Barrier hit — contract cancelled" : "⚠ Barrera tocada — contrato cancelado")
+          : `USD ${(p * noc).toFixed(0)}K`,
+        tocaBarrera ? "danger" : p >= 0 ? "positive" : "warn");
+    }).join("")}
+
+    <div class="alert alert-${H > S ? "warn" : "danger"}" style="margin-top:12px;">
+      <span class="alert-icon">⚠</span>
+      <span style="font-size:11.5px;">
+        ${isEn
+          ? `The KO forward gives a <strong>better strike ($${K.toFixed(2)})</strong> than a plain forward ($${vanilla.toFixed(2)}), but <strong>cancels if USD/MXN touches $${H.toFixed(2)}</strong>. In the optimistic scenario (peso depreciates to $${Scenarios.getState().escenarios.optimista.usdmxn}), check if the barrier would be hit.`
+          : `El KO forward da un <strong>mejor strike ($${K.toFixed(2)})</strong> que un forward normal ($${vanilla.toFixed(2)}), pero se <strong>cancela si USD/MXN toca $${H.toFixed(2)}</strong>. En el escenario optimista (peso se deprecia a $${Scenarios.getState().escenarios.optimista.usdmxn}), verifica si se tocaría la barrera.`}
+      </span>
+    </div>
+  `;
+};
+
+window.calcFXSeagull = function() {
+  const isEn  = I18N.getLocale() === "en";
+  const S     = parseFloat(document.getElementById("fx-sg-spot")?.value || Scenarios.getVar("usdmxn"));
+  const K1    = parseFloat(document.getElementById("fx-sg-K1")?.value   || S * 0.97);
+  const K2    = parseFloat(document.getElementById("fx-sg-K2")?.value   || S * 1.06);
+  const K3    = parseFloat(document.getElementById("fx-sg-K3")?.value   || S * 0.90);
+  const noc   = parseFloat(document.getElementById("fx-sg-noc")?.value  || 10000);
+  const meses = parseFloat(document.getElementById("fx-sg-T")?.value    || 6);
+  const vol   = parseFloat(document.getElementById("fx-sg-vol")?.value  || 12) / 100;
+  const T     = meses / 12;
+  const r     = Scenarios.getVar("tiie28") / 100;
+  const q     = Scenarios.getVar("sofr1m") / 100;
+
+  const res = Models.seagull(S, K1, K2, K3, T, r, q, vol, true, Models.PARAMS.fx_usdmxn);
+
+  const el = document.getElementById("fx-sg-result");
+  if (!el) return;
+
+  const esc = Scenarios.getState().escenarios;
+
+  el.innerHTML = `
+    <div class="section-title" style="margin-top:0;">
+      ${isEn ? "Seagull Result" : "Resultado Seagull"}
+    </div>
+    ${_resultRow("Spot", `$${S.toFixed(4)}`)}
+    ${_resultRow(`K1 — ${isEn ? "Floor put (bought)" : "Put piso comprada"}`, `$${K1.toFixed(4)}`, "positive")}
+    ${_resultRow(`K2 — ${isEn ? "Cap call (sold)" : "Call techo vendida"}`, `$${K2.toFixed(4)}`, "warn")}
+    ${_resultRow(`K3 — ${isEn ? "Extra put (sold)" : "Put adicional vendida"}`, `$${K3.toFixed(4)}`, "danger")}
+    ${_resultRow(isEn ? "Put K1 premium" : "Prima put K1", `$${res.putK1.precio.toFixed(4)}`)}
+    ${_resultRow(isEn ? "Call K2 premium (received)" : "Prima call K2 (recibida)", `-$${res.callK2.precio.toFixed(4)}`)}
+    ${_resultRow(isEn ? "Put K3 premium (received)" : "Prima put K3 (recibida)", `-$${res.putK3.precio.toFixed(4)}`)}
+    ${_resultRow(isEn ? "Net cost" : "Costo neto",
+                  `$${res.costoNeto.toFixed(4)}/USD · USD ${(res.costoNeto * noc).toFixed(1)}K`,
+                  res.esCostless ? "positive" : Math.abs(res.costoNeto) < 0.01 * S ? "warn" : "danger")}
+    ${_resultRow(isEn ? "Costless?" : "¿Costless?",
+                  res.esCostless ? "✓ Sí" : `✗ No — ajusta K3 hacia $${(K3 * 0.97).toFixed(2)}`,
+                  res.esCostless ? "positive" : "warn")}
+
+    <div class="divider"></div>
+    <div style="font-size:11px; font-weight:700; color:var(--text-muted);
+                margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">
+      ${isEn ? "Payoff by scenario" : "Payoff por escenario"}
+    </div>
+    ${[
+      { label: `Base · $${esc.base.usdmxn}`,      spot: esc.base.usdmxn },
+      { label: `${isEn?"Opt":"Opt"} · $${esc.optimista.usdmxn}`, spot: esc.optimista.usdmxn },
+      { label: `${isEn?"Adv":"Adv"} · $${esc.adverso.usdmxn}`,  spot: esc.adverso.usdmxn },
+    ].map(sc => {
+      const p = res.payoff(sc.spot) * noc;
+      return _resultRow(sc.label, `USD ${p.toFixed(0)}K`, p >= 0 ? "positive" : "danger");
+    }).join("")}
+
+    <div class="alert alert-${res.esCostless ? "success" : "info"}" style="margin-top:12px;">
+      <span class="alert-icon">${res.esCostless ? "✓" : "💡"}</span>
+      <span style="font-size:11.5px;">
+        ${isEn
+          ? `The seagull protects between <strong>$${K1.toFixed(2)}–$${K2.toFixed(2)}</strong> at ${res.esCostless ? "zero" : "reduced"} cost. Risk: if peso appreciates beyond $${K3.toFixed(2)}, the sold put erodes protection below K3.`
+          : `El seagull protege entre <strong>$${K1.toFixed(2)}–$${K2.toFixed(2)}</strong> a costo ${res.esCostless ? "cero" : "reducido"}. Riesgo: si el peso aprecia más allá de $${K3.toFixed(2)}, la put vendida erosiona la protección bajo K3.`}
+      </span>
+    </div>
+  `;
+};
+
+window.calcFXStrangle = function() {
+  const isEn  = I18N.getLocale() === "en";
+  const S     = parseFloat(document.getElementById("fx-st-spot")?.value  || Scenarios.getVar("usdmxn"));
+  const Kput  = parseFloat(document.getElementById("fx-st-Kput")?.value  || S * 0.93);
+  const Kcall = parseFloat(document.getElementById("fx-st-Kcall")?.value || S * 1.07);
+  const noc   = parseFloat(document.getElementById("fx-st-noc")?.value   || 10000);
+  const meses = parseFloat(document.getElementById("fx-st-T")?.value     || 6);
+  const vol   = parseFloat(document.getElementById("fx-st-vol")?.value   || 12) / 100;
+  const T     = meses / 12;
+  const r     = Scenarios.getVar("tiie28") / 100;
+  const q     = Scenarios.getVar("sofr1m") / 100;
+
+  const res = Models.strangle(S, Kput, Kcall, T, r, vol, q, true, Models.PARAMS.fx_usdmxn);
+
+  const el = document.getElementById("fx-st-result");
+  if (!el) return;
+
+  const esc = Scenarios.getState().escenarios;
+  const costoTotal = res.costTotal * noc;
+
+  el.innerHTML = `
+    <div class="section-title" style="margin-top:0;">
+      ${isEn ? "Strangle Result" : "Resultado Strangle"}
+    </div>
+    ${_resultRow("Spot", `$${S.toFixed(4)}`)}
+    ${_resultRow("K put OTM", `$${Kput.toFixed(4)}`, "positive")}
+    ${_resultRow("K call OTM", `$${Kcall.toFixed(4)}`, "warn")}
+    ${_resultRow(isEn ? "Put premium" : "Prima put", `$${res.put.precio.toFixed(4)}/USD`)}
+    ${_resultRow(isEn ? "Call premium" : "Prima call", `$${res.call.precio.toFixed(4)}/USD`)}
+    ${_resultRow(isEn ? "Total cost" : "Costo total",
+                  `$${res.costTotal.toFixed(4)}/USD · USD ${costoTotal.toFixed(1)}K`, "warn")}
+    ${_resultRow(isEn ? "Break-even down" : "Break-even baja", `$${res.bepAbajo.toFixed(4)}`, "danger")}
+    ${_resultRow(isEn ? "Break-even up" : "Break-even alza", `$${res.bepArriba.toFixed(4)}`, "positive")}
+
+    <div class="divider"></div>
+    <div style="font-size:11px; font-weight:700; color:var(--text-muted);
+                margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">
+      ${isEn ? "Payoff by scenario" : "Payoff por escenario"}
+    </div>
+    ${[
+      { label: `Base · $${esc.base.usdmxn}`,           spot: esc.base.usdmxn },
+      { label: `Opt · $${esc.optimista.usdmxn}`,        spot: esc.optimista.usdmxn },
+      { label: `Adv · $${esc.adverso.usdmxn}`,          spot: esc.adverso.usdmxn },
+    ].map(sc => {
+      const p = res.payoff(sc.spot) * noc;
+      return _resultRow(sc.label, `USD ${p.toFixed(0)}K`, p >= 0 ? "positive" : "danger");
+    }).join("")}
+
+    <div class="alert alert-warn" style="margin-top:12px;">
+      <span class="alert-icon">⚠</span>
+      <span style="font-size:11.5px;">
+        ${isEn
+          ? `The strangle pays if USD/MXN moves sharply — below <strong>$${res.bepAbajo.toFixed(2)}</strong> or above <strong>$${res.bepArriba.toFixed(2)}</strong>. Relevant for the USMCA binary event (Jul-2026). Cost: <strong>USD ${costoTotal.toFixed(0)}K</strong> — maximum loss if spot stays between both strikes.`
+          : `El strangle paga si USD/MXN se mueve fuertemente — bajo <strong>$${res.bepAbajo.toFixed(2)}</strong> o sobre <strong>$${res.bepArriba.toFixed(2)}</strong>. Relevante para el evento binario USMCA (jul-2026). Costo: <strong>USD ${costoTotal.toFixed(0)}K</strong> — pérdida máxima si spot se queda entre ambos strikes.`}
+      </span>
+    </div>
+  `;
+};
 
 function _fxBindCalcs() {
-  // Trigger cálculos iniciales
   calcFXCollar();
   calcFXForward();
+  calcFXKnockOut();
+  calcFXSeagull();
+  calcFXStrangle();
 }
 
 // Lazy render
