@@ -438,7 +438,205 @@ const Models = (() => {
 
     return resultado;
   }
+// ─────────────────────────────────────────
+  // 9. KNOCK-OUT / KNOCK-IN FORWARD (Barrier)
+  // ─────────────────────────────────────────
+  // Fórmula analítica para opciones con barrera (Reiner-Rubinstein)
+  // tipo: "call" | "put"
+  // barreraTipo: "up-and-out" | "down-and-out" | "up-and-in" | "down-and-in"
+  function barrierOption(tipo, S, K, H, T, r, sigma, q = 0) {
+    if (T <= 0) return { precio: Math.max(tipo === "call" ? S - K : K - S, 0), delta: 0 };
 
+    const sqrtT = Math.sqrt(T);
+    const mu    = (r - q - 0.5 * sigma * sigma) / (sigma * sigma);
+    const lam   = Math.sqrt(mu * mu + 2 * r / (sigma * sigma));
+
+    // Componentes Reiner-Rubinstein
+    const x1 = Math.log(S / K) / (sigma * sqrtT) + (1 + mu) * sigma * sqrtT;
+    const x2 = Math.log(S / H) / (sigma * sqrtT) + (1 + mu) * sigma * sqrtT;
+    const y1 = Math.log(H * H / (S * K)) / (sigma * sqrtT) + (1 + mu) * sigma * sqrtT;
+    const y2 = Math.log(H / S) / (sigma * sqrtT) + (1 + mu) * sigma * sqrtT;
+
+    const eta  = tipo === "call" ? 1 : -1;
+    const phi  = S > H ? 1 : -1; // up vs down
+
+    const dfr  = safeExp(-r * T);
+    const dfq  = safeExp(-q * T);
+    const hRatio = Math.pow(H / S, 2 * mu + 2);
+
+    const A = eta * (S * dfq * normCDF(eta * x1) - K * dfr * normCDF(eta * (x1 - sigma * sqrtT)));
+    const B = eta * (S * dfq * normCDF(eta * x2) - K * dfr * normCDF(eta * (x2 - sigma * sqrtT)));
+    const C = eta * (S * dfq * hRatio * normCDF(eta * y1) - K * dfr * hRatio * normCDF(eta * (y1 - sigma * sqrtT)));
+    const D = eta * (S * dfq * hRatio * normCDF(eta * y2) - K * dfr * hRatio * normCDF(eta * (y2 - sigma * sqrtT)));
+
+    // Vanilla BS como referencia
+    const vanilla = blackScholes(tipo, S, K, T, r, sigma, q).precio;
+
+    // Up-and-out call (más común para FX México)
+    let precio;
+    if (tipo === "call" && H > S) {
+      // up-and-out
+      precio = A - B + C - D;
+    } else if (tipo === "put" && H < S) {
+      // down-and-out
+      precio = A - B + C - D;
+    } else {
+      precio = vanilla; // fallback
+    }
+
+    precio = Math.max(precio, 0);
+
+    return {
+      precio,
+      vanilla,
+      descuento: vanilla > 0 ? ((vanilla - precio) / vanilla * 100).toFixed(1) : "0",
+      barrera:   H,
+      strike:    K,
+      modelo:    "Reiner-Rubinstein",
+      advertencia: precio < vanilla * 0.05
+        ? "Barrera muy cercana — precio knock-out casi cero"
+        : null,
+    };
+  }
+
+  // Knock-out forward: forward que se cancela si spot toca la barrera
+  function knockOutForward(S, K, H, T, r_d, r_f, sigma) {
+    // = call knock-out - put knock-out en el strike (sintético)
+    const callKO = barrierOption("call", S, K, H, T, r_d, sigma, r_f);
+    const putKO  = barrierOption("put",  S, K, H, T, r_d, sigma, r_f);
+
+    const precioFwd   = forwardPrice(S, r_d, r_f, T).forward;
+    const descuento   = precioFwd > 0
+      ? ((precioFwd - K) / precioFwd * 100).toFixed(2)
+      : "0";
+
+    return {
+      callKO,
+      putKO,
+      precioForwardTeórico: precioFwd,
+      strikeKO: K,
+      barrera:  H,
+      descuentoVsForward: descuento,
+      modelo: "Knock-out Forward (Reiner-Rubinstein)",
+      payoff: (spotFinal) => {
+        if (
+          (H > S && spotFinal >= H) || // up-and-out cancelado
+          (H < S && spotFinal <= H)
+        ) {
+          return 0; // contrato cancelado por barrera
+        }
+        return (K - spotFinal); // payoff normal (vendedor de USD recibe MXN)
+      },
+    };
+  }
+
+  // ─────────────────────────────────────────
+  // 10. SEAGULL (Collar + Put vendida)
+  // ─────────────────────────────────────────
+  // Estructura: compra put K1 (floor) + vende call K2 (cap) + vende put K3 (K3 < K1)
+  // Reduce costo del collar vendiendo protección adicional en zona extrema
+  function seagull(S, K1, K2, K3, T, r, q, sigma, useHeston = false, hestonParams = null) {
+    const priceFn = (tipo, K) => {
+      if (useHeston && hestonParams) {
+        const h = hestonParams;
+        return heston(tipo, S, K, T, r, q, h.v0, h.kappa, h.theta_v, h.xi, h.rho_sv);
+      }
+      return blackScholes(tipo, S, K, T, r, sigma, q);
+    };
+
+    const putK1  = priceFn("put",  K1); // comprada — protección
+    const callK2 = priceFn("call", K2); // vendida   — cede upside
+    const putK3  = priceFn("put",  K3); // vendida   — reduce costo (K3 < K1)
+
+    const costoNeto = putK1.precio - callK2.precio - putK3.precio;
+    const esCostless = Math.abs(costoNeto) < 0.002 * S;
+
+    return {
+      putK1, callK2, putK3,
+      K1, K2, K3,
+      costoNeto,
+      esCostless,
+      rangoProtegido: `${K3}–${K1} (con cobertura total) / ${K1}–${K2} (sin costo adicional)`,
+      modelo: "Seagull",
+      descripcion: `Seagull: compra put ${K1} + vende call ${K2} + vende put ${K3}. ` +
+        `Costo neto: ${costoNeto.toFixed(4)}. ` +
+        (esCostless ? "¡COSTLESS!" : `Ajusta K3 para aproximar a cero.`),
+      payoff: (spotFinal) => {
+        let p = 0;
+        p += Math.max(K1 - spotFinal, 0); // put K1 comprada
+        p -= Math.max(spotFinal - K2, 0); // call K2 vendida
+        p -= Math.max(K3 - spotFinal, 0); // put K3 vendida
+        return p - costoNeto;
+      },
+    };
+  }
+
+  // ─────────────────────────────────────────
+  // 11. STRANGLE
+  // ─────────────────────────────────────────
+  // Compra put OTM + compra call OTM — apuesta a volatilidad extrema
+  // Para Autlán: útil si hay incertidumbre USMCA (julio 2026)
+  function strangle(S, K_put, K_call, T, r, sigma, q = 0, useHeston = false, hestonParams = null) {
+    const priceFn = (tipo, K) => {
+      if (useHeston && hestonParams) {
+        const h = hestonParams;
+        return heston(tipo, S, K, T, r, q, h.v0, h.kappa, h.theta_v, h.xi, h.rho_sv);
+      }
+      return blackScholes(tipo, S, K, T, r, sigma, q);
+    };
+
+    const put  = priceFn("put",  K_put);
+    const call = priceFn("call", K_call);
+
+    const costTotal  = put.precio + call.precio;
+    const bepAbajo   = K_put  - costTotal;
+    const bepArriba  = K_call + costTotal;
+
+    return {
+      put, call,
+      K_put, K_call,
+      costTotal,
+      bepAbajo,
+      bepArriba,
+      modelo: "Strangle",
+      descripcion: `Strangle: paga USD ${costTotal.toFixed(4)}/unidad. ` +
+        `Gana si spot < ${bepAbajo.toFixed(2)} o > ${bepArriba.toFixed(2)}.`,
+      payoff: (spotFinal) => {
+        return Math.max(K_put - spotFinal, 0)
+             + Math.max(spotFinal - K_call, 0)
+             - costTotal;
+      },
+    };
+  }
+
+  // ─────────────────────────────────────────
+  // 12. BUTTERFLY SPREAD
+  // ─────────────────────────────────────────
+  // Compra put K1 + vende 2 puts K2 + compra put K3 (K1 < K2 < K3)
+  // Apuesta a que el spot se queda cerca de K2 — costo muy bajo
+  function butterfly(S, K1, K2, K3, T, r, sigma, q = 0) {
+    const p1 = blackScholes("put", S, K1, T, r, sigma, q);
+    const p2 = blackScholes("put", S, K2, T, r, sigma, q);
+    const p3 = blackScholes("put", S, K3, T, r, sigma, q);
+
+    const costoNeto = p1.precio - 2 * p2.precio + p3.precio;
+    const gananciaMax = K2 - K1 - costoNeto;
+
+    return {
+      p1, p2, p3,
+      K1, K2, K3,
+      costoNeto,
+      gananciaMax,
+      modelo: "Butterfly",
+      descripcion: `Butterfly: costo ${costoNeto.toFixed(4)}, ganancia máx ${gananciaMax.toFixed(4)} si spot = ${K2}.`,
+      payoff: (spotFinal) => {
+        return Math.max(K1 - spotFinal, 0)
+             - 2 * Math.max(K2 - spotFinal, 0)
+             + Math.max(K3 - spotFinal, 0)
+             - costoNeto;
+      },
+    };
+  }
   // ─────────────────────────────────────────
   // PARÁMETROS POR ACTIVO
   // ─────────────────────────────────────────
@@ -498,6 +696,11 @@ const Models = (() => {
     PARAMS,
     normCDF,
     normPDF,
+    barrierOption,
+    knockOutForward,
+    seagull,
+    strangle,
+    butterfly,
   };
 
 })();
