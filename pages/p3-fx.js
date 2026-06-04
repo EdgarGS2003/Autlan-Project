@@ -14,9 +14,11 @@ function renderFX() {
     <div class="alert alert-danger mb-24">
       <span class="alert-icon">⚠</span>
       <span>
-        ${isEn
-          ? `Active FX hedging: <strong>~3%</strong> of exposure covered vs <strong>60%</strong> allowed by internal policy. Gap of <strong>~57 pp</strong> without protection on ~USD 394M of annualized revenues. Current USD/MXN: <strong id="fx-tc-live">17.30</strong>`
-          : `Cobertura FX activa: <strong>~3%</strong> de exposición cubierta vs <strong>60%</strong> permitido por política interna. Gap de <strong>~57 pp</strong> sin protección sobre ~USD 394M de ingresos anualizados. USD/MXN actual: <strong id="fx-tc-live">17.30</strong>`}
+        Cobertura FX activa: <strong>~3%</strong> de exposición cubierta vs
+        <strong>60%</strong> permitido por política interna.
+        Gap de <strong>~57 pp</strong> sin protección sobre
+        ~USD 394M de ingresos anualizados.
+        USD/MXN actual: <strong id="fx-tc-live">17.36</strong>
       </span>
     </div>
 
@@ -246,13 +248,13 @@ function _fxTabCollar() {
       <div>
         <div class="section-title" style="margin-top:0;">Parámetros del collar</div>
         <div class="field-group">
-          <label>${isEn ? "Floor — long put (protection floor)" : "Floor — put largo (piso de protección)"}</label>
-          <input type="number" id="fx-collar-floor" value="17.00" step="0.05"
+          <label>Floor — put largo (piso de protección)</label>
+          <input type="number" id="fx-collar-floor" value="17.50" step="0.05"
                  oninput="calcFXCollar()" />
         </div>
         <div class="field-group">
-          <label>${isEn ? "Cap — short call (yielded ceiling)" : "Cap — call corto (techo que se cede)"}</label>
-          <input type="number" id="fx-collar-cap" value="17.88" step="0.05"
+          <label>Cap — call corto (techo que se cede)</label>
+          <input type="number" id="fx-collar-cap" value="18.50" step="0.05"
                  oninput="calcFXCollar()" />
         </div>
         <div class="field-group">
@@ -286,8 +288,8 @@ function _fxTabForward() {
       <div>
         <div class="section-title" style="margin-top:0;">Parámetros del forward</div>
         <div class="field-group">
-          <label>${isEn ? "Spot Exchange Rate (USD/MXN)" : "Tipo de cambio spot (USD/MXN)"}</label>
-          <input type="number" id="fx-fwd-spot" value="17.30" step="0.05"
+          <label>Tipo de cambio spot (USD/MXN)</label>
+          <input type="number" id="fx-fwd-spot" value="17.36" step="0.05"
                  oninput="calcFXForward()" />
         </div>
         <div class="field-group">
@@ -326,8 +328,8 @@ function _fxTabPut() {
       <div>
         <div class="section-title" style="margin-top:0;">Put USD/MXN — opción de venta</div>
         <div class="field-group">
-          <label>${isEn ? "Current Spot (USD/MXN)" : "Spot actual (USD/MXN)"}</label>
-          <input type="number" id="fx-put-spot" value="17.30" step="0.05"
+          <label>Spot actual (USD/MXN)</label>
+          <input type="number" id="fx-put-spot" value="17.36" step="0.05"
                  oninput="calcFXPut()" />
         </div>
         <div class="field-group">
@@ -565,8 +567,8 @@ window.switchFXTab = function(idx) {
 // ─────────────────────────────────────────
 window.calcFXCollar = function() {
   const S      = Scenarios.getVar("usdmxn");
-  const floor  = parseFloat(document.getElementById("fx-collar-floor")?.value  || 17.0);
-  const cap    = parseFloat(document.getElementById("fx-collar-cap")?.value    || 17.88);
+  const floor  = parseFloat(document.getElementById("fx-collar-floor")?.value  || 17.5);
+  const cap    = parseFloat(document.getElementById("fx-collar-cap")?.value    || 18.5);
   const noc    = parseFloat(document.getElementById("fx-collar-noc")?.value    || 10000);
   const meses  = parseFloat(document.getElementById("fx-collar-T")?.value      || 6);
   const volPct = parseFloat(document.getElementById("fx-collar-vol")?.value    || 12);
@@ -613,14 +615,13 @@ window.calcFXCollar = function() {
   `;
 
   _fxRenderPayoffChart();
-  _fxRenderTablaComparativa(); // ← añadir esta línea
+  _fxRenderTablaComparativa();
 };
 
 window.calcFXForward = function() {
-  const isEn  = I18N.getLocale() === "en";
-  const spot  = parseFloat(document.getElementById("fx-fwd-spot")?.value   || 17.30);
+  const spot  = parseFloat(document.getElementById("fx-fwd-spot")?.value   || 17.36);
   const r_d   = parseFloat(document.getElementById("fx-fwd-rmx")?.value    || 6.74) / 100;
-  const r_f   = parseFloat(document.getElementById("fx-fwd-rusd")?.value   || 4.30) / 100;
+  const r_f   = parseFloat(document.getElementById("fx-fwd-rusd")?.value   || 3.62) / 100;
   const meses = parseFloat(document.getElementById("fx-fwd-T")?.value      || 6);
   const noc   = parseFloat(document.getElementById("fx-fwd-noc")?.value    || 10000);
   const T     = meses / 12;
@@ -654,12 +655,12 @@ window.calcFXForward = function() {
       </span>
     </div>
   `;
-   _fxRenderTablaComparativa();
+  _fxRenderTablaComparativa();
+  _fxRenderPayoffChart();
 };
 
 window.calcFXPut = function() {
-  const isEn   = I18N.getLocale() === "en";
-  const S      = parseFloat(document.getElementById("fx-put-spot")?.value   || 17.30);
+  const S      = parseFloat(document.getElementById("fx-put-spot")?.value   || 17.36);
   const K      = parseFloat(document.getElementById("fx-put-strike")?.value || 17.00);
   const volPct = parseFloat(document.getElementById("fx-put-vol")?.value    || 12);
   const meses  = parseFloat(document.getElementById("fx-put-T")?.value      || 6);
@@ -707,6 +708,7 @@ window.calcFXPut = function() {
     </div>
   `;
   _fxRenderTablaComparativa();
+  _fxRenderPayoffChart();
 };
 
 window.calcFXSwap = function() {
@@ -735,6 +737,7 @@ window.calcFXSwap = function() {
     </div>
   `;
   _fxRenderTablaComparativa();
+  _fxRenderPayoffChart();
 };
 
 // ─────────────────────────────────────────
@@ -791,6 +794,7 @@ window.calcFXKO = function() {
     </div>
   `;
   _fxRenderTablaComparativa();
+  _fxRenderPayoffChart();
 };
 
 window.calcFXSeagull = function() {
@@ -835,6 +839,7 @@ window.calcFXSeagull = function() {
     </div>
   `;
   _fxRenderTablaComparativa();
+  _fxRenderPayoffChart();
 };
 
 window.calcFXStrangle = function() {
@@ -874,6 +879,7 @@ window.calcFXStrangle = function() {
     </div>
   `;
   _fxRenderTablaComparativa();
+  _fxRenderPayoffChart();
 };
 
 // ─────────────────────────────────────────
@@ -885,7 +891,6 @@ function _fxRenderTablaComparativa() {
 
   const escVars = Scenarios.getState().escenarios;
   const noc     = 10000;
-  const T       = 0.5;
   const r       = Scenarios.getVar("tiie28") / 100;
   const q       = Scenarios.getVar("sofr1m") / 100;
   const S       = Scenarios.getVar("usdmxn");
@@ -897,51 +902,59 @@ function _fxRenderTablaComparativa() {
   // Sin cobertura
   const sinCob = (tc) => tc * noc;
 
-  // Forward
-  const fwdPrice = Models.forwardPrice(S, r, q, T).forward;
+  // Forward — leer horizonte del tab
+  const fwdMeses = parseFloat(document.getElementById("fx-fwd-T")?.value || 6);
+  const T_fwd    = fwdMeses / 12;
+  const fwdPrice = Models.forwardPrice(S, r, q, T_fwd).forward;
   const conFwd   = (tc) => sinCob(tc) + Models.forwardPayoff(tc, fwdPrice, noc).ganancia;
 
-  // Collar - read from inputs if present, else use calibrated defaults 17.00 / 17.88
-  const collarFloor = parseFloat(document.getElementById("fx-collar-floor")?.value || 17.00);
-  const collarCap   = parseFloat(document.getElementById("fx-collar-cap")?.value   || 17.88);
-  const conCollar   = (tc) => sinCob(tc) + Models.collarPayoff(tc, collarFloor, collarCap, noc).payoffCollar;
+  // Collar — leer floor/cap/horizonte del tab
+  const colFloor = parseFloat(document.getElementById("fx-collar-floor")?.value || 17.50);
+  const colCap   = parseFloat(document.getElementById("fx-collar-cap")?.value   || 18.50);
+  const conCollar = (tc) => sinCob(tc) + Models.collarPayoff(tc, colFloor, colCap, noc).payoffCollar;
 
-  // Put
+  // Put — leer strike/horizonte del tab
   const putStrike = parseFloat(document.getElementById("fx-put-strike")?.value || 17.00);
-  const put = Models.heston("put", S, putStrike, T, r, q,
+  const putMeses  = parseFloat(document.getElementById("fx-put-T")?.value      || 6);
+  const T_put     = putMeses / 12;
+  const put = Models.heston("put", S, putStrike, T_put, r, q,
     Models.PARAMS.fx_usdmxn.v0, Models.PARAMS.fx_usdmxn.kappa,
     Models.PARAMS.fx_usdmxn.theta_v, Models.PARAMS.fx_usdmxn.xi,
     Models.PARAMS.fx_usdmxn.rho_sv);
   const conPut = (tc) => sinCob(tc) + Math.max(putStrike - tc, 0) * noc - put.precio * noc;
 
-  // KO Forward — leer params del tab si existen, si no usar defaults
+  // KO Forward — leer params del tab
   const koK = parseFloat(document.getElementById("fx-ko-strike")?.value  || (S * 0.99).toFixed(2));
   const koH = parseFloat(document.getElementById("fx-ko-barrera")?.value || (S * 1.08).toFixed(2));
   const conKO = (tc) => tc >= koH
     ? sinCob(tc)
     : sinCob(tc) + (koK - tc) * noc;
 
-  // Seagull — leer params del tab si existen
-  const sgK1 = parseFloat(document.getElementById("fx-sg-K1")?.value || (S * 0.97).toFixed(2));
-  const sgK2 = parseFloat(document.getElementById("fx-sg-K2")?.value || (S * 1.06).toFixed(2));
-  const sgK3 = parseFloat(document.getElementById("fx-sg-K3")?.value || (S * 0.90).toFixed(2));
-  const sgRes = Models.seagull(S, sgK1, sgK2, sgK3, T, r, q, 0.12, true, Models.PARAMS.fx_usdmxn);
+  // Seagull — leer params del tab
+  const sgK1  = parseFloat(document.getElementById("fx-sg-K1")?.value  || (S * 0.97).toFixed(2));
+  const sgK2  = parseFloat(document.getElementById("fx-sg-K2")?.value  || (S * 1.06).toFixed(2));
+  const sgK3  = parseFloat(document.getElementById("fx-sg-K3")?.value  || (S * 0.90).toFixed(2));
+  const sgVol = parseFloat(document.getElementById("fx-sg-vol")?.value  || 12) / 100;
+  const sgT   = parseFloat(document.getElementById("fx-sg-T")?.value    || 6) / 12;
+  const sgRes = Models.seagull(S, sgK1, sgK2, sgK3, sgT, r, q, sgVol, true, Models.PARAMS.fx_usdmxn);
   const conSG = (tc) => sinCob(tc) + sgRes.payoff(tc) * noc - sgRes.costoNeto * noc;
 
-  // Strangle — leer params del tab si existen
-  const stKp = parseFloat(document.getElementById("fx-st-Kput")?.value  || (S * 0.93).toFixed(2));
-  const stKc = parseFloat(document.getElementById("fx-st-Kcall")?.value || (S * 1.07).toFixed(2));
-  const stRes = Models.strangle(S, stKp, stKc, T, r, 0.12, q, true, Models.PARAMS.fx_usdmxn);
+  // Strangle — leer params del tab
+  const stKp  = parseFloat(document.getElementById("fx-st-Kput")?.value  || (S * 0.93).toFixed(2));
+  const stKc  = parseFloat(document.getElementById("fx-st-Kcall")?.value || (S * 1.07).toFixed(2));
+  const stVol = parseFloat(document.getElementById("fx-st-vol")?.value   || 12) / 100;
+  const stT   = parseFloat(document.getElementById("fx-st-T")?.value     || 6) / 12;
+  const stRes = Models.strangle(S, stKp, stKc, stT, r, stVol, q, true, Models.PARAMS.fx_usdmxn);
   const conST = (tc) => sinCob(tc) + stRes.payoff(tc) * noc;
 
   const filas = [
-    { label: isEn ? "Unhedged" : "Sin cobertura",                      fn: sinCob,   bold: true },
-    { label: `Forward $${fwdPrice.toFixed(2)}`,        fn: conFwd  },
-    { label: `Collar $${collarFloor.toFixed(2)}-$${collarCap.toFixed(2)}`,                   fn: conCollar },
-    { label: `Put $${putStrike.toFixed(2)} (${isEn ? "-premium" : "−prima"})`,                    fn: conPut  },
-    { label: `KO Fwd (${isEn ? "barrier" : "barrera"} $${koH.toFixed(2)})`,    fn: conKO   },
-    { label: "Seagull",                                 fn: conSG   },
-    { label: "Strangle",                                fn: conST   },
+    { label: "Sin cobertura",                                     fn: sinCob,    bold: true },
+    { label: `Forward $${fwdPrice.toFixed(2)}`,                   fn: conFwd  },
+    { label: `Collar $${colFloor.toFixed(2)}–$${colCap.toFixed(2)}`, fn: conCollar },
+    { label: `Put $${putStrike.toFixed(2)} (−prima)`,             fn: conPut  },
+    { label: `KO Fwd (barrera $${koH.toFixed(2)})`,               fn: conKO   },
+    { label: "Seagull",                                            fn: conSG   },
+    { label: "Strangle",                                           fn: conST   },
   ];
 
   const fmt = (v) => `USD ${(v/1000).toFixed(1)}M`;
@@ -979,8 +992,8 @@ function _fxRenderPayoffChart() {
   for (let tc = 13.0; tc <= 22.0; tc += 0.1) tcs.push(parseFloat(tc.toFixed(2)));
 
   const fwdP  = Models.forwardPrice(S, r, q, T).forward;
-  const floor = parseFloat(document.getElementById("fx-collar-floor")?.value || 17.00);
-  const cap   = parseFloat(document.getElementById("fx-collar-cap")?.value   || 17.88);
+  const floor = parseFloat(document.getElementById("fx-collar-floor")?.value || S * 0.97);
+  const cap   = parseFloat(document.getElementById("fx-collar-cap")?.value   || S * 1.06);
   const koK   = parseFloat(document.getElementById("fx-ko-strike")?.value    || (S * 0.99).toFixed(2));
   const koH   = parseFloat(document.getElementById("fx-ko-barrera")?.value   || (S * 1.08).toFixed(2));
   const sgK1  = parseFloat(document.getElementById("fx-sg-K1")?.value        || (S * 0.97).toFixed(2));
@@ -988,9 +1001,9 @@ function _fxRenderPayoffChart() {
   const sgK3  = parseFloat(document.getElementById("fx-sg-K3")?.value        || (S * 0.90).toFixed(2));
   const stKp  = parseFloat(document.getElementById("fx-st-Kput")?.value      || (S * 0.93).toFixed(2));
   const stKc  = parseFloat(document.getElementById("fx-st-Kcall")?.value     || (S * 1.07).toFixed(2));
-  const putStrike = parseFloat(document.getElementById("fx-put-strike")?.value || 17.00);
 
-  const putP  = Models.heston("put", S, putStrike, T, r, q,
+  const putStrikeChart = parseFloat(document.getElementById("fx-put-strike")?.value || S * 0.97);
+  const putP  = Models.heston("put", S, putStrikeChart, T, r, q,
     Models.PARAMS.fx_usdmxn.v0, Models.PARAMS.fx_usdmxn.kappa,
     Models.PARAMS.fx_usdmxn.theta_v, Models.PARAMS.fx_usdmxn.xi,
     Models.PARAMS.fx_usdmxn.rho_sv).precio;
@@ -1015,9 +1028,9 @@ function _fxRenderPayoffChart() {
       vals:  tcs.map(tc => Models.collarPayoff(tc, floor, cap, noc).payoffCollar),
     },
     {
-      label: `Put $${putStrike.toFixed(2)}`,
+      label: `Put $${putStrikeChart.toFixed(2)}`,
       color: "#D4870F", dash: [],
-      vals:  tcs.map(tc => Math.max(putStrike - tc, 0) * noc - putP * noc),
+      vals:  tcs.map(tc => Math.max(putStrikeChart - tc, 0) * noc - putP * noc),
     },
     {
       label: `KO Fwd (H=$${koH.toFixed(2)})`,
