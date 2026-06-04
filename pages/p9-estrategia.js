@@ -182,22 +182,6 @@ function _getPortafolio() {
       },
     },
     {
-      id:          "COB-GAS-01",
-      riesgo:      isEn ? "Natural Gas" : "Gas Natural",
-      instrumento: isEn ? "Fixed price gas swap" : "Swap precio fijo gas",
-      descripcion: isEn ? "12-month swap · 900K MMBtu · $3.35/MMBtu" : "Swap 12 meses · 900K MMBtu · $3.35/MMBtu",
-      precioFijo:  3.35,
-      nocional:    900000, // MMBtu
-      nocionalUSD: 3.35 * 900000 / 1000, // USD miles
-      pctExposicion: 50,  // % consumo expuesto
-      costoNeto:   (gas - 3.35) * 900000 / 1000, // positivo si gas > fijo
-      horizonte:   isEn ? "12 months" : "12 meses",
-      mercado:     "OTC",
-      estado:      isEn ? "RECOMMENDED" : "RECOMENDADO",
-      color:       "var(--gas-green)",
-      payoff: (gasFinal) => (gasFinal - 3.35) * 900000 / 1000, // ahorro si gas sube
-    },
-    {
       id:          "COB-TASA-01",
       riesgo:      isEn ? "Interest rate (SOFR)" : "Tasa de interés (SOFR)",
       instrumento: isEn ? "IRS SOFR — variable to fixed" : "IRS SOFR — variable a fija",
@@ -254,7 +238,7 @@ function _estRenderResumen() {
                      exp.ingresosFX_anualizado.valor * 100;
 
   el.innerHTML = `
-    <div class="grid-4" style="gap:16px; margin-bottom:20px;">
+    <div class="grid-3" style="gap:16px; margin-bottom:20px;">
       ${[
         {
           label: isEn ? "Current FX Hedging" : "Cobertura FX actual",
@@ -264,12 +248,6 @@ function _estRenderResumen() {
         },
         {
           label: isEn ? "Gold Hedging" : "Cobertura Oro",
-          value: "0%",
-          nuevo: "50%",
-          tipo:  "danger",
-        },
-        {
-          label: isEn ? "Gas Hedging" : "Cobertura Gas",
           value: "0%",
           nuevo: "50%",
           tipo:  "danger",
