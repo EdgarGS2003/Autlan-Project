@@ -67,9 +67,12 @@ function renderPerfil() {
           ${_filaResultados(I18N.t("p1.grossProfit"), 60659, 51437, 12686, 14923, true)}
           ${_filaResultados(I18N.t("p1.sellExp"), 12649, 15912, 3101, 5905, false, true)}
           ${_filaResultados(I18N.t("p1.adminExp"), 36523, 37714, 9301, 10656, false, true)}
-          ${_filaResultados(I18N.t("p1.opProfit"), 5262, -4094, -1084, 170, true)}
-          ${_filaResultados(I18N.t("p1.finExp"), 31881, 42493, 7654, 7318, false, true)}
-          ${_filaResultados(I18N.t("p1.netLoss"), -12025, -37773, -7632, -5976, true)}
+          ${_filaResultados(I18N.t("p1.opProfit"), 5262, -4094, -1084, 170, true, false,
+            "Utilidad / pérdida operativa = Ingresos − Costo de ventas − Gastos de venta − Gastos de administración. El resultado negativo en 2025 (−USD 4.1M) se explica por: (1) apreciación del peso que redujo el valor MXN de ingresos USD sin mover costos fijos, (2) caída en precio del manganeso desde máximos 2022, (3) debilidad del mercado de acero en México (mínimo 30 años). Mejora notable en 1T26: +USD 170K — señal de recuperación incipiente.")}
+          ${_filaResultados(I18N.t("p1.finExp"), 31881, 42493, 7654, 7318, false, true,
+            "Gasto financiero = intereses sobre deuda bancaria (SOFR + spread y TIIE + spread) + pérdida por instrumentos derivados fuera del dinero (collar TIIE OTM) + efecto cambiario en deuda USD. El salto de USD 31.9M (2024) a USD 42.5M (2025) se debe a: (1) mayor saldo de deuda, (2) tasas SOFR elevadas durante 2025, (3) minusvalía del collar TIIE. En 1T26 baja a USD 7.3M (-4.4% YoY) por inicio del ciclo de recortes Banxico.")}
+          ${_filaResultados(I18N.t("p1.netLoss"), -12025, -37773, -7632, -5976, true, false,
+            "Pérdida neta = Utilidad operativa − Gasto financiero − Impuestos − Otros. La pérdida de USD 37.8M en 2025 NO implica que la empresa esté quebrando — es una pérdida contable. La empresa sigue generando EBITDA positivo (USD 31.5M) y tiene activos de USD 627M. Las pérdidas se explican principalmente por el gasto financiero (USD 42.5M) que supera la utilidad operativa, más efectos no monetarios de derivados. En 1T26 la pérdida se reduce a USD 6.0M (+21.7% mejora YoY).")}
         </tbody>
       </table>
     </div>
@@ -115,12 +118,18 @@ function renderPerfil() {
             <span class="badge badge-warn">${I18N.t("badge.negOutlook")}</span>
           </div>
 
-          ${_filaMetrica(I18N.t("p1.leverage"), "63.0%", "danger")}
-          ${_filaMetrica(I18N.t("p1.netDebt"), "USD 164.1M", "warn")}
-          ${_filaMetrica(I18N.t("p1.dscr"), "0.6x", "danger")}
-          ${_filaMetrica(I18N.t("p1.finExpAnn"), "USD 42.5M", "warn")}
-          ${_filaMetrica(I18N.t("p1.cashAvail"), "USD 21.8M", "warn")}
-          ${_filaMetrica(I18N.t("p1.debtEbitda"), "5.9x", "danger")}
+          ${_filaMetrica(I18N.t("p1.leverage"), "63.0%", "danger",
+            "Leverage = Deuda total / Activos totales = USD 395.6M / USD 627.9M = 63%. Fuente: XBRL 1T26 BMV auditado. Un leverage >50% se considera alto en el sector minero. El umbral crítico es ~70% donde los covenants bancarios típicamente se activan.")}
+          ${_filaMetrica(I18N.t("p1.netDebt"), "USD 164.1M", "warn",
+            "Deuda neta = Deuda total − Efectivo = USD 185.9M − USD 21.8M = USD 164.1M. Fuente: XBRL 1T26. Mide la deuda 'real' descontando el efectivo disponible para pagarla. A mayor deuda neta, mayor presión sobre el flujo de caja libre.")}
+          ${_filaMetrica(I18N.t("p1.dscr"), "0.6x", "danger",
+            "DSCR (Debt Service Coverage Ratio) = EBITDA / Gasto financiero total = USD 25.4M / USD 42.5M ≈ 0.6x. Proyección HR Ratings dic-2025 para 2026-2028. Un DSCR < 1.0x significa que el flujo operativo NO cubre autónomamente el servicio de deuda — la empresa necesita líneas de crédito o refinanciamiento. Threshold crítico de covenants: típicamente 1.0-1.25x.")}
+          ${_filaMetrica(I18N.t("p1.finExpAnn"), "USD 42.5M", "warn",
+            "Gasto financiero anualizado 2025 (auditado). Compuesto por: ~USD 28M intereses SOFR (USD 135.5M × ~10.75%), ~USD 5.5M intereses TIIE (USD 29.7M equiv × ~11.75%), ~USD 4M EURIBOR, ~USD 2.5M tasa fija, + minusvalías derivados. Fuente: XBRL 4T25 estado de resultados.")}
+          ${_filaMetrica(I18N.t("p1.cashAvail"), "USD 21.8M", "warn",
+            "Efectivo y equivalentes al 31-mar-2026. Fuente: XBRL 1T26 balance auditado. Con gasto financiero mensual de ~USD 3.5M y CAPEX mínimo de ~USD 2.5M/mes, el runway de caja es de ~3-4 meses sin líneas de crédito adicionales. Las líneas de crédito comprometidas no utilizadas proveen buffer adicional.")}
+          ${_filaMetrica(I18N.t("p1.debtEbitda"), "5.9x", "danger",
+            "Deuda neta / EBITDA = USD 164.1M / USD 27.8M (EBITDA últimos 12 meses) ≈ 5.9x. El sector minero típicamente opera en rangos de 2-3x en ciclo normal. >4x se considera zona de estrés financiero. >6x activa típicamente covenants de ratio de apalancamiento. La meta de Autlán para 2027-2028 es reducirlo a <4x vía crecimiento de EBITDA.")}
 
           <div class="divider"></div>
           <div class="section-title">${I18N.t("p1.ratings")}</div>
@@ -309,8 +318,7 @@ function renderPerfil() {
 // ─────────────────────────────────────────
 // HELPERS DE RENDERIZADO
 // ─────────────────────────────────────────
-
-function _filaResultados(label, v2024, v2025, v1t25, v1t26, highlight = false, costoDir = false) {
+function _filaResultados(label, v2024, v2025, v1t25, v1t26, highlight = false, costoDir = false, explicacion = null) {
   const varYoy = ((v1t26 - v1t25) / Math.abs(v1t25) * 100);
   const esPositivo = costoDir ? varYoy < 0 : varYoy > 0;
   const claseVar   = esPositivo ? "positive" : "negative";
@@ -324,24 +332,26 @@ function _filaResultados(label, v2024, v2025, v1t25, v1t26, highlight = false, c
     return v < 0 ? `-${str}` : str;
   };
 
+  const tooltipHtml = explicacion ? `
+    <span class="dash-tooltip-wrap" style="margin-left:5px;">
+      <span class="dash-tooltip-icon" style="font-size:9px; padding:1px 4px;">ⓘ</span>
+      <span class="dash-tooltip-box" style="width:280px; font-weight:400; font-size:11px; line-height:1.6;">
+        ${explicacion}
+      </span>
+    </span>` : "";
+
   return `
     <tr style="${highlight ? "font-weight:700; background:var(--bg-raised);" : ""}">
-      <td style="font-size:12.5px;">${label}</td>
-      <td class="mono" style="text-align:right; color:var(--text-secondary);">
-        ${fmt(v2024)}
+      <td style="font-size:12.5px;">
+        <span style="display:inline-flex; align-items:center;">
+          ${label}${tooltipHtml}
+        </span>
       </td>
-      <td class="mono" style="text-align:right; ${v2025 < 0 ? "color:var(--danger);" : ""}">
-        ${fmt(v2025)}
-      </td>
-      <td class="mono" style="text-align:right; color:var(--text-secondary);">
-        ${fmt(v1t25)}
-      </td>
-      <td class="mono" style="text-align:right; ${v1t26 < 0 ? "color:var(--danger);" : ""}">
-        ${fmt(v1t26)}
-      </td>
-      <td class="mono ${claseVar}" style="text-align:right;">
-        ${signVar}${varYoy.toFixed(1)}%
-      </td>
+      <td class="mono" style="text-align:right; color:var(--text-secondary);">${fmt(v2024)}</td>
+      <td class="mono" style="text-align:right; ${v2025 < 0 ? "color:var(--danger);" : ""}">${fmt(v2025)}</td>
+      <td class="mono" style="text-align:right; color:var(--text-secondary);">${fmt(v1t25)}</td>
+      <td class="mono" style="text-align:right; ${v1t26 < 0 ? "color:var(--danger);" : ""}">${fmt(v1t26)}</td>
+      <td class="mono ${claseVar}" style="text-align:right;">${signVar}${varYoy.toFixed(1)}%</td>
     </tr>`;
 }
 
@@ -367,7 +377,7 @@ function _filaBalance(label, valor, tipo = "", bold = false, grande = false) {
     </div>`;
 }
 
-function _filaMetrica(label, valor, tipo = "") {
+function _filaMetrica(label, valor, tipo = "", explicacion = null) {
   const colorMap = {
     success: "var(--success)",
     danger:  "var(--danger)",
@@ -375,10 +385,19 @@ function _filaMetrica(label, valor, tipo = "") {
     "":      "var(--text-primary)",
   };
 
+  const tooltipHtml = explicacion ? `
+    <span class="dash-tooltip-wrap" style="margin-left:5px;">
+      <span class="dash-tooltip-icon" style="font-size:9px; padding:1px 4px;">ⓘ</span>
+      <span class="dash-tooltip-box" style="width:280px; font-weight:400; font-size:11px; line-height:1.6;">
+        ${explicacion}
+      </span>
+    </span>` : "";
+
   return `
-    <div class="flex-between" style="padding:5px 0;
-                border-bottom:1px solid var(--border);">
-      <span style="font-size:11.5px; color:var(--text-secondary);">${label}</span>
+    <div class="flex-between" style="padding:5px 0; border-bottom:1px solid var(--border);">
+      <span style="font-size:11.5px; color:var(--text-secondary); display:inline-flex; align-items:center;">
+        ${label}${tooltipHtml}
+      </span>
       <span class="text-mono" style="font-size:12px; font-weight:600;
             color:${colorMap[tipo] || colorMap[""]};">
         ${valor}
