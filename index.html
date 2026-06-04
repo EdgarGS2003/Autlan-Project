@@ -60,22 +60,11 @@
         <span class="nav-status danger" id="status-oro">●</span>
       </a>
 
-      <a class="nav-item" data-page="gas" href="#">
-        <span class="nav-icon">⚡️</span>
-        <span class="nav-label">Gas Natural</span>
-        <span class="nav-status danger" id="status-gas">●</span>
-      </a>
-
+    
       <a class="nav-item" data-page="tasa" href="#">
         <span class="nav-icon">🏦</span>
         <span class="nav-label">Tasa de Interés</span>
         <span class="nav-status warn" id="status-tasa">●</span>
-      </a>
-
-      <a class="nav-item" data-page="manganeso" href="#">
-        <span class="nav-icon">🪨</span>
-        <span class="nav-label">Manganeso</span>
-        <span class="nav-status" id="status-mn">●</span>
       </a>
 
       <div class="nav-section-label">ANÁLISIS</div>
@@ -310,9 +299,7 @@
   <script src="pages/p2-escenarios.js"></script>
   <script src="pages/p3-fx.js"></script>
   <script src="pages/p4-oro.js"></script>
-  <script src="pages/p5-gas.js"></script>
   <script src="pages/p6-tasa.js"></script>
-  <script src="pages/p7-manganeso.js"></script>
   <script src="pages/p8-secundarios.js"></script>
   <script src="pages/p9-estrategia.js"></script>
   <script src="pages/p10-docs.js"></script>
@@ -484,8 +471,6 @@
     if (typeof renderEscenarios === "function") renderEscenarios();
     if (typeof renderFX        === "function") renderFX();
     if (typeof renderOro       === "function") renderOro();
-    if (typeof renderGas       === "function") renderGas();
-    if (typeof renderManganeso === "function") renderManganeso();
     if (typeof renderSecundarios === "function") renderSecundarios();
     if (typeof renderEstrategia === "function") renderEstrategia();
     if (typeof renderDocs === "function") renderDocs();
