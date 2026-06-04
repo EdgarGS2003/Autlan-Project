@@ -884,8 +884,7 @@ window.exportarFXExcel = function() {
   const esc  = Scenarios.getState().escenarios;
 
   // ── Hoja 1: Parámetros del modelo ──
-  let csv = isEn ? "AUTLAN FX HEDGING CALCULATOR — MODEL EXPORT\n\n"
-                 : "AUTLAN CALCULADORA FX — EXPORTACION DEL MODELO\n\n";
+ let csv = isEn ? "AUTLAN FX HEDGING CALCULATOR - MODEL EXPORT\n\n" : "AUTLAN CALCULADORA FX - EXPORTACION DEL MODELO\n\n";
   
   csv += isEn ? "MODEL PARAMETERS
 " : "PARÁMETROS DEL MODELO
