@@ -636,13 +636,36 @@ function _fxRenderTablaComparativa() {
     Models.PARAMS.fx_usdmxn.rho_sv);
   const conPut = (tc) => sinCob(tc) + Math.max(17.00 - tc, 0) * noc - put.precio * noc;
 
-  const filas = [
-    { label: "Sin cobertura",      fn: sinCob,   clase: "" },
-    { label: "Forward $"+fwdPrice.toFixed(2), fn: conFwd, clase: "accent" },
-    { label: "Collar $17.50-$18.50", fn: conCollar, clase: "success" },
-    { label: "Put $17.00 (−prima)", fn: conPut,  clase: "warn" },
-  ];
+  // DESPUÉS:
+  // KO Forward
+  const koK   = parseFloat(document.getElementById("fx-ko-strike")?.value  || S * 0.99);
+  const koH   = parseFloat(document.getElementById("fx-ko-barrera")?.value || S * 1.08);
+  const conKO = (tc) => tc >= koH
+    ? sinCob(tc)
+    : sinCob(tc) + (koK - tc) * noc;
 
+  // Seagull
+  const sgK1  = parseFloat(document.getElementById("fx-sg-K1")?.value || S * 0.97);
+  const sgK2  = parseFloat(document.getElementById("fx-sg-K2")?.value || S * 1.06);
+  const sgK3  = parseFloat(document.getElementById("fx-sg-K3")?.value || S * 0.90);
+  const sgRes2 = Models.seagull(S, sgK1, sgK2, sgK3, T, r, q, 0.12, true, Models.PARAMS.fx_usdmxn);
+  const conSG = (tc) => sinCob(tc) + sgRes2.payoff(tc) * noc - sgRes2.costoNeto * noc;
+
+  // Strangle
+  const stKp  = parseFloat(document.getElementById("fx-st-Kput")?.value  || S * 0.93);
+  const stKc  = parseFloat(document.getElementById("fx-st-Kcall")?.value || S * 1.07);
+  const stRes2 = Models.strangle(S, stKp, stKc, T, r, 0.12, q, true, Models.PARAMS.fx_usdmxn);
+  const conST = (tc) => sinCob(tc) + stRes2.payoff(tc) * noc;
+
+  const filas = [
+    { label: "Sin cobertura",                             fn: sinCob,   clase: "" },
+    { label: `Forward $${fwdPrice.toFixed(2)}`,          fn: conFwd,   clase: "accent" },
+    { label: "Collar $17.50–$18.50",                     fn: conCollar,clase: "success" },
+    { label: "Put $17.00 (−prima)",                      fn: conPut,   clase: "warn" },
+    { label: `KO Fwd (barrera $${koH.toFixed(2)})`,      fn: conKO,    clase: "" },
+    { label: "Seagull",                                   fn: conSG,    clase: "" },
+    { label: "Strangle",                                  fn: conST,    clase: "" },
+  ];
   const fmt = (v) => `USD ${(v/1000).toFixed(1)}M`;
 
   el.innerHTML = filas.map((f, i) => `
@@ -808,25 +831,26 @@ function _fxRenderRecomendacion() {
         </div>
       </div>
 
-      <div style="padding:14px; background:var(--bg-raised);
-                  border-radius:var(--radius-md); border-left:3px solid var(--warn);">
-        <div style="font-size:11px; font-weight:700; color:var(--warn);
-                    margin-bottom:6px;">QUÉ RIESGO ACEPTA</div>
+     // DESPUÉS:
+      <div style="...border-left:3px solid var(--warn);">
+        <div style="...color:var(--warn)...">QUÉ RIESGO ACEPTA</div>
         <div style="font-size:12px; line-height:1.6;">
-          Con collar: se cede el upside si el peso se deprecia más allá del cap.
-          Con forward: se elimina completamente la incertidumbre — bueno y malo.
-          Con put: riesgo de perder la prima si el TC no se mueve a favor.
+          <strong>Collar/Seagull:</strong> se cede el upside por encima del cap.
+          <strong>Forward/KO Fwd:</strong> se elimina toda incertidumbre (bueno y malo);
+          el KO además se extingue si el peso se deprecia demasiado.
+          <strong>Put/Strangle:</strong> riesgo de perder la prima si el TC no se mueve.
         </div>
       </div>
-
+      
       <div style="padding:14px; background:var(--bg-raised);
                   border-radius:var(--radius-md); border-left:3px solid var(--danger);">
         <div style="font-size:11px; font-weight:700; color:var(--danger);
                     margin-bottom:6px;">QUÉ SACRIFICA</div>
         <div style="font-size:12px; line-height:1.6;">
-          Forward: todo el upside cambiario.
-          Collar: upside por encima del cap.
-          Put: la prima pagada reduce el ingreso neto incluso si no se ejerce.
+         // DESPUÉS:
+          <strong>Forward/KO Fwd:</strong> todo el upside cambiario (el KO también puede extinguirse).
+          <strong>Collar/Seagull:</strong> upside por encima del cap; Seagull además pierde protección extrema.
+          <strong>Put/Strangle:</strong> prima pagada reduce el ingreso neto aunque no se ejerza.
           En todos los casos: la certidumbre tiene un costo económico.
         </div>
       </div>
@@ -1164,30 +1188,34 @@ window.calcFXKO = function() {
 
   const vanilla = Models.forwardPrice(S, r, q, T).forward;
   const mejora  = vanilla - K;
-  const res     = Models.knockOutForward(S, K, H, T, r, q, vol);
+  // DESPUÉS:
+  const res = Models.knockOutForward(S, K, H, T, r, q, vol);
 
   const el = document.getElementById("fx-ko-result");
   if (!el) return;
 
+  // Guard: detectar qué propiedades devuelve el modelo
+  const probKO = res.probKO   ?? res.probExtincion ?? res.prob  ?? 0;
+  const valor  = res.valor    ?? res.precio        ?? res.price ?? (K - S);
+
   el.innerHTML = `
     <div class="section-title" style="margin-top:0;">Resultado KO Forward</div>
-    ${_resultRow("Spot actual", `$${S.toFixed(4)}`)}
-    ${_resultRow("Forward vanilla (ref)", `$${vanilla.toFixed(4)}`)}
-    ${_resultRow("Strike KO", `$${K.toFixed(4)}`, "positive")}
-    ${_resultRow("Barrera KO", `$${H.toFixed(4)}`, "warn")}
-    ${_resultRow("Mejora vs forward", `$${mejora.toFixed(4)} MXN/USD`, mejora > 0 ? "positive" : "warn")}
-    ${_resultRow("Prob. extinción (aprox.)", `${(res.probKO * 100).toFixed(1)}%`,
-                  res.probKO > 0.3 ? "danger" : res.probKO > 0.1 ? "warn" : "positive")}
-    ${_resultRow("Valor del KO fwd", `$${res.valor.toFixed(4)}/USD`)}
-    ${_resultRow("Nocional", `USD ${noc.toLocaleString()}K`)}
-    ${_resultRow("Modelo", "Reiner-Rubinstein")}
+    ${_resultRow("Spot actual",            `$${S.toFixed(4)}`)}
+    ${_resultRow("Forward vanilla (ref)",  `$${vanilla.toFixed(4)}`)}
+    ${_resultRow("Strike KO",              `$${K.toFixed(4)}`,  "positive")}
+    ${_resultRow("Barrera KO",             `$${H.toFixed(4)}`,  "warn")}
+    ${_resultRow("Mejora vs forward",      `$${mejora.toFixed(4)} MXN/USD`, mejora > 0 ? "positive" : "warn")}
+    ${_resultRow("Prob. extinción (aprox.)", `${(probKO * 100).toFixed(1)}%`,
+                  probKO > 0.3 ? "danger" : probKO > 0.1 ? "warn" : "positive")}
+    ${_resultRow("Valor del KO fwd",       `$${valor.toFixed(4)}/USD`)}
+    ${_resultRow("Nocional",               `USD ${noc.toLocaleString()}K`)}
+    ${_resultRow("Modelo",                 "Reiner-Rubinstein")}
 
     <div class="alert alert-warn" style="margin-top:12px;">
       <span class="alert-icon">⚠</span>
       <span style="font-size:11.5px;">
         Si USD/MXN sube sobre <strong>$${H.toFixed(2)}</strong>, el contrato se extingue
-        y Autlán queda sin cobertura en el peor momento (peso débil).
-        Usar solo si la probabilidad de extinción es &lt;15%.
+        y Autlán queda sin cobertura. Usar solo si prob. extinción &lt;15%.
       </span>
     </div>`;
 };
