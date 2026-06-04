@@ -1,55 +1,39 @@
 /**
  * pages/p2-escenarios.js — Escenarios & Inputs
  * Motor de supuestos macro · Alimenta todas las páginas
+ * v2 — Sin sliders, tabla como única fuente de control
  */
 
 function getSliderLabel(key, defaultLabel) {
   const keys = {
-    usdmxn: I18N.getLocale() === "en" ? "Exchange rate (USD/MXN)" : "Tipo de cambio (USD/MXN)",
-    precioMn: I18N.t("p2.driver.mn"),
+    usdmxn:    I18N.getLocale() === "en" ? "Exchange Rate (USD/MXN)" : "Tipo de cambio (USD/MXN)",
+    precioMn:  I18N.t("p2.driver.mn"),
     precioOro: I18N.t("p2.driver.oro"),
-    tiie28: "TIIE 28d",
-    sofr1m: "SOFR 1m",
+    tiie28:    "TIIE 28d",
+    sofr1m:    "SOFR 1m",
     precioGas: I18N.t("p2.driver.gas"),
-    volPct: I18N.getLocale() === "en" ? "Volume" : "Volumen",
+    volPct:    I18N.getLocale() === "en" ? "Volume (%)" : "Volumen (%)",
   };
   return keys[key] || defaultLabel;
 }
 
-function getSliderSensitivity(key, defaultSens) {
+function getSliderSensitivity(key) {
   const sens = {
-    usdmxn: {
-      es: "Cada $1 MXN de apreciación reduce ingresos ~USD 18M",
-      en: "Each $1 MXN appreciation reduces revenues by ~USD 18M",
-    },
-    tiie28: {
-      es: "Cada 100bps sube costo financiero MXN ~USD 440K",
-      en: "Each 100bps rise increases MXN financial cost by ~USD 440K",
-    },
-    sofr1m: {
-      es: "Cada 100bps sube costo financiero USD ~USD 1.35M",
-      en: "Each 100bps rise increases USD financial cost by ~USD 1.35M",
-    },
-    precioOro: {
-      es: "Cada USD 100/oz impacta ingresos Metallorum ~USD 1.5-2M",
-      en: "Each USD 100/oz shift impacts Metallorum revenues by ~USD 1.5-2M",
-    },
-    precioMn: {
-      es: "Cada USD 100/MT impacta ingresos ferroaleaciones ~USD 5-8M",
-      en: "Each USD 100/MT shift impacts ferroalloy revenues by ~USD 5-8M",
-    },
-    precioGas: {
-      es: "Cada USD 1/MMBtu sube costos operativos ~USD 2-3M",
-      en: "Each USD 1/MMBtu rise increases operating costs by ~USD 2-3M",
-    },
-    volPct: {
-      es: "Variación de ±15% sobre plan base de ingresos",
-      en: "Variation of ±15% on the base revenue plan",
-    },
+    usdmxn:    { es: "Cada $1 MXN de apreciación reduce ingresos ~USD 18M",           en: "Each $1 MXN appreciation reduces revenues ~USD 18M" },
+    tiie28:    { es: "Cada 100bps sube costo financiero MXN ~USD 440K",               en: "Each 100bps rise increases MXN financial cost ~USD 440K" },
+    sofr1m:    { es: "Cada 100bps sube costo financiero USD ~USD 1.35M",              en: "Each 100bps rise increases USD financial cost ~USD 1.35M" },
+    precioOro: { es: "Cada USD 100/oz impacta ingresos Metallorum ~USD 0.7M",         en: "Each USD 100/oz impacts Metallorum revenues ~USD 0.7M" },
+    precioMn:  { es: "Cada USD 100/MT impacta ingresos ferroaleaciones ~USD 5-8M",    en: "Each USD 100/MT impacts ferroalloy revenues ~USD 5-8M" },
+    precioGas: { es: "Cada USD 1/MMBtu sube costos operativos ~USD 2-3M",             en: "Each USD 1/MMBtu rise increases operating costs ~USD 2-3M" },
+    volPct:    { es: "Variación de ±15% sobre plan base de ingresos",                 en: "Variation of ±15% on base revenue plan" },
   };
-  return sens[key] ? sens[key][I18N.getLocale()] : defaultSens;
+  const loc = I18N.getLocale();
+  return sens[key] ? sens[key][loc] : "";
 }
 
+// ─────────────────────────────────────────
+// RENDER PRINCIPAL
+// ─────────────────────────────────────────
 function renderEscenarios() {
   const el = document.getElementById("escenarios-content");
   if (!el) return;
@@ -58,43 +42,50 @@ function renderEscenarios() {
 
     <div class="alert alert-info mb-24">
       <span class="alert-icon">⚙</span>
-      <span>
-        ${I18N.t("p2.alert")}
-      </span>
+      <span>${I18N.t("p2.alert")}</span>
     </div>
 
-    <!-- VARIABLES INDEPENDIENTES — SLIDERS -->
-    <div class="grid-2 mb-24">
-
-      <!-- COLUMNA IZQ: Sliders -->
-      <div>
-        <div class="section-title">${I18N.t("p2.independent")}</div>
-        <div class="card" id="sliders-container"></div>
+    <!-- TABLA DE ESCENARIOS — única fuente de control -->
+    <div class="section-title">${I18N.t("p2.perScenario")}</div>
+    <div class="card mb-24">
+      <div class="table-wrap">
+        <table id="esc-table">
+          <thead>
+            <tr>
+              <th style="min-width:200px;">${I18N.t("p2.variable")}</th>
+              <th class="esc-header-base" style="text-align:center;">${I18N.t("topbar.base")}</th>
+              <th class="esc-header-opt"  style="text-align:center;">${I18N.t("topbar.optimista")}</th>
+              <th class="esc-header-adv"  style="text-align:center;">${I18N.t("topbar.adverso")}</th>
+              <th style="font-size:10px; color:var(--text-muted); font-weight:500; min-width:180px;">
+                ${I18N.getLocale() === "en" ? "Sensitivity" : "Sensibilidad"}
+              </th>
+            </tr>
+          </thead>
+          <tbody id="esc-table-body"></tbody>
+        </table>
       </div>
 
-      <!-- COLUMNA DER: Tabla de escenarios editable -->
-      <div>
-        <div class="section-title">${I18N.t("p2.perScenario")}</div>
-        <div class="card">
-          <div class="table-wrap">
-            <table id="esc-table">
-              <thead>
-                <tr>
-                  <th>${I18N.t("p2.variable")}</th>
-                  <th class="esc-header-base">${I18N.t("topbar.base")}</th>
-                  <th class="esc-header-opt">${I18N.t("topbar.optimista")}</th>
-                  <th class="esc-header-adv">${I18N.t("topbar.adverso")}</th>
-                </tr>
-              </thead>
-              <tbody id="esc-table-body"></tbody>
-            </table>
-          </div>
-          <div style="margin-top:12px; font-size:11px; color:var(--text-muted);">
-            ${I18N.t("label.clickEdit")}
-          </div>
+      <!-- Controles debajo de la tabla -->
+      <div style="margin-top:14px; display:flex; align-items:center;
+                  justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <span style="font-size:11px; color:var(--text-muted);">
+          ${I18N.t("label.clickEdit")}
+        </span>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="aplicarEscenario('base')"
+                  style="color:var(--accent); border-color:var(--accent);">
+            ◎ ${I18N.getLocale() === "en" ? "Apply Base to model" : "Aplicar Base al modelo"}
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="aplicarEscenario('optimista')"
+                  style="color:var(--success); border-color:var(--success);">
+            ▲ ${I18N.getLocale() === "en" ? "Apply Optimistic" : "Aplicar Optimista"}
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="aplicarEscenario('adverso')"
+                  style="color:var(--danger); border-color:var(--danger);">
+            ▼ ${I18N.getLocale() === "en" ? "Apply Adverse" : "Aplicar Adverso"}
+          </button>
         </div>
       </div>
-
     </div>
 
     <!-- NARRATIVA POR ESCENARIO -->
@@ -125,118 +116,12 @@ function renderEscenarios() {
 
   `;
 
-  _renderSliders();
   _renderEscTable();
   _renderNarrativa();
   _renderVarsDependientes();
   _renderImpactoDrivers();
-
-  // Suscripciones
-  Scenarios.on("calc:update",       _renderVarsDependientes);
-  Scenarios.on("calc:update",       _renderImpactoDrivers);
-  Scenarios.on("escenarios:update", _renderEscTable);
+  _escEnsureSubscribed();
 }
-
-// ─────────────────────────────────────────
-// SLIDERS
-// ─────────────────────────────────────────
-function _renderSliders() {
-  const el = document.getElementById("sliders-container");
-  if (!el) return;
-
-  const cfg   = Scenarios.SLIDER_CONFIG;
-  const state = Scenarios.getState();
-
-  el.innerHTML = Object.entries(cfg).map(([key, c]) => {
-    const val    = state.vars[key];
-    const pct    = ((val - c.min) / (c.max - c.min) * 100).toFixed(1);
-    const label  = getSliderLabel(key, c.label);
-    const sens   = getSliderSensitivity(key, c.sensibilidad);
-
-    return `
-      <div class="slider-group" id="sg-${key}">
-        <div class="slider-header">
-          <div class="slider-label">
-            <span>${c.icono}</span>
-            <span>${label}</span>
-          </div>
-          <div class="slider-value" id="sv-${key}">${c.formato(val)}</div>
-        </div>
-
-        <div style="position:relative;">
-          <div class="slider-track">
-            <div class="slider-fill" id="sf-${key}"
-                 style="width:${pct}%; background:${c.color};"></div>
-          </div>
-          <input type="range"
-            id="slider-${key}"
-            min="${c.min}" max="${c.max}" step="${c.step}"
-            value="${val}"
-            style="position:absolute; top:-2px; left:0;
-                   width:100%; opacity:0; height:10px; cursor:pointer;"
-            oninput="onSliderChange('${key}', this.value)"
-          />
-        </div>
-
-        <div class="slider-range">
-          <span>${c.formato(c.min)}</span>
-          <span>${c.formato(c.max)}</span>
-        </div>
-
-        <!-- Marcadores de escenarios -->
-        <div style="position:relative; height:16px; margin-top:2px;">
-          ${_escenarioMarkers(key, c)}
-        </div>
-
-        <div class="slider-sensitivity">${sens}</div>
-      </div>
-    `;
-  }).join("<div class='divider'></div>");
-}
-
-function _escenarioMarkers(key, c) {
-  const esc = Scenarios.getState().escenarios;
-  const markers = [
-    { nombre: "B", val: esc.base[key],      color: "var(--accent)"   },
-    { nombre: "O", val: esc.optimista[key], color: "var(--success)"  },
-    { nombre: "A", val: esc.adverso[key],   color: "var(--danger)"   },
-  ];
-
-  return markers.map(m => {
-    if (typeof m.val !== "number") return "";
-    const pct = ((m.val - c.min) / (c.max - c.min) * 100);
-    const clamped = Math.min(Math.max(pct, 2), 96);
-    return `
-      <div style="position:absolute; left:${clamped}%;
-                  transform:translateX(-50%);
-                  font-size:9px; font-weight:700;
-                  color:${m.color}; line-height:1;">
-        ${m.nombre}
-      </div>`;
-  }).join("");
-}
-
-// Callback del slider
-window.onSliderChange = function(key, val) {
-  const cfg   = Scenarios.SLIDER_CONFIG[key];
-  const num   = parseFloat(val);
-
-  // Actualizar visual
-  const pct = ((num - cfg.min) / (cfg.max - cfg.min) * 100).toFixed(1);
-  const svEl = document.getElementById(`sv-${key}`);
-  const sfEl = document.getElementById(`sf-${key}`);
-  if (svEl) svEl.textContent = cfg.formato(num);
-  if (sfEl) sfEl.style.width = `${pct}%`;
-
-  // Propagar al estado global
-  Scenarios.setVar(key, num, "slider");
-
-  // Actualizar topbar
-  if (key === "usdmxn") {
-    const el = document.getElementById("tc-live");
-    if (el) el.textContent = `$${num.toFixed(2)}`;
-  }
-};
 
 // ─────────────────────────────────────────
 // TABLA DE ESCENARIOS EDITABLE
@@ -249,62 +134,78 @@ function _renderEscTable() {
   const state = Scenarios.getState();
 
   el.innerHTML = Object.entries(cfg).map(([key, c]) => {
-    const b = state.escenarios.base[key];
-    const o = state.escenarios.optimista[key];
-    const a = state.escenarios.adverso[key];
+    const b    = state.escenarios.base[key];
+    const o    = state.escenarios.optimista[key];
+    const a    = state.escenarios.adverso[key];
     const label = getSliderLabel(key, c.label);
+    const sens  = getSliderSensitivity(key);
+
+    // Indicador visual de dirección optimista vs adverso
+    const dirOpt = o > b ? "▲" : o < b ? "▼" : "—";
+    const dirAdv = a > b ? "▲" : a < b ? "▼" : "—";
 
     return `
       <tr>
-        <td style="font-size:11.5px;">
-          <span>${c.icono}</span> ${label}
+        <td style="font-size:12px; font-weight:500;">
+          <span style="margin-right:6px;">${c.icono}</span>${label}
         </td>
-        <td class="esc-base">
+
+        <td class="esc-base" style="text-align:center;">
           <span class="editable-val mono"
                 onclick="editEscenarioVal('base','${key}','${c.unidad}')"
-                title="Clic para editar"
-                style="cursor:pointer; padding:2px 6px;
-                       border-radius:4px; display:inline-block;
-                       color:var(--accent);">
+                title="${I18N.getLocale() === "en" ? "Click to edit" : "Clic para editar"}"
+                style="cursor:pointer; padding:3px 10px; border-radius:4px;
+                       display:inline-block; color:var(--accent);
+                       background:rgba(91,45,142,0.06);
+                       transition:background 0.15s;">
             ${c.formato(b)}
           </span>
         </td>
-        <td class="esc-optimista">
+
+        <td class="esc-optimista" style="text-align:center;">
           <span class="editable-val mono"
                 onclick="editEscenarioVal('optimista','${key}','${c.unidad}')"
-                title="Clic para editar"
-                style="cursor:pointer; padding:2px 6px;
-                       border-radius:4px; display:inline-block;
-                       color:var(--success);">
-            ${c.formato(o)}
+                title="${I18N.getLocale() === "en" ? "Click to edit" : "Clic para editar"}"
+                style="cursor:pointer; padding:3px 10px; border-radius:4px;
+                       display:inline-block; color:var(--success);
+                       background:rgba(45,125,78,0.06);
+                       transition:background 0.15s;">
+            ${dirOpt} ${c.formato(o)}
           </span>
         </td>
-        <td class="esc-adverso">
+
+        <td class="esc-adverso" style="text-align:center;">
           <span class="editable-val mono"
                 onclick="editEscenarioVal('adverso','${key}','${c.unidad}')"
-                title="Clic para editar"
-                style="cursor:pointer; padding:2px 6px;
-                       border-radius:4px; display:inline-block;
-                       color:var(--danger);">
-            ${c.formato(a)}
+                title="${I18N.getLocale() === "en" ? "Click to edit" : "Clic para editar"}"
+                style="cursor:pointer; padding:3px 10px; border-radius:4px;
+                       display:inline-block; color:var(--danger);
+                       background:rgba(155,35,53,0.06);
+                       transition:background 0.15s;">
+            ${dirAdv} ${c.formato(a)}
           </span>
+        </td>
+
+        <td style="font-size:10.5px; color:var(--text-muted); line-height:1.4;">
+          ${sens}
         </td>
       </tr>`;
   }).join("");
 }
 
-// Edición inline de valores de escenario
+// Edición inline
 window.editEscenarioVal = function(escenario, variable, unidad) {
-  const state   = Scenarios.getState();
-  const valAct  = state.escenarios[escenario][variable];
-  const cfg     = Scenarios.SLIDER_CONFIG[variable];
-  const label   = getSliderLabel(variable, cfg.label);
+  const state  = Scenarios.getState();
+  const valAct = state.escenarios[escenario][variable];
+  const cfg    = Scenarios.SLIDER_CONFIG[variable];
+  const label  = getSliderLabel(variable, cfg.label);
+  const isEn   = I18N.getLocale() === "en";
 
   const nuevo = prompt(
     `${escenario.toUpperCase()} · ${label}\n` +
-    `${I18N.getLocale() === "en" ? "Unit" : "Unidad"}: ${unidad}\n` +
-    `${I18N.getLocale() === "en" ? "Current value" : "Valor actual"}: ${cfg.formato(valAct)}\n\n` +
-    `${I18N.getLocale() === "en" ? "Enter the new value:" : "Ingresa el nuevo valor:"}`,
+    `${isEn ? "Unit" : "Unidad"}: ${unidad}\n` +
+    `${isEn ? "Current value" : "Valor actual"}: ${cfg.formato(valAct)}\n\n` +
+    `${isEn ? "Enter new value:" : "Ingresa el nuevo valor:"}`,
     valAct
   );
 
@@ -314,17 +215,39 @@ window.editEscenarioVal = function(escenario, variable, unidad) {
 
   Scenarios.setEscenarioVar(escenario, variable, num);
   _renderEscTable();
+  _renderNarrativa();
   showToast(`${escenario} · ${label} → ${cfg.formato(num)}`, "success");
+};
+
+// ─────────────────────────────────────────
+// APLICAR ESCENARIO AL MODELO
+// ─────────────────────────────────────────
+window.aplicarEscenario = function(escenario) {
+  const esc = Scenarios.getState().escenarios[escenario];
+  const cfg = Scenarios.SLIDER_CONFIG;
+  for (const key of Object.keys(cfg)) {
+    if (typeof esc[key] === "number") {
+      Scenarios.setVar(key, esc[key], "escenario");
+    }
+  }
+  const isEn = I18N.getLocale() === "en";
+  showToast(
+    isEn
+      ? `Scenario "${escenario}" applied — dependent variables updated`
+      : `Escenario "${escenario}" aplicado — variables dependientes actualizadas`,
+    "success"
+  );
 };
 
 // ─────────────────────────────────────────
 // NARRATIVA
 // ─────────────────────────────────────────
 function _renderNarrativa() {
-  const el  = document.getElementById("narrativa-container");
+  const el = document.getElementById("narrativa-container");
   if (!el) return;
 
   const esc = Scenarios.getState().escenarios;
+  const isEn = I18N.getLocale() === "en";
 
   const escenarios = [
     { key: "base",      label: I18N.t("p2.esc.base"),      color: "var(--accent)",  icon: "◎" },
@@ -343,8 +266,7 @@ function _renderNarrativa() {
             <span style="font-size:18px; color:${e.color};">${e.icon}</span>
             <div class="card-title" style="color:${e.color};">${e.label}</div>
           </div>
-          <button class="btn btn-ghost btn-sm"
-                  onclick="editNarrativa('${e.key}')">
+          <button class="btn btn-ghost btn-sm" onclick="editNarrativa('${e.key}')">
             ${I18N.t("label.edit")}
           </button>
         </div>
@@ -363,8 +285,7 @@ function _renderNarrativa() {
                 <div style="font-size:12px; color:var(--text-primary); line-height:1.5;">
                   ${narrativa[key] || "—"}
                 </div>
-              </div>
-            `;
+              </div>`;
           }).join("")}
         </div>
       </div>`;
@@ -375,15 +296,15 @@ window.editNarrativa = function(escenario) {
   const state = Scenarios.getState();
   const cfg   = Scenarios.SLIDER_CONFIG;
   const narr  = state.escenarios[escenario].narrativa;
+  const isEn  = I18N.getLocale() === "en";
 
-  // Editar variable por variable
   for (const [key, c] of Object.entries(cfg)) {
     const actual = narr[key] || "";
-    const label = getSliderLabel(key, c.label);
+    const label  = getSliderLabel(key, c.label);
     const nuevo  = prompt(
-      I18N.getLocale() === "en"
-        ? `${escenario.toUpperCase()} · Narrative: ${label}\n\nCurrent text:\n${actual}\n\nNew narrative (Enter to keep):`
-        : `${escenario.toUpperCase()} · Narrativa: ${label}\n\nTexto actual:\n${actual}\n\nNueva narrativa (Enter para mantener):`,
+      isEn
+        ? `${escenario.toUpperCase()} · Narrative: ${label}\n\nCurrent:\n${actual}\n\nNew text (Enter to keep):`
+        : `${escenario.toUpperCase()} · Narrativa: ${label}\n\nActual:\n${actual}\n\nNueva narrativa (Enter para mantener):`,
       actual
     );
     if (nuevo !== null && nuevo !== actual) {
@@ -392,7 +313,10 @@ window.editNarrativa = function(escenario) {
   }
 
   _renderNarrativa();
-  showToast(I18N.getLocale() === "en" ? `Narrative for ${escenario} updated` : `Narrativa ${escenario} actualizada`, "success");
+  showToast(
+    isEn ? `Narrative for "${escenario}" updated` : `Narrativa "${escenario}" actualizada`,
+    "success"
+  );
 };
 
 // ─────────────────────────────────────────
@@ -406,18 +330,20 @@ function _renderVarsDependientes() {
   const actual = cache.actual;
   if (!actual) return;
 
-  const vars   = Scenarios.getState().vars;
-  const fmt    = Scenarios.fmt;
+  const vars = Scenarios.getState().vars;
+  const fmt  = Scenarios.fmt;
 
-  // Calcular variables dependientes
-  const ingresosEst   = 322746 * (1 + (vars.usdmxn - 18.0) / 18.0 * 0.85)
-                               * (vars.volPct / 100);
-  const costoFinEst   = 42493  + (vars.sofr1m - 4.30) / 100 * 135479
-                               + (vars.tiie28 - 7.10) / 100 * 29747;
-  const ebitdaEst     = actual.resultados.ebitda;
-  const fcfEst        = actual.resultados.fcf;
-  const dscrEst       = actual.resultados.dscr;
-  const margenEst     = parseFloat(actual.resultados.margenEbitda);
+  // Ingresos: usar impactos del modelo para consistencia
+  const ingresosEst = 322746
+    + (actual.impactos.fx  || 0)
+    + (actual.impactos.mn  || 0)
+    + (actual.impactos.oro || 0);
+  const costoFinEst = actual.resultados.gastoFin;
+  const ebitdaEst   = actual.resultados.ebitda;
+  const fcfEst      = actual.resultados.fcf;
+  const dscrEst     = actual.resultados.dscr;
+  const margenEst   = parseFloat(actual.resultados.margenEbitda);
+  const isEn        = I18N.getLocale() === "en";
 
   const items = [
     {
@@ -435,7 +361,7 @@ function _renderVarsDependientes() {
     {
       label: I18N.t("p2.dep.ebitda"),
       val:   fmt.usd(ebitdaEst),
-      sub:   `${I18N.getLocale() === "en" ? "Margin" : "Margen"} ${margenEst}%`,
+      sub:   `${isEn ? "Margin" : "Margen"} ${margenEst}%`,
       tipo:  ebitdaEst > 30000 ? "success" : ebitdaEst > 0 ? "warn" : "danger",
     },
     {
@@ -466,7 +392,10 @@ function _renderVarsDependientes() {
         ${i.label}
       </div>
       <div style="font-size:18px; font-weight:700; font-family:var(--font-mono);
-                  color:var(--text-${i.tipo === "success" ? "primary" : i.tipo});">
+                  color:${i.tipo === "success" ? "var(--success)"
+                        : i.tipo === "danger"  ? "var(--danger)"
+                        : i.tipo === "warn"    ? "var(--warn)"
+                        : "var(--text-primary)"};">
         ${i.val}
       </div>
       <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
@@ -487,26 +416,29 @@ function _renderImpactoDrivers() {
   const actual = cache.actual;
   if (!actual) return;
 
-  const imp = actual.impactos;
-  const fmt = Scenarios.fmt;
+  const imp     = actual.impactos;
+  const fmt     = Scenarios.fmt;
+  const ebitda  = actual.resultados.ebitda;
+  const isEn    = I18N.getLocale() === "en";
 
   const drivers = [
-    { label: I18N.t("p2.driver.fx"), val: imp.fx,     key: "fx"  },
-    { label: I18N.t("p2.driver.mn"),    val: imp.mn,     key: "mn"  },
-    { label: I18N.t("p2.driver.oro"),          val: imp.oro,    key: "oro" },
-    { label: I18N.t("p2.driver.tiie"),           val: imp.tiie,   key: "tiie"},
-    { label: I18N.t("p2.driver.sofr"),          val: imp.sofr,   key: "sofr"},
-    { label: I18N.t("p2.driver.gas"),          val: imp.gas,    key: "gas" },
-    { label: I18N.t("p2.driver.vol"),             val: imp.volumen,key: "vol" },
+    { label: I18N.t("p2.driver.fx"),   val: imp.fx,      key: "fx"  },
+    { label: I18N.t("p2.driver.mn"),   val: imp.mn,      key: "mn"  },
+    { label: I18N.t("p2.driver.oro"),  val: imp.oro,     key: "oro" },
+    { label: I18N.t("p2.driver.tiie"), val: imp.tiie,    key: "tiie"},
+    { label: I18N.t("p2.driver.sofr"), val: imp.sofr,    key: "sofr"},
+    { label: I18N.t("p2.driver.gas"),  val: imp.gas,     key: "gas" },
+    { label: I18N.t("p2.driver.vol"),  val: imp.volumen, key: "vol" },
   ];
 
   const maxAbs = Math.max(...drivers.map(d => Math.abs(d.val)), 1);
 
   el.innerHTML = `
     <div style="margin-bottom:8px; font-size:11.5px; color:var(--text-muted);">
-      ${I18N.t("p2.impact.sub")} (USD ${(31470/1000).toFixed(1)}M) 
+      ${I18N.t("p2.impact.sub")} (${fmt.usd(ebitda)})
       ${I18N.t("p2.impact.given")}
     </div>
+
     ${drivers.map(d => {
       const pct      = Math.abs(d.val) / maxAbs * 100;
       const positivo = d.val >= 0;
@@ -517,17 +449,13 @@ function _renderImpactoDrivers() {
         <div style="margin-bottom:10px;">
           <div class="flex-between" style="margin-bottom:4px;">
             <span style="font-size:12px;">${d.label}</span>
-            <span class="mono" style="font-size:12px; font-weight:600;
-                  color:${color};">
+            <span class="mono" style="font-size:12px; font-weight:600; color:${color};">
               ${label}
             </span>
           </div>
-          <div style="height:8px; background:var(--bg-raised);
-                      border-radius:4px; overflow:hidden;">
-            <div style="width:${pct}%; height:100%;
-                        background:${color}; border-radius:4px;
-                        transition:width 0.3s ease;">
-            </div>
+          <div style="height:8px; background:var(--bg-raised); border-radius:4px; overflow:hidden;">
+            <div style="width:${pct}%; height:100%; background:${color};
+                        border-radius:4px; transition:width 0.3s ease;"></div>
           </div>
         </div>`;
     }).join("")}
@@ -544,7 +472,7 @@ function _renderImpactoDrivers() {
     </div>
     <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
       ${I18N.t("p2.impact.adj")}
-      <strong>${fmt.usd(31470 + imp.total)}</strong>
+      <strong>${fmt.usd(ebitda)}</strong>
     </div>
   `;
 }
@@ -555,22 +483,12 @@ function _renderImpactoDrivers() {
 window.resetEscenarios = function() {
   if (!confirm(I18N.t("p2.resetConfirm"))) return;
 
-  // Restaurar variables actuales
-  const defaults = {
-    usdmxn: 17.20, tiie28: 7.10, sofr1m: 4.30,
-    precioOro: 3000, precioMn: 1309, precioGas: 3.20, volPct: 100,
-  };
-
+  // Usar valores base del escenario como referencia
+  const defaults = Scenarios.getState().escenarios.base;
   for (const [key, val] of Object.entries(defaults)) {
-    Scenarios.setVar(key, val, "reset");
-    const sliderEl = document.getElementById(`slider-${key}`);
-    if (sliderEl) sliderEl.value = val;
-    const cfg = Scenarios.SLIDER_CONFIG[key];
-    const svEl = document.getElementById(`sv-${key}`);
-    const sfEl = document.getElementById(`sf-${key}`);
-    const pct  = ((val - cfg.min) / (cfg.max - cfg.min) * 100).toFixed(1);
-    if (svEl) svEl.textContent = cfg.formato(val);
-    if (sfEl) sfEl.style.width = `${pct}%`;
+    if (typeof val === "number" && Scenarios.SLIDER_CONFIG[key]) {
+      Scenarios.setVar(key, val, "reset");
+    }
   }
 
   showToast(I18N.t("p2.saved"), "success");
@@ -578,20 +496,22 @@ window.resetEscenarios = function() {
 
 window.exportarSupuestosCSV = function() {
   const data = Scenarios.exportarSupuestos();
-  const cfg  = Scenarios.SLIDER_CONFIG;
+  const isEn = I18N.getLocale() === "en";
 
-  const headers = I18N.getLocale() === "en"
-    ? "Variable,Unit,Actual,Base,Optimistic,Adverse\n"
-    : "Variable,Unidad,Actual,Base,Optimista,Adverso\n";
+  const headers = isEn
+    ? "Variable,Unit,Base,Optimistic,Adverse\n"
+    : "Variable,Unidad,Base,Optimista,Adverso\n";
 
   let csv = headers;
   data.supuestos.forEach(s => {
-    csv += `"${s.variable}","${s.unidad}","${s.actual}","${s.base}","${s.optimista}","${s.adverso}"\n`;
+    csv += `"${s.variable}","${s.unidad}","${s.base}","${s.optimista}","${s.adverso}"\n`;
   });
 
-  if (data.overrides.length) {
-    csv += I18N.getLocale() === "en" ? "\nAudited Data Overrides\n" : "\nOverrides de datos auditados\n";
-    csv += I18N.getLocale() === "en" ? "Field,Original,Override,Justification,Date\n" : "Campo,Original,Override,Justificación,Fecha\n";
+  if (data.overrides?.length) {
+    csv += isEn ? "\nAudited Data Overrides\n" : "\nOverrides de datos auditados\n";
+    csv += isEn
+      ? "Field,Original,Override,Justification,Date\n"
+      : "Campo,Original,Override,Justificación,Fecha\n";
     data.overrides.forEach(o => {
       csv += `"${o.campo}","${o.original}","${o.override}","${o.justificacion}","${o.fecha}"\n`;
     });
@@ -607,6 +527,19 @@ window.exportarSupuestosCSV = function() {
 
   showToast(I18N.t("p2.csvExported"), "success");
 };
+
+// ─────────────────────────────────────────
+// SUSCRIPCIONES — una sola vez
+// ─────────────────────────────────────────
+let _escSubscribed = false;
+function _escEnsureSubscribed() {
+  if (_escSubscribed) return;
+  _escSubscribed = true;
+  Scenarios.on("calc:update",       _renderVarsDependientes);
+  Scenarios.on("calc:update",       _renderImpactoDrivers);
+  Scenarios.on("escenarios:update", _renderEscTable);
+  Scenarios.on("escenarios:update", _renderNarrativa);
+}
 
 // Lazy render
 Scenarios.on("page:escenarios", () => {
