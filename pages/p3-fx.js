@@ -5,6 +5,7 @@
  */
 
 function renderFX() {
+  const isEn = I18N.getLocale() === "en";
   const el = document.getElementById("fx-content");
   if (!el) return;
 
@@ -243,6 +244,7 @@ function _fxRenderCollaresVigentes() {
 // TABS — INSTRUMENTOS (HTML)
 // ─────────────────────────────────────────
 function _fxTabCollar() {
+  const isEn = I18N.getLocale() === "en";
   return `
     <div class="grid-2">
       <div>
@@ -283,6 +285,7 @@ function _fxTabCollar() {
 }
 
 function _fxTabForward() {
+  const isEn = I18N.getLocale() === "en";
   return `
     <div class="grid-2">
       <div>
@@ -323,6 +326,7 @@ function _fxTabForward() {
 }
 
 function _fxTabPut() {
+  const isEn = I18N.getLocale() === "en";
   return `
     <div class="grid-2">
       <div>
@@ -889,6 +893,7 @@ function _fxRenderTablaComparativa() {
   const el = document.getElementById("fx-tabla-comparativa");
   if (!el) return;
 
+  const isEn = I18N.getLocale() === "en";
   const escVars = Scenarios.getState().escenarios;
   const noc     = 10000;
   const r       = Scenarios.getVar("tiie28") / 100;
@@ -909,8 +914,8 @@ function _fxRenderTablaComparativa() {
   const conFwd   = (tc) => sinCob(tc) + Models.forwardPayoff(tc, fwdPrice, noc).ganancia;
 
   // Collar — leer floor/cap/horizonte del tab
-  const colFloor = parseFloat(document.getElementById("fx-collar-floor")?.value || 17.50);
-  const colCap   = parseFloat(document.getElementById("fx-collar-cap")?.value   || 18.50);
+  const colFloor = parseFloat(document.getElementById("fx-collar-floor")?.value || 17.00);
+  const colCap   = parseFloat(document.getElementById("fx-collar-cap")?.value   || 17.88);
   const conCollar = (tc) => sinCob(tc) + Models.collarPayoff(tc, colFloor, colCap, noc).payoffCollar;
 
   // Put — leer strike/horizonte del tab
@@ -948,11 +953,11 @@ function _fxRenderTablaComparativa() {
   const conST = (tc) => sinCob(tc) + stRes.payoff(tc) * noc;
 
   const filas = [
-    { label: "Sin cobertura",                                     fn: sinCob,    bold: true },
+    { label: isEn ? "Unhedged" : "Sin cobertura",                                     fn: sinCob,    bold: true },
     { label: `Forward $${fwdPrice.toFixed(2)}`,                   fn: conFwd  },
     { label: `Collar $${colFloor.toFixed(2)}–$${colCap.toFixed(2)}`, fn: conCollar },
-    { label: `Put $${putStrike.toFixed(2)} (−prima)`,             fn: conPut  },
-    { label: `KO Fwd (barrera $${koH.toFixed(2)})`,               fn: conKO   },
+    { label: `Put $${putStrike.toFixed(2)} (${isEn ? "-premium" : "−prima"})`,             fn: conPut  },
+    { label: `KO Fwd (${isEn ? "barrier" : "barrera"} $${koH.toFixed(2)})`,               fn: conKO   },
     { label: "Seagull",                                            fn: conSG   },
     { label: "Strangle",                                           fn: conST   },
   ];
@@ -992,8 +997,8 @@ function _fxRenderPayoffChart() {
   for (let tc = 13.0; tc <= 22.0; tc += 0.1) tcs.push(parseFloat(tc.toFixed(2)));
 
   const fwdP  = Models.forwardPrice(S, r, q, T).forward;
-  const floor = parseFloat(document.getElementById("fx-collar-floor")?.value || S * 0.97);
-  const cap   = parseFloat(document.getElementById("fx-collar-cap")?.value   || S * 1.06);
+  const floor = parseFloat(document.getElementById("fx-collar-floor")?.value || 17.00);
+  const cap   = parseFloat(document.getElementById("fx-collar-cap")?.value   || 17.88);
   const koK   = parseFloat(document.getElementById("fx-ko-strike")?.value    || (S * 0.99).toFixed(2));
   const koH   = parseFloat(document.getElementById("fx-ko-barrera")?.value   || (S * 1.08).toFixed(2));
   const sgK1  = parseFloat(document.getElementById("fx-sg-K1")?.value        || (S * 0.97).toFixed(2));
@@ -1002,7 +1007,7 @@ function _fxRenderPayoffChart() {
   const stKp  = parseFloat(document.getElementById("fx-st-Kput")?.value      || (S * 0.93).toFixed(2));
   const stKc  = parseFloat(document.getElementById("fx-st-Kcall")?.value     || (S * 1.07).toFixed(2));
 
-  const putStrikeChart = parseFloat(document.getElementById("fx-put-strike")?.value || S * 0.97);
+  const putStrikeChart = parseFloat(document.getElementById("fx-put-strike")?.value || 17.00);
   const putP  = Models.heston("put", S, putStrikeChart, T, r, q,
     Models.PARAMS.fx_usdmxn.v0, Models.PARAMS.fx_usdmxn.kappa,
     Models.PARAMS.fx_usdmxn.theta_v, Models.PARAMS.fx_usdmxn.xi,
