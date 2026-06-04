@@ -613,6 +613,7 @@ window.calcFXCollar = function() {
   `;
 
   _fxRenderPayoffChart();
+  _fxRenderTablaComparativa(); // ← añadir esta línea
 };
 
 window.calcFXForward = function() {
@@ -653,6 +654,7 @@ window.calcFXForward = function() {
       </span>
     </div>
   `;
+   _fxRenderTablaComparativa();
 };
 
 window.calcFXPut = function() {
@@ -704,6 +706,7 @@ window.calcFXPut = function() {
       </span>
     </div>
   `;
+  _fxRenderTablaComparativa();
 };
 
 window.calcFXSwap = function() {
@@ -731,6 +734,7 @@ window.calcFXSwap = function() {
       <span style="font-size:11.5px;">${res.ventaja}</span>
     </div>
   `;
+  _fxRenderTablaComparativa();
 };
 
 // ─────────────────────────────────────────
@@ -786,6 +790,7 @@ window.calcFXKO = function() {
       </span>
     </div>
   `;
+  _fxRenderTablaComparativa();
 };
 
 window.calcFXSeagull = function() {
@@ -829,6 +834,7 @@ window.calcFXSeagull = function() {
       </span>
     </div>
   `;
+  _fxRenderTablaComparativa();
 };
 
 window.calcFXStrangle = function() {
@@ -867,6 +873,7 @@ window.calcFXStrangle = function() {
       </span>
     </div>
   `;
+  _fxRenderTablaComparativa();
 };
 
 // ─────────────────────────────────────────
