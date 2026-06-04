@@ -814,6 +814,25 @@ function _oroRenderRecomendacion() {
 // ─────────────────────────────────────────
 // BIND & INIT
 // ─────────────────────────────────────────
+function _resultRow(label, val, tipo = "") {
+  const colorMap = {
+    positive: "var(--success)",
+    accent:   "var(--accent)",
+    warn:     "var(--warn)",
+    danger:   "var(--danger)",
+    "":       "var(--text-primary)",
+  };
+  return `
+    <div class="flex-between" style="padding:5px 0;
+                border-bottom:1px solid var(--border);">
+      <span style="font-size:11.5px; color:var(--text-secondary);">${label}</span>
+      <span class="mono" style="font-size:12px; font-weight:600;
+            color:${colorMap[tipo] || colorMap[""]};">
+        ${val}
+      </span>
+    </div>`;
+}
+
 function _oroBindCalcs() {
   calcOroForward();
   calcOroPut();
