@@ -882,245 +882,130 @@ window.exportarFXExcel = function() {
   const T    = 0.5;
   const noc  = 10000;
   const esc  = Scenarios.getState().escenarios;
+  const NL   = "\n";
 
-  // ── Hoja 1: Parámetros del modelo ──
- let csv = isEn ? "AUTLAN FX HEDGING CALCULATOR - MODEL EXPORT\n\n" : "AUTLAN CALCULADORA FX - EXPORTACION DEL MODELO\n\n";
-  
-  csv += isEn ? "MODEL PARAMETERS
-" : "PARÁMETROS DEL MODELO
-";
-  csv += isEn ? "Parameter,Value,Unit
-" : "Parámetro,Valor,Unidad
-";
-  csv += `"USD/MXN Spot",${S.toFixed(4)},MXN/USD
-`;
-  csv += `"TIIE 28d",${(r*100).toFixed(2)},%
-`;
-  csv += `"SOFR 1m",${(q*100).toFixed(2)},%
-`;
-  csv += `"${isEn?"Horizon":"Horizonte"}",${T*12},${isEn?"months":"meses"}
-`;
-  csv += `"${isEn?"Reference Notional":"Nocional referencia"}",${noc},${isEn?"USD thousands":"USD miles"}
-`;
-  csv += `"${isEn?"Heston v0 (variance)":"Heston v0 (varianza)"}",${Models.PARAMS.fx_usdmxn.v0},—
-`;
-  csv += `"${isEn?"Heston kappa (mean reversion)":"Heston kappa (reversión media)"}",${Models.PARAMS.fx_usdmxn.kappa},—
-`;
-  csv += `"${isEn?"Heston xi (vol of vol)":"Heston xi (vol de vol)"}",${Models.PARAMS.fx_usdmxn.xi},—
-`;
-  csv += `"${isEn?"Heston rho (correlation)":"Heston rho (correlación)"}",${Models.PARAMS.fx_usdmxn.rho_sv},—
+  const row = (label, val) => `"${label}","${val}"${NL}`;
 
-`;
+  let csv = (isEn ? "AUTLAN FX HEDGING CALCULATOR - MODEL EXPORT" : "AUTLAN CALCULADORA FX - EXPORTACION DEL MODELO") + NL + NL;
 
-  // ── Hoja 2: Resultados de cada instrumento ──
-  csv += isEn ? "INSTRUMENT PRICING RESULTS
-" : "RESULTADOS DE PRICING POR INSTRUMENTO
-";
+  csv += (isEn ? "MODEL PARAMETERS" : "PARAMETROS DEL MODELO") + NL;
+  csv += (isEn ? "Parameter,Value,Unit" : "Parametro,Valor,Unidad") + NL;
+  csv += `"USD/MXN Spot","${S.toFixed(4)}","MXN/USD"${NL}`;
+  csv += `"TIIE 28d","${(r*100).toFixed(2)}","%"${NL}`;
+  csv += `"SOFR 1m","${(q*100).toFixed(2)}","%"${NL}`;
+  csv += `"${isEn?"Horizon":"Horizonte"}","${T*12}","${isEn?"months":"meses"}"${NL}`;
+  csv += `"${isEn?"Reference Notional":"Nocional referencia"}","${noc}","${isEn?"USD thousands":"USD miles"}"${NL}`;
+  csv += `"Heston v0","${Models.PARAMS.fx_usdmxn.v0}","—"${NL}`;
+  csv += `"Heston kappa","${Models.PARAMS.fx_usdmxn.kappa}","—"${NL}`;
+  csv += `"Heston xi","${Models.PARAMS.fx_usdmxn.xi}","—"${NL}`;
+  csv += `"Heston rho","${Models.PARAMS.fx_usdmxn.rho_sv}","—"${NL}${NL}`;
 
-  // Collar
   const collarFloor = parseFloat(document.getElementById("fx-collar-floor")?.value || S*0.97);
   const collarCap   = parseFloat(document.getElementById("fx-collar-cap")?.value   || S*1.06);
   const collarVol   = parseFloat(document.getElementById("fx-collar-vol")?.value   || 12) / 100;
   const collarRes   = Models.collarPrice(S, collarFloor, collarCap, T, r, q, collarVol, true, Models.PARAMS.fx_usdmxn);
 
-  csv += isEn ? "
-COLLAR
-" : "
-COLLAR
-";
-  csv += isEn ? "Parameter,Value
-" : "Parámetro,Valor
-";
-  csv += `"Spot",$${S.toFixed(4)}
-`;
-  csv += `"Floor",$${collarFloor.toFixed(4)}
-`;
-  csv += `"Cap",$${collarCap.toFixed(4)}
-`;
-  csv += `"${isEn?"Put Premium":"Prima put"}",$${collarRes.put.precio.toFixed(6)}/USD
-`;
-  csv += `"${isEn?"Call Premium":"Prima call"}",$${collarRes.call.precio.toFixed(6)}/USD
-`;
-  csv += `"${isEn?"Net Cost":"Costo neto"}",$${collarRes.costoNeto.toFixed(6)}/USD
-`;
-  csv += `"${isEn?"Costless?":"¿Costless?"}","${collarRes.esCostless ? "Yes/Sí" : "No"}"
-`;
-  csv += `"${isEn?"Total notional cost":"Costo total nocional"}",USD ${(collarRes.costoNeto*noc).toFixed(1)}K
-`;
-  csv += `"Model","Heston (2nd order approx.)"
-`;
+  csv += "COLLAR" + NL;
+  csv += row("Spot", `$${S.toFixed(4)}`);
+  csv += row("Floor", `$${collarFloor.toFixed(4)}`);
+  csv += row("Cap", `$${collarCap.toFixed(4)}`);
+  csv += row(isEn?"Put Premium":"Prima put", `$${collarRes.put.precio.toFixed(6)}/USD`);
+  csv += row(isEn?"Call Premium":"Prima call", `$${collarRes.call.precio.toFixed(6)}/USD`);
+  csv += row(isEn?"Net Cost":"Costo neto", `$${collarRes.costoNeto.toFixed(6)}/USD`);
+  csv += row(isEn?"Costless?":"Costless?", collarRes.esCostless ? "Yes" : "No");
+  csv += row(isEn?"Total Notional Cost":"Costo total nocional", `USD ${(collarRes.costoNeto*noc).toFixed(1)}K`);
+  csv += row("Model", "Heston (2nd order approx.)") + NL;
 
-  // Forward
   const fwdRes = Models.forwardPrice(S, r, q, T);
-  csv += isEn ? "
-FORWARD
-" : "
-FORWARD
-";
-  csv += `"Spot",$${S.toFixed(4)}
-`;
-  csv += `"${isEn?"Forward Price":"Precio forward"}",$${fwdRes.forward.toFixed(4)}
-`;
-  csv += `"${isEn?"Swap Points":"Puntos swap"}",$${fwdRes.puntosSwap.toFixed(4)}
-`;
-  csv += `"${isEn?"Rate Differential (TIIE-SOFR)":"Diferencial tasas (TIIE-SOFR)"}","${((r-q)*100).toFixed(2)}%"
-`;
-  csv += `"${isEn?"Premium":"Prima"}","${isEn?"Zero":"Cero"}"
-`;
+  csv += "FORWARD" + NL;
+  csv += row("Spot", `$${S.toFixed(4)}`);
+  csv += row(isEn?"Forward Price":"Precio forward", `$${fwdRes.forward.toFixed(4)}`);
+  csv += row(isEn?"Swap Points":"Puntos swap", `$${fwdRes.puntosSwap.toFixed(4)}`);
+  csv += row(isEn?"Rate Diff TIIE-SOFR":"Diferencial TIIE-SOFR", `${((r-q)*100).toFixed(2)}%`);
+  csv += row(isEn?"Premium":"Prima", isEn?"Zero":"Cero") + NL;
 
-  // Put
   const putStrike = parseFloat(document.getElementById("fx-put-strike")?.value || S*0.97);
-  const putVol    = parseFloat(document.getElementById("fx-put-vol")?.value    || 12) / 100;
   const putRes    = Models.heston("put", S, putStrike, T, r, q,
     Models.PARAMS.fx_usdmxn.v0, Models.PARAMS.fx_usdmxn.kappa,
     Models.PARAMS.fx_usdmxn.theta_v, Models.PARAMS.fx_usdmxn.xi, Models.PARAMS.fx_usdmxn.rho_sv);
-  csv += isEn ? "
-PUT OPTION (HESTON)
-" : "
-OPCIÓN PUT (HESTON)
-";
-  csv += `"Spot",$${S.toFixed(4)}
-`;
-  csv += `"Strike",$${putStrike.toFixed(4)}
-`;
-  csv += `"${isEn?"Premium":"Prima"}","$${putRes.precio.toFixed(6)}/USD"
-`;
-  csv += `"${isEn?"Total Premium":"Prima total"}","USD ${(putRes.precio*noc).toFixed(1)}K"
-`;
-  csv += `"Delta","${putRes.delta.toFixed(6)}"
-`;
-  csv += `"Gamma","${putRes.gamma.toFixed(8)}"
-`;
-  csv += `"Vega (per 1% vol)","${putRes.vega.toFixed(6)}"
-`;
-  csv += `"${isEn?"Moneyness":"Moneyness"}","${putRes.itm ? "ITM" : "OTM"}"
-`;
+  csv += (isEn?"PUT OPTION (HESTON)":"OPCION PUT (HESTON)") + NL;
+  csv += row("Spot", `$${S.toFixed(4)}`);
+  csv += row("Strike", `$${putStrike.toFixed(4)}`);
+  csv += row(isEn?"Premium":"Prima", `$${putRes.precio.toFixed(6)}/USD`);
+  csv += row(isEn?"Total Premium":"Prima total", `USD ${(putRes.precio*noc).toFixed(1)}K`);
+  csv += row("Delta", putRes.delta.toFixed(6));
+  csv += row("Gamma", putRes.gamma.toFixed(8));
+  csv += row("Vega (per 1% vol)", putRes.vega.toFixed(6));
+  csv += row("Moneyness", putRes.itm ? "ITM" : "OTM") + NL;
 
-  // KO Forward
-  const koS  = parseFloat(document.getElementById("fx-ko-spot")?.value    || S);
-  const koK  = parseFloat(document.getElementById("fx-ko-strike")?.value  || S*0.99);
-  const koH  = parseFloat(document.getElementById("fx-ko-barrera")?.value || S*1.08);
-  const koVol = parseFloat(document.getElementById("fx-ko-vol")?.value    || 12) / 100;
-  const vanilla = Models.forwardPrice(koS, r, q, T).forward;
-  csv += isEn ? "
-KNOCK-OUT FORWARD
-" : "
-FORWARD KNOCK-OUT
-";
-  csv += `"Spot",$${koS.toFixed(4)}
-`;
-  csv += `"Strike (KO)",$${koK.toFixed(4)}
-`;
-  csv += `"${isEn?"KO Barrier":"Barrera KO"}",$${koH.toFixed(4)}
-`;
-  csv += `"${isEn?"Plain Forward (ref)":"Forward normal (ref)"}",$${vanilla.toFixed(4)}
-`;
-  csv += `"${isEn?"Improvement vs Forward":"Mejora vs Forward"}","${((vanilla-koK)/vanilla*100).toFixed(2)}%"
-`;
-  csv += `"Model","Reiner-Rubinstein"
-`;
+  const koK = parseFloat(document.getElementById("fx-ko-strike")?.value  || S*0.99);
+  const koH = parseFloat(document.getElementById("fx-ko-barrera")?.value || S*1.08);
+  const vanilla = Models.forwardPrice(S, r, q, T).forward;
+  csv += (isEn?"KNOCK-OUT FORWARD":"FORWARD KNOCK-OUT") + NL;
+  csv += row("Spot", `$${S.toFixed(4)}`);
+  csv += row("Strike KO", `$${koK.toFixed(4)}`);
+  csv += row(isEn?"KO Barrier":"Barrera KO", `$${koH.toFixed(4)}`);
+  csv += row(isEn?"Plain Forward (ref)":"Forward normal (ref)", `$${vanilla.toFixed(4)}`);
+  csv += row(isEn?"Improvement vs Forward":"Mejora vs Forward", `${((vanilla-koK)/vanilla*100).toFixed(2)}%`);
+  csv += row("Model", "Reiner-Rubinstein") + NL;
 
-  // Seagull
-  const sgK1 = parseFloat(document.getElementById("fx-sg-K1")?.value || S*0.97);
-  const sgK2 = parseFloat(document.getElementById("fx-sg-K2")?.value || S*1.06);
-  const sgK3 = parseFloat(document.getElementById("fx-sg-K3")?.value || S*0.90);
-  const sgV  = parseFloat(document.getElementById("fx-sg-vol")?.value || 12) / 100;
+  const sgK1  = parseFloat(document.getElementById("fx-sg-K1")?.value  || S*0.97);
+  const sgK2  = parseFloat(document.getElementById("fx-sg-K2")?.value  || S*1.06);
+  const sgK3  = parseFloat(document.getElementById("fx-sg-K3")?.value  || S*0.90);
+  const sgV   = parseFloat(document.getElementById("fx-sg-vol")?.value  || 12) / 100;
   const sgRes = Models.seagull(S, sgK1, sgK2, sgK3, T, r, q, sgV, true, Models.PARAMS.fx_usdmxn);
-  csv += isEn ? "
-SEAGULL
-" : "
-SEAGULL
-";
-  csv += `"Spot",$${S.toFixed(4)}
-`;
-  csv += `"K1 (floor put)",$${sgK1.toFixed(4)}
-`;
-  csv += `"K2 (cap call)",$${sgK2.toFixed(4)}
-`;
-  csv += `"K3 (sold put)",$${sgK3.toFixed(4)}
-`;
-  csv += `"${isEn?"Put K1 Premium":"Prima put K1"}","$${sgRes.putK1.precio.toFixed(6)}"
-`;
-  csv += `"${isEn?"Call K2 Premium (rcvd)":"Prima call K2 (recib.)"}","-$${sgRes.callK2.precio.toFixed(6)}"
-`;
-  csv += `"${isEn?"Put K3 Premium (rcvd)":"Prima put K3 (recib.)"}","-$${sgRes.putK3.precio.toFixed(6)}"
-`;
-  csv += `"${isEn?"Net Cost":"Costo neto"}","$${sgRes.costoNeto.toFixed(6)}/USD"
-`;
-  csv += `"${isEn?"Costless?":"¿Costless?"}","${sgRes.esCostless ? "Yes/Sí" : "No"}"
-`;
+  csv += "SEAGULL" + NL;
+  csv += row("Spot", `$${S.toFixed(4)}`);
+  csv += row("K1 (floor put)", `$${sgK1.toFixed(4)}`);
+  csv += row("K2 (cap call)", `$${sgK2.toFixed(4)}`);
+  csv += row("K3 (sold put)", `$${sgK3.toFixed(4)}`);
+  csv += row(isEn?"Put K1 Premium":"Prima put K1", `$${sgRes.putK1.precio.toFixed(6)}`);
+  csv += row(isEn?"Call K2 (rcvd)":"Call K2 (recib.)", `-$${sgRes.callK2.precio.toFixed(6)}`);
+  csv += row(isEn?"Put K3 (rcvd)":"Put K3 (recib.)", `-$${sgRes.putK3.precio.toFixed(6)}`);
+  csv += row(isEn?"Net Cost":"Costo neto", `$${sgRes.costoNeto.toFixed(6)}/USD`);
+  csv += row(isEn?"Costless?":"Costless?", sgRes.esCostless ? "Yes" : "No") + NL;
 
-  // Strangle
   const stKput  = parseFloat(document.getElementById("fx-st-Kput")?.value  || S*0.93);
   const stKcall = parseFloat(document.getElementById("fx-st-Kcall")?.value || S*1.07);
   const stVol   = parseFloat(document.getElementById("fx-st-vol")?.value   || 12) / 100;
   const stRes   = Models.strangle(S, stKput, stKcall, T, r, stVol, q, true, Models.PARAMS.fx_usdmxn);
-  csv += isEn ? "
-STRANGLE
-" : "
-STRANGLE
-";
-  csv += `"Spot",$${S.toFixed(4)}
-`;
-  csv += `"K put OTM",$${stKput.toFixed(4)}
-`;
-  csv += `"K call OTM",$${stKcall.toFixed(4)}
-`;
-  csv += `"${isEn?"Put Premium":"Prima put"}","$${stRes.put.precio.toFixed(6)}/USD"
-`;
-  csv += `"${isEn?"Call Premium":"Prima call"}","$${stRes.call.precio.toFixed(6)}/USD"
-`;
-  csv += `"${isEn?"Total Cost":"Costo total"}","$${stRes.costTotal.toFixed(6)}/USD"
-`;
-  csv += `"${isEn?"Break-even Down":"Break-even baja"}","$${stRes.bepAbajo.toFixed(4)}"
-`;
-  csv += `"${isEn?"Break-even Up":"Break-even alza"}","$${stRes.bepArriba.toFixed(4)}"
-`;
+  csv += "STRANGLE" + NL;
+  csv += row("Spot", `$${S.toFixed(4)}`);
+  csv += row("K put OTM", `$${stKput.toFixed(4)}`);
+  csv += row("K call OTM", `$${stKcall.toFixed(4)}`);
+  csv += row(isEn?"Put Premium":"Prima put", `$${stRes.put.precio.toFixed(6)}/USD`);
+  csv += row(isEn?"Call Premium":"Prima call", `$${stRes.call.precio.toFixed(6)}/USD`);
+  csv += row(isEn?"Total Cost":"Costo total", `$${stRes.costTotal.toFixed(6)}/USD`);
+  csv += row(isEn?"Break-even Down":"Break-even baja", `$${stRes.bepAbajo.toFixed(4)}`);
+  csv += row(isEn?"Break-even Up":"Break-even alza", `$${stRes.bepArriba.toFixed(4)}`) + NL;
 
-  // ── Hoja 3: Payoff por escenario ──
-  csv += isEn ? "
-
-PAYOFF BY SCENARIO (USD thousands, notional = USD 10M)
-"
-              : "
-
-PAYOFF POR ESCENARIO (USD miles, nocional = USD 10M)
-";
-  csv += isEn ? "Instrument,Base ($"+esc.base.usdmxn.toFixed(2)+"),Optimistic ($"+esc.optimista.usdmxn.toFixed(2)+"),Adverse ($"+esc.adverso.usdmxn.toFixed(2)+")
-"
-              : "Instrumento,Base ($"+esc.base.usdmxn.toFixed(2)+"),Optimista ($"+esc.optimista.usdmxn.toFixed(2)+"),Adverso ($"+esc.adverso.usdmxn.toFixed(2)+")
-";
+  csv += (isEn?"PAYOFF BY SCENARIO (USD thousands, notional USD 10M)":"PAYOFF POR ESCENARIO (USD miles, nocional USD 10M)") + NL;
+  csv += (isEn
+    ? `Instrument,Base ($${esc.base.usdmxn.toFixed(2)}),Optimistic ($${esc.optimista.usdmxn.toFixed(2)}),Adverse ($${esc.adverso.usdmxn.toFixed(2)})`
+    : `Instrumento,Base ($${esc.base.usdmxn.toFixed(2)}),Optimista ($${esc.optimista.usdmxn.toFixed(2)}),Adverso ($${esc.adverso.usdmxn.toFixed(2)})`) + NL;
 
   const fmt2 = (v) => (v/1000).toFixed(2);
-  const sinCobFn = (tc) => tc * noc;
-  const fwdFn    = (tc) => sinCobFn(tc) + Models.forwardPayoff(tc, fwdRes.forward, noc).ganancia;
-  const colFn    = (tc) => sinCobFn(tc) + Models.collarPayoff(tc, collarFloor, collarCap, noc).payoffCollar;
-  const putFn    = (tc) => sinCobFn(tc) + Math.max(putStrike - tc, 0)*noc - putRes.precio*noc;
-  const koFn     = (tc) => tc >= koH ? sinCobFn(tc) : sinCobFn(tc) + (koK - tc)*noc;
-  const sgFn     = (tc) => sinCobFn(tc) + sgRes.payoff(tc)*noc - sgRes.costoNeto*noc;
-  const stFn     = (tc) => sinCobFn(tc) + stRes.payoff(tc)*noc;
-
   const scenarios = [esc.base.usdmxn, esc.optimista.usdmxn, esc.adverso.usdmxn];
+  const sinCobFn = (tc) => tc * noc;
   const instruments = [
-    { label: isEn?"Unhedged":"Sin cobertura",           fn: sinCobFn },
-    { label: `Forward $${fwdRes.forward.toFixed(2)}`,   fn: fwdFn    },
-    { label: `Collar $${collarFloor.toFixed(2)}-$${collarCap.toFixed(2)}`, fn: colFn },
-    { label: `Put $${putStrike.toFixed(2)}`,            fn: putFn    },
-    { label: `KO Fwd (barrera $${koH.toFixed(2)})`,    fn: koFn     },
-    { label: "Seagull",                                  fn: sgFn     },
-    { label: "Strangle",                                 fn: stFn     },
+    { label: isEn?"Unhedged":"Sin cobertura",         fn: sinCobFn },
+    { label: `Forward $${fwdRes.forward.toFixed(2)}`, fn: (tc) => sinCobFn(tc) + Models.forwardPayoff(tc, fwdRes.forward, noc).ganancia },
+    { label: `Collar $${collarFloor.toFixed(2)}-$${collarCap.toFixed(2)}`, fn: (tc) => sinCobFn(tc) + Models.collarPayoff(tc, collarFloor, collarCap, noc).payoffCollar },
+    { label: `Put $${putStrike.toFixed(2)}`,          fn: (tc) => sinCobFn(tc) + Math.max(putStrike-tc,0)*noc - putRes.precio*noc },
+    { label: `KO Fwd (barrier $${koH.toFixed(2)})`,  fn: (tc) => tc >= koH ? sinCobFn(tc) : sinCobFn(tc) + (koK-tc)*noc },
+    { label: "Seagull",                                fn: (tc) => sinCobFn(tc) + sgRes.payoff(tc)*noc - sgRes.costoNeto*noc },
+    { label: "Strangle",                               fn: (tc) => sinCobFn(tc) + stRes.payoff(tc)*noc },
   ];
 
   instruments.forEach(ins => {
-    csv += `"${ins.label}",${scenarios.map(tc => fmt2(ins.fn(tc))).join(",")}
-`;
+    csv += `"${ins.label}",${scenarios.map(tc => fmt2(ins.fn(tc))).join(",")}${NL}`;
   });
 
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement("a");
   a.href     = url;
-  a.download = `autlan-fx-hedging-${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `autlan-fx-${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
   showToast(isEn ? "FX model exported" : "Modelo FX exportado", "success");
