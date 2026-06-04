@@ -439,19 +439,63 @@ function _renderImpactoDrivers() {
       ${I18N.t("p2.impact.given")}
     </div>
 
-    ${drivers.map(d => {
+   ${drivers.map(d => {
       const pct      = Math.abs(d.val) / maxAbs * 100;
       const positivo = d.val >= 0;
       const color    = positivo ? "var(--success-mid)" : "var(--danger-mid)";
       const label    = positivo ? `+${fmt.usd(d.val)}` : fmt.usd(d.val);
+      const pctEbitda = ebitda !== 0
+        ? ((d.val / Math.abs(ebitda)) * 100).toFixed(1)
+        : "—";
+
+      const explicaciones = {
+        fx:      isEn
+          ? "FX impact: Autlán earns USD but pays ~60% of costs in MXN. When the peso appreciates (TC falls), USD revenues convert to fewer pesos — margins compress without any operational change. Formula: Revenue_base × Δ%TC × 0.85 (85% FX-sensitive)."
+          : "Impacto FX: Autlán cobra en USD pero paga ~60% de costos en MXN. Cuando el peso aprecia (TC baja), los ingresos USD valen menos en pesos — los márgenes se comprimen sin cambio operativo. Fórmula: Ingresos_base × Δ%TC × 0.85 (85% sensible a FX).",
+        mn:      isEn
+          ? "Manganese impact: ~60% of revenues come from ferroalloy sales priced in USD/MT. A price change directly multiplies against annual volume. Formula: Revenue_base × 0.60 × Δ%Price_Mn."
+          : "Impacto Manganeso: ~60% de ingresos provienen de ferroaleaciones cotizadas en USD/MT. Un cambio de precio se multiplica directamente contra el volumen anual. Fórmula: Ingresos_base × 0.60 × Δ%Precio_Mn.",
+        oro:     isEn
+          ? "Gold impact (Metallorum): ~20,000 oz annualized target × base price USD 3,000/oz. Any price change applies over the full annualized volume. Formula: 20,000 oz × USD 3,000 × Δ%Price_Gold."
+          : "Impacto Oro (Metallorum): ~20,000 oz anualizadas meta × precio base USD 3,000/oz. Cualquier cambio de precio aplica sobre el volumen anualizado completo. Fórmula: 20,000 oz × USD 3,000 × Δ%Precio_Oro.",
+        tiie:    isEn
+          ? "TIIE impact on financial expense: Autlán has ~USD 29.7M equivalent of MXN debt linked to TIIE. Each 1pp rise in TIIE increases annual interest ~USD 297K. Formula: −USD 29.7M × Δpp_TIIE / 100."
+          : "Impacto TIIE en gasto financiero: Autlán tiene ~USD 29.7M equiv. de deuda MXN ligada a TIIE. Cada 1pp de alza en TIIE sube intereses ~USD 297K anuales. Fórmula: −USD 29.7M × Δpp_TIIE / 100.",
+        sofr:    isEn
+          ? "SOFR impact on financial expense: USD 135.5M of USD bank debt linked to SOFR + spread. Each 1pp rise costs Autlán an additional ~USD 1.35M/year. Formula: −USD 135.5M × Δpp_SOFR / 100."
+          : "Impacto SOFR en gasto financiero: USD 135.5M de deuda bancaria USD ligada a SOFR + spread. Cada 1pp de alza cuesta ~USD 1.35M adicionales al año. Fórmula: −USD 135.5M × Δpp_SOFR / 100.",
+        gas:     isEn
+          ? "Natural gas impact on smelting costs: Autlán's smelters are energy-intensive. Each USD 1/MMBtu change affects operating costs ~USD 2-3M. Formula: −USD 8M base × Δ%Price_Gas (proxy for total energy exposure)."
+          : "Impacto Gas en costos de fundición: los hornos de Autlán son intensivos en energía. Cada USD 1/MMBtu impacta costos operativos ~USD 2-3M. Fórmula: −USD 8M base × Δ%Precio_Gas (proxy de exposición energética total).",
+        vol:     isEn
+          ? "Volume impact: reflects changes in total sales volume vs base plan (100%). Each ±1% of volume changes revenues by ~USD 1.9M (60% ferroalloys × 35% contribution margin). Formula: Revenue_base × 0.60 × Δ%Vol × 0.35."
+          : "Impacto Volumen: refleja cambios en volumen de ventas vs plan base (100%). Cada ±1% de volumen cambia ingresos ~USD 1.9M (60% ferroaleaciones × 35% margen contribución). Fórmula: Ingresos_base × 0.60 × Δ%Vol × 0.35.",
+      };
+
+      const explicacion = explicaciones[d.key] || "";
 
       return `
-        <div style="margin-bottom:10px;">
-          <div class="flex-between" style="margin-bottom:4px;">
-            <span style="font-size:12px;">${d.label}</span>
-            <span class="mono" style="font-size:12px; font-weight:600; color:${color};">
-              ${label}
+        <div style="margin-bottom:12px;">
+          <div class="flex-between" style="margin-bottom:4px; align-items:center;">
+            <span style="font-size:12px; display:inline-flex; align-items:center; gap:6px;">
+              ${d.label}
+              <span class="dash-tooltip-wrap">
+                <span class="dash-tooltip-icon" style="font-size:9px; padding:1px 4px;">ⓘ</span>
+                <span class="dash-tooltip-box" style="width:300px; font-weight:400; font-size:11px; line-height:1.6;">
+                  ${explicacion}
+                </span>
+              </span>
             </span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono);">
+                ${pctEbitda !== "—"
+                  ? `<span style="color:${positivo ? "var(--success)" : "var(--danger)"}; font-weight:700;">${positivo ? "+" : ""}${pctEbitda}%</span> del EBITDA`
+                  : "—"}
+              </span>
+              <span class="mono" style="font-size:12px; font-weight:600; color:${color};">
+                ${label}
+              </span>
+            </div>
           </div>
           <div style="height:8px; background:var(--bg-raised); border-radius:4px; overflow:hidden;">
             <div style="width:${pct}%; height:100%; background:${color};
@@ -459,7 +503,6 @@ function _renderImpactoDrivers() {
           </div>
         </div>`;
     }).join("")}
-
     <div class="divider"></div>
     <div class="flex-between">
       <span style="font-size:12.5px; font-weight:700;">
