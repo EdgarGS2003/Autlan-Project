@@ -187,7 +187,7 @@ window.I18N = (() => {
     "p1.accumLoss":            { es: "Pérdida acumulada",           en: "Cumulative Loss" },
     "p1.q1loss":               { es: "Minusvalía 1T26",             en: "Impairment 1Q26" },
     "p1.collarAlert":          { es: "TIIE actual (7.10%) por debajo del floor (8.75%) — el collar no se ejerce. La empresa paga la tasa de mercado completa más prima sin beneficio activo.", en: "Current TIIE (7.10%) below floor (8.75%) — collar is not exercised. The company pays the full market rate plus premium without active benefit." },
-    "p1.fxAlert":              { es: "Cobertura FX activa cubre solo ~3% de exposición vs 60% permitido por política. Con USD/MXN actual en 17.20, cada peso de apreciación reduce ingresos ~USD 18M.", en: "Active FX hedging covers only ~3% of exposure vs 60% allowed by policy. With current USD/MXN at 17.20, each peso of appreciation reduces revenues by ~USD 18M." },
+    "p1.fxAlert":              { es: "Cobertura FX activa cubre solo ~3% de exposición vs 60% permitido por política. Con USD/MXN actual en 17.30, cada peso de apreciación reduce ingresos ~USD 18M.", en: "Active FX hedging covers only ~3% of exposure vs 60% allowed by policy. With current USD/MXN at 17.30, each peso of appreciation reduces revenues by ~USD 18M." },
     "p1.floorPut":             { es: "Floor (put)",                 en: "Floor (put)" },
     "p1.capCall":              { es: "Cap (call)",                  en: "Cap (call)" },
     "p1.notionalMonth":        { es: "Nocional/mes",                en: "Notional/month" },

@@ -557,8 +557,8 @@ window.resetEscenarios = function() {
 
   // Restaurar variables actuales
   const defaults = {
-    usdmxn: 17.20, tiie28: 7.10, sofr1m: 4.30,
-    precioOro: 3000, precioMn: 1309, precioGas: 3.20, volPct: 100,
+    usdmxn: 17.30, tiie28: 7.10, sofr1m: 4.30,
+    precioOro: 4513, precioMn: 1309, precioGas: 3.20, volPct: 100,
   };
 
   for (const [key, val] of Object.entries(defaults)) {

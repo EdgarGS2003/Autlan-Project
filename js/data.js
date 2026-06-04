@@ -339,7 +339,7 @@ const AUTLAN = {
         nocionalUSD: { valor: 1000, moneda: "USD", source: "XBRL_1T26", audited: true },
         floorUSD:    17.30,
         capUSD:      18.2761,
-        nota:        "Protege apreciación del peso (floor $17.30). Con TC actual ~$17.20 cerca del floor.",
+        nota:        "Protege apreciación del peso (floor $17.30). Con TC actual ~$17.30 cerca del floor.",
         ejercidos:   0,
         audited:     true,
       },
@@ -448,7 +448,7 @@ const AUTLAN = {
                               nota: "ABIERTO: Precio realizado neto por oz y unidad exacta de las kOz reportadas" },
       capexEscalamiento:  { source: "PENDIENTE",
                              nota:  "ABIERTO: Capex requerido para escalar a 20,000 oz y luego a 100,000 oz/año" },
-      precioOroActual:  { valor: 3000, moneda: "USD/oz", nota: "Precio de mercado may-2026 (aprox)" },
+      precioOroActual:  { valor: 4513, moneda: "USD/oz", nota: "LSEG Refinitiv 02-jun-2026" },
       meta2028:         { valor: 15.0, nota: "Target % de ingresos totales" },
     },
     energia: {
@@ -467,7 +467,7 @@ const AUTLAN = {
   // ─────────────────────────────────────────────
   mercado: {
     fecha: "2026-05-14",
-    usdmxn:     { valor: 17.20, source: "TradingEconomics May-2026" },
+    usdmxn:     { valor: 17.30, source: "LSEG Refinitiv 02-jun-2026" },
     // TC histórico para contexto del modelo
     tcPromedio2025: { valor: 17.00, source: "JUNTA_MAY26", nota: "Promedio USD/MXN 2025" },
     tc1T26:         { valor: 18.07, source: "JUNTA_MAY26", nota: "Promedio 1T26 — ya reflejado en mejora de márgenes" },
@@ -476,7 +476,7 @@ const AUTLAN = {
     sofr1m:     { valor:  4.30, source: "CALC/Estimado May-2026", audited: false },
     inflacion:  { valor:  4.45, source: "INEGI Abr-2026" },
     dxy:        { valor: 99.0,  source: "Bloomberg Abr-2026" },
-    precioOro:  { valor: 3000,  moneda: "USD/oz", source: "Mercado May-2026" },
+    precioOro:  { valor: 4513,  moneda: "USD/oz", source: "LSEG Refinitiv 02-jun-2026" },
     precioMn:   { valor: 1309,  moneda: "USD/MT", source: "IMARC Q1-2026" },
     precioGas:  { valor:  3.20, moneda: "USD/MMBtu", source: "Henry Hub estimado" },
     euribor6m:  { valor:  2.40, source: "BCE estimado May-2026" },
@@ -493,7 +493,7 @@ const AUTLAN = {
         base:     { valor: 18.0,  narrativa: "TC ~$18 consistente con promedio 1T26 ($18.07). Peso estable post-USMCA. Riesgo soberano por baja de calificadoras puede presionar peso adicional." },
         optimista:{ valor: 19.5,  narrativa: "Depreciación moderada del peso. Fed mantiene tasas altas; DXY 103+. Favorable para ingresos Autlán — estructura 100% USD ingresos / 60% costos en pesos." },
         adverso:  { valor: 16.0,  narrativa: "Apreciación fuerte del peso. Collar FX actual (floor $17.30) protege parcialmente. EBITDA comprime ~8-12%. Collar se ejerce bajo $17.30." },
-        actual:   17.20,
+        actual:   17.30,
         min:      14.0,
         max:      23.0,
         sensibilidad: "Cada $1 de apreciación del peso reduce EBITDA ~USD 18M sobre base ingresos USD 322M (estructura 100% USD ingresos / ~60% costos MXN)",
@@ -523,12 +523,12 @@ const AUTLAN = {
       precioOro: {
         label:  "Precio del Oro",
         unidad: "USD / oz",
-        base:     { valor: 2900,  narrativa: "Corrección moderada desde máximos. Demanda banco central sostiene piso. DXY moderado. Metallorum: meta 20,000 oz 2026 afectada moderadamente." },
-        optimista:{ valor: 3300,  narrativa: "Risk-off global. Tensiones geopolíticas. Bancos centrales aceleran compras. USD débil. Metallorum sin cobertura captura upside total." },
-        adverso:  { valor: 2400,  narrativa: "Fortaleza USD (DXY >105). Fed hawkish. Salida de ETFs. Metallorum sin cobertura impactado ~USD 12M sobre meta 20K oz." },
-        actual:   3000,
-        min:      1800,
-        max:      4000,
+        base:     { valor: 4500,  narrativa: "Consolidación cerca de máximos (~$4,500). Demanda de banco central sostiene. Metallorum: meta 20,000 oz 2026." },
+        optimista:{ valor: 5200,  narrativa: "Risk-off global. Tensiones geopolíticas. Bancos centrales aceleran compras. USD débil. Oro extiende rally." },
+        adverso:  { valor: 3800,  narrativa: "Corrección del oro desde máximos. Fortaleza USD (DXY >105). Fed hawkish. Salida de ETFs." },
+        actual:   4513,
+        min:      3000,
+        max:      5500,
         sensibilidad: "Cada USD 100/oz impacta ingresos Metallorum ~USD 2M anualizados (base: meta 20,000 oz 2026 — junta may-2026)",
       },
       precioMn: {

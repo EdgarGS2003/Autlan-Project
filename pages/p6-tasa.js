@@ -603,6 +603,41 @@ function _tasaTabCap() {
           <span>${isEn ? "Adjust the parameters to calculate the cap." : "Ajusta los parámetros para calcular el cap."}</span>
         </div>
       </div>
+    </div>
+    
+    <!-- Propuesta de Reestructuración (Nuevo Collar) -->
+    <div class="card mt-24" style="border-left: 4px solid var(--accent); padding: 16px;">
+      <div style="font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+        <span>★</span>
+        <span>${isEn ? "Recommended Alternative: Collar Restructure" : "Alternativa Recomendada: Reestructuración a Nuevo Collar"}</span>
+      </div>
+      <div style="font-size: 12px; line-height: 1.6; color: var(--text-secondary); margin-bottom: 12px;">
+        ${isEn 
+          ? "As the existing collar (8.75% / 11%) is out-of-the-money and inactive, the risk desk recommends restructuring it into a new <strong>Zero-Cost Collar</strong> to hedge against rate hikes in the adverse scenario (7.75%):"
+          : "Debido a que el collar vigente (8.75% / 11%) está fuera del dinero e inactivo, la mesa de riesgos recomienda reestructurarlo en un nuevo <strong>Collar Costless (Cero Costo)</strong> para proteger contra alzas en el escenario adverso (7.75%):"}
+      </div>
+      <div class="grid-3" style="gap: 12px; margin-bottom: 12px;">
+        <div style="background: var(--bg-raised); padding: 10px; border-radius: var(--radius-sm); text-align: center;">
+          <div style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">${isEn ? "Purchased CAP" : "CAP Comprado"}</div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--danger);">7.50%</div>
+          <div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;">${isEn ? "Protects adverse rate (7.75%)" : "Protege tasa adversa (7.75%)"}</div>
+        </div>
+        <div style="background: var(--bg-raised); padding: 10px; border-radius: var(--radius-sm); text-align: center;">
+          <div style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">${isEn ? "Sold FLOOR" : "FLOOR Vendido"}</div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--success);">6.69%</div>
+          <div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;">${isEn ? "Finances the CAP premium" : "Financia la prima del CAP"}</div>
+        </div>
+        <div style="background: var(--bg-raised); padding: 10px; border-radius: var(--radius-sm); text-align: center;">
+          <div style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">${isEn ? "Net Cost & Horizon" : "Costo Neto y Plazo"}</div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--accent);">$0 (Zero-Cost)</div>
+          <div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;">${isEn ? "1 Year · MXN 157.6M Notional" : "1 Año · Nocional MXN 157.6M"}</div>
+        </div>
+      </div>
+      <div style="font-size: 11px; color: var(--text-muted);">
+        * ${isEn 
+          ? "Pricing based on Black-76 for caplets under a swaption volatility of 16.8% (LSEG Refinitiv 02-Jun-2026). Costless structure solved via parity of option premiums."
+          : "Valuación basada en Black-76 para caplets bajo una volatilidad de swaption de 16.8% (LSEG Refinitiv 02-jun-2026). Estructura costless resuelta por paridad de primas."}
+      </div>
     </div>`;
 }
 
@@ -1042,8 +1077,8 @@ function _tasaRenderRecomendacion() {
         </div>
         <div style="font-size:12px; line-height:1.6;">
           ${isEn
-            ? `<strong>Keep TIIE collar</strong> as tail risk protection (adverse USMCA -> Banxico rate hike). Add <strong>SOFR IRS</strong> on 50% of core debt (USD ~67M) to lock the largest financial expense component.`
-            : `<strong>Mantener el collar TIIE</strong> como protección de tail risk (USMCA adverso → Banxico sube). Agregar <strong>IRS SOFR</strong> sobre 50% de la deuda principal (USD ~67M) para fijar el mayor componente del gasto financiero.`}
+            ? `<strong>Restructure TIIE collar</strong> to a new costless collar with **Cap 7.50% / Floor 6.69%** (notional MXN 157.6M, 1-year horizon, zero net cost). This protects against the adverse rate hike scenario (7.75%) while funding the premium completely with the sold floor.`
+            : `<strong>Reestructurar el collar TIIE</strong> a un nuevo collar costless con **Cap 7.50% / Floor 6.69%** (nocional MXN 157.6M, horizonte 1 año, costo neto cero). Esto protege contra el escenario adverso de alzas (7.75%) financiando la prima mediante el floor vendido.`}
         </div>
       </div>
     </div>

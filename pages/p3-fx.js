@@ -17,8 +17,8 @@ function renderFX() {
       <span class="alert-icon">⚠</span>
       <span>
         ${isEn
-          ? `Active FX hedging: <strong>~3%</strong> of exposure covered vs <strong>60%</strong> allowed by internal policy. Gap of <strong>~57 pp</strong> without protection on ~USD 394M of annualized revenues. Current USD/MXN: <strong id="fx-tc-live">17.20</strong>`
-          : `Cobertura FX activa: <strong>~3%</strong> de exposición cubierta vs <strong>60%</strong> permitido por política interna. Gap de <strong>~57 pp</strong> sin protección sobre ~USD 394M de ingresos anualizados. USD/MXN actual: <strong id="fx-tc-live">17.20</strong>`}
+          ? `Active FX hedging: <strong>~3%</strong> of exposure covered vs <strong>60%</strong> allowed by internal policy. Gap of <strong>~57 pp</strong> without protection on ~USD 394M of annualized revenues. Current USD/MXN: <strong id="fx-tc-live">17.30</strong>`
+          : `Cobertura FX activa: <strong>~3%</strong> de exposición cubierta vs <strong>60%</strong> permitido por política interna. Gap de <strong>~57 pp</strong> sin protección sobre ~USD 394M de ingresos anualizados. USD/MXN actual: <strong id="fx-tc-live">17.30</strong>`}
       </span>
     </div>
 
@@ -245,12 +245,12 @@ function _fxTabCollar() {
 
         <div class="field-group">
           <label>${isEn ? "Floor — long put (protection floor)" : "Floor — put largo (piso de protección)"}</label>
-          <input type="number" id="fx-collar-floor" value="17.50" step="0.05"
+          <input type="number" id="fx-collar-floor" value="17.00" step="0.05"
                  oninput="calcFXCollar()" />
         </div>
         <div class="field-group">
           <label>${isEn ? "Cap — short call (yielded ceiling)" : "Cap — call corto (techo que se cede)"}</label>
-          <input type="number" id="fx-collar-cap" value="18.50" step="0.05"
+          <input type="number" id="fx-collar-cap" value="17.88" step="0.05"
                  oninput="calcFXCollar()" />
         </div>
         <div class="field-group">
@@ -287,7 +287,7 @@ function _fxTabForward() {
         <div class="section-title" style="margin-top:0;">${isEn ? "Forward Parameters" : "Parámetros del forward"}</div>
         <div class="field-group">
           <label>${isEn ? "Spot Exchange Rate (USD/MXN)" : "Tipo de cambio spot (USD/MXN)"}</label>
-          <input type="number" id="fx-fwd-spot" value="17.20" step="0.05"
+          <input type="number" id="fx-fwd-spot" value="17.30" step="0.05"
                  oninput="calcFXForward()" />
         </div>
         <div class="field-group">
@@ -328,7 +328,7 @@ function _fxTabPut() {
         <div class="section-title" style="margin-top:0;">${isEn ? "USD/MXN Put — Sell Option" : "Put USD/MXN — opción de venta"}</div>
         <div class="field-group">
           <label>${isEn ? "Current Spot (USD/MXN)" : "Spot actual (USD/MXN)"}</label>
-          <input type="number" id="fx-put-spot" value="17.20" step="0.05"
+          <input type="number" id="fx-put-spot" value="17.30" step="0.05"
                  oninput="calcFXPut()" />
         </div>
         <div class="field-group">
@@ -427,8 +427,8 @@ window.switchFXTab = function(idx) {
 window.calcFXCollar = function() {
   const isEn   = I18N.getLocale() === "en";
   const S      = Scenarios.getVar("usdmxn");
-  const floor  = parseFloat(document.getElementById("fx-collar-floor")?.value  || 17.5);
-  const cap    = parseFloat(document.getElementById("fx-collar-cap")?.value    || 18.5);
+  const floor  = parseFloat(document.getElementById("fx-collar-floor")?.value  || 17.0);
+  const cap    = parseFloat(document.getElementById("fx-collar-cap")?.value    || 17.88);
   const noc    = parseFloat(document.getElementById("fx-collar-noc")?.value    || 10000);
   const meses  = parseFloat(document.getElementById("fx-collar-T")?.value      || 6);
   const volPct = parseFloat(document.getElementById("fx-collar-vol")?.value    || 12);
@@ -478,7 +478,7 @@ window.calcFXCollar = function() {
 
 window.calcFXForward = function() {
   const isEn  = I18N.getLocale() === "en";
-  const spot  = parseFloat(document.getElementById("fx-fwd-spot")?.value   || 17.20);
+  const spot  = parseFloat(document.getElementById("fx-fwd-spot")?.value   || 17.30);
   const r_d   = parseFloat(document.getElementById("fx-fwd-rmx")?.value    || 7.10) / 100;
   const r_f   = parseFloat(document.getElementById("fx-fwd-rusd")?.value   || 4.30) / 100;
   const meses = parseFloat(document.getElementById("fx-fwd-T")?.value      || 6);
@@ -517,7 +517,7 @@ window.calcFXForward = function() {
 
 window.calcFXPut = function() {
   const isEn   = I18N.getLocale() === "en";
-  const S      = parseFloat(document.getElementById("fx-put-spot")?.value   || 17.20);
+  const S      = parseFloat(document.getElementById("fx-put-spot")?.value   || 17.30);
   const K      = parseFloat(document.getElementById("fx-put-strike")?.value || 17.00);
   const volPct = parseFloat(document.getElementById("fx-put-vol")?.value    || 12);
   const meses  = parseFloat(document.getElementById("fx-put-T")?.value      || 6);
@@ -616,20 +616,20 @@ function _fxRenderTablaComparativa() {
   const sinCob = (tc) => tc * noc;
 
   // Forward a 18.20 aprox (paridad)
-  const fwdPrice = Models.forwardPrice(17.20, r, q, T).forward;
+  const fwdPrice = Models.forwardPrice(17.30, r, q, T).forward;
   const conFwd   = (tc) => {
     const pay = Models.forwardPayoff(tc, fwdPrice, noc);
     return sinCob(tc) + pay.ganancia;
   };
 
-  // Collar 17.50 - 18.50
+  // Collar 17.00 - 17.88
   const conCollar = (tc) => {
-    const pay = Models.collarPayoff(tc, 17.50, 18.50, noc);
+    const pay = Models.collarPayoff(tc, 17.00, 17.88, noc);
     return sinCob(tc) + pay.payoffCollar;
   };
 
   // Put 17.00
-  const put = Models.heston("put", 17.20, 17.00, T, r, q,
+  const put = Models.heston("put", 17.30, 17.00, T, r, q,
     Models.PARAMS.fx_usdmxn.v0, Models.PARAMS.fx_usdmxn.kappa,
     Models.PARAMS.fx_usdmxn.theta_v, Models.PARAMS.fx_usdmxn.xi,
     Models.PARAMS.fx_usdmxn.rho_sv);
@@ -638,7 +638,7 @@ function _fxRenderTablaComparativa() {
   const filas = [
     { label: isEn ? "Unhedged" : "Sin cobertura",      fn: sinCob,   clase: "" },
     { label: "Forward $"+fwdPrice.toFixed(2), fn: conFwd, clase: "accent" },
-    { label: "Collar $17.50-$18.50", fn: conCollar, clase: "success" },
+    { label: "Collar $17.00-$17.88", fn: conCollar, clase: "success" },
     { label: `Put $17.00 (${isEn ? "-premium" : "−prima"})`, fn: conPut,  clase: "warn" },
   ];
 
@@ -676,8 +676,8 @@ function _fxRenderPayoffChart() {
   const tcs    = [];
   for (let tc = 14.0; tc <= 22.0; tc += 0.1) tcs.push(parseFloat(tc.toFixed(2)));
 
-  const fwdP   = Models.forwardPrice(17.20, r, q, T).forward;
-  const putP   = Models.heston("put", 17.20, 17.00, T, r, q,
+  const fwdP   = Models.forwardPrice(17.30, r, q, T).forward;
+  const putP   = Models.heston("put", 17.30, 17.00, T, r, q,
     Models.PARAMS.fx_usdmxn.v0, Models.PARAMS.fx_usdmxn.kappa,
     Models.PARAMS.fx_usdmxn.theta_v, Models.PARAMS.fx_usdmxn.xi,
     Models.PARAMS.fx_usdmxn.rho_sv).precio;
@@ -686,7 +686,7 @@ function _fxRenderPayoffChart() {
     {
       label:  isEn ? "Unhedged" : "Sin cobertura",
       color:  "#8A96A8",
-      vals:   tcs.map(tc => (tc - 17.20) * noc),
+      vals:   tcs.map(tc => (tc - 17.30) * noc),
     },
     {
       label:  `Forward $${fwdP.toFixed(2)}`,
@@ -694,9 +694,9 @@ function _fxRenderPayoffChart() {
       vals:   tcs.map(tc => Models.forwardPayoff(tc, fwdP, noc).ganancia),
     },
     {
-      label:  "Collar $17.50-$18.50",
+      label:  "Collar $17.00-$17.88",
       color:  "#2D7D4E",
-      vals:   tcs.map(tc => Models.collarPayoff(tc, 17.50, 18.50, noc).payoffCollar),
+      vals:   tcs.map(tc => Models.collarPayoff(tc, 17.00, 17.88, noc).payoffCollar),
     },
     {
       label:  "Put $17.00",

@@ -444,22 +444,22 @@ const Models = (() => {
   // ─────────────────────────────────────────
   const PARAMS = {
     fx_usdmxn: {
-      sigma:   0.12,
-      q:       0.071,
-      r:       0.043,
-      v0:      0.0144,
+      sigma:   0.0907,   // vol implícita ATM 3M (FENICS, 02-jun-2026) — antes 0.12
+      q:       0.071,    // tasa MXN (doméstica)
+      r:       0.043,    // tasa USD (foránea)
+      v0:      0.0082,   // = 0.0907^2 — antes 0.0144
       kappa:   2.5,
-      theta_v: 0.0169,
+      theta_v: 0.0082,
       xi:      0.40,
       rho_sv: -0.60,
     },
     oro: {
-      sigma:   0.18,
+      sigma:   0.2449,   // vol implícita GVZ (CBOE, 02-jun-2026) — antes 0.18
       q:       0.00,
       r:       0.043,
-      v0:      0.0324,
+      v0:      0.0600,   // = 0.2449^2 — antes 0.0324
       kappa:   1.2,
-      theta_v: 0.0400,
+      theta_v: 0.0600,
       xi:      0.35,
       rho_sv: -0.40,
     },
@@ -470,7 +470,7 @@ const Models = (() => {
       r:       0.043,
     },
     tasa_tiie: {
-      sigma:   0.25,
+      sigma:   0.168,    // vol swaption 1Y×1Y lognormal (LSEG) — antes 0.25
       kappa:   0.80,
     },
     tasa_sofr: {

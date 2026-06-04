@@ -128,24 +128,19 @@ function _getPortafolio() {
       id:          "COB-FX-01",
       riesgo:      isEn ? "Exchange rate" : "Tipo de cambio",
       instrumento: isEn ? "USD/MXN Collar (costless)" : "Collar USD/MXN (costless)",
-      descripcion: isEn ? "4 additional monthly collars · USD 4M/month" : "4 collares mensuales adicionales · USD 4M/mes",
-      floor:       17.40,
-      cap:         18.40,
-      nocional:    48000,   // USD miles — 12 meses × USD 4M/mes
-      pctExposicion: 14.5, // % de ingresos anualizados
-      costoNeto:   0,       // costless
-      horizonte:   isEn ? "12 months" : "12 meses",
+      descripcion: isEn ? "Costless collar · floor 17.00 / cap 17.88" : "Collar costless · floor 17.00 / cap 17.88",
+      floor:       17.00,
+      cap:         17.88,
+      nocional:    49200,   // USD miles — ~50% ingreso trimestral
+      pctExposicion: 50,
+      costoNeto:   0,
+      horizonte:   isEn ? "3 months" : "3 meses",
       mercado:     "OTC",
       estado:      isEn ? "RECOMMENDED" : "RECOMENDADO",
       color:       "var(--accent)",
       payoff: (tcFinal) => {
-        // Collar: protege si TC < floor, limita si TC > cap
-        const payoffMes = tcFinal < 17.40
-          ? (17.40 - tcFinal) * 4000
-          : tcFinal > 18.40
-          ? (18.40 - tcFinal) * 4000
-          : 0;
-        return payoffMes * 12; // anualizado
+        const ef = Math.min(Math.max(tcFinal, 17.00), 17.88);
+        return (ef - tcFinal) * 49200;
       },
     },
     {
@@ -170,20 +165,20 @@ function _getPortafolio() {
       id:          "COB-ORO-01",
       riesgo:      isEn ? "Gold Price" : "Precio del Oro",
       instrumento: isEn ? "Gold Costless Collar" : "Costless Collar oro",
-      descripcion: isEn ? "Collar $2,700–$3,300/oz · 260K oz (~50% prod.)" : "Collar $2,700–$3,300/oz · 260K oz (~50% prod.)",
-      floor:       2700,
-      cap:         3300,
-      nocional:    260000,  // oz
-      nocionalUSD: 260000 * oro / 1000, // USD miles
-      pctExposicion: 50,
+      descripcion: isEn ? "Collar $4,400–$4,569/oz · 12K oz (~60% prod.)" : "Collar $4,400–$4,569/oz · 12K oz (~60% prod.)",
+      floor:       4400,
+      cap:         4569,
+      nocional:    12000,   // oz
+      nocionalUSD: 12000 * oro / 1000, // USD miles
+      pctExposicion: 60,
       costoNeto:   0,
-      horizonte:   isEn ? "12 months" : "12 meses",
+      horizonte:   isEn ? "3 months" : "3 meses",
       mercado:     "OTC",
       estado:      isEn ? "RECOMMENDED" : "RECOMENDADO",
       color:       "var(--gold)",
       payoff: (oroFinal) => {
-        const ef = Math.min(Math.max(oroFinal, 2700), 3300);
-        return (ef - oroFinal) * 260; // USD miles
+        const ef = Math.min(Math.max(oroFinal, 4400), 4569);
+        return (ef - oroFinal) * 12; // USD miles (12,000 oz / 1000)
       },
     },
     {
@@ -220,20 +215,20 @@ function _getPortafolio() {
     {
       id:          "COB-TASA-02",
       riesgo:      isEn ? "Interest rate (TIIE)" : "Tasa de interés (TIIE)",
-      instrumento: isEn ? "Active TIIE Collar (maintain)" : "Collar TIIE existente (mantener)",
-      descripcion: isEn ? "Collar 8.75%–11% · MXN 157.6M · Matures 2028" : "Collar 8.75%–11% · MXN 157.6M · Vence 2028",
-      floor:       8.75,
-      cap:         11.00,
+      instrumento: isEn ? "TIIE Collar (restructure)" : "Collar TIIE (reestructurar)",
+      descripcion: isEn ? "New collar cap 7.50% / floor 6.69% · MXN 157.6M" : "Collar nuevo cap 7.50% / floor 6.69% · MXN 157.6M",
+      floor:       6.69,
+      cap:         7.50,
       nocionalMXN: 157584,
       nocionalUSD: 157584 / tc,
-      pctExposicion: 50,
-      costoNeto:   -AUTLAN.derivadosVigentes.collarTasa.mtm.minusvalia1T26.valor,
-      horizonte:   isEn ? "Until Jun 2028" : "Hasta jun-2028",
+      pctExposicion: 100,
+      costoNeto:   0,       // zero-cost
+      horizonte:   isEn ? "12 months" : "12 meses",
       mercado:     "OTC",
-      estado:      isEn ? "EXISTING — MAINTAIN" : "EXISTENTE — MANTENER",
-      color:       "var(--warn)",
+      estado:      isEn ? "RECOMMENDED" : "RECOMENDADO",
+      color:       "var(--accent)",
       payoff: (tiieFinal) => {
-        const ef     = Math.min(Math.max(tiieFinal, 8.75), 11.0);
+        const ef     = Math.min(Math.max(tiieFinal, 6.69), 7.50);
         const nocUSD = 157584 / tc;
         return (tiieFinal - ef) * nocUSD / 100;
       },
@@ -751,11 +746,11 @@ function _estRenderTradeoff() {
     elim: {
       title: "✓ WHAT RISK I ELIMINATED",
       items: [
-        "USD/MXN drop < $17.40 — FX collar protects completely",
-        "Gold price drop < $2,700/oz — gold collar triggers",
+        "USD/MXN drop < $17.00 — FX collar protects completely",
+        "Gold price drop < $4,400/oz — gold collar triggers",
         "Natural gas spike > $3.35/MMBtu — swap locks in the cost",
         "SOFR rise > 4.50% — IRS locks rate on USD 67M debt",
-        "TIIE rise > 11% — active collar cap limits the ceiling",
+        "TIIE rise > 7.50% — restructured collar cap limits the ceiling",
         "Extreme EBITDA volatility in the adverse scenario",
       ]
     },
@@ -766,15 +761,15 @@ function _estRenderTradeoff() {
         "40-50% of FX revenues still unhedged (up to policy limit)",
         "OTC counterparty risk — mitigated with IG banks",
         "Basis risk between derivative index and actual client price",
-        "TIIE between 8.75% and floor — collar OTM until rate rises",
+        "TIIE below 6.69% — collar floor requires paying floor rate",
         "July 2026 USMCA risk — not covered with derivatives (political tail risk)",
       ]
     },
     sacr: {
       title: "✗ WHAT UPSIDE I SACRIFICE",
       items: [
-        "USD/MXN > $18.40 — FX collar limits additional revenues",
-        "Gold > $3,300/oz — gold collar yields extra gain",
+        "USD/MXN > $17.88 — FX collar limits additional revenues",
+        "Gold > $4,569/oz — gold collar limits extra gain",
         "Natural gas < $3.35/MMBtu — swap pays fixed even if spot is lower",
         "SOFR < 4.50% — IRS pays fixed rate even if SOFR drops",
         "Full benefit of a weaker peso in the optimistic scenario",
@@ -785,11 +780,11 @@ function _estRenderTradeoff() {
     elim: {
       title: "✓ QUÉ RIESGO ELIMINÉ",
       items: [
-        "Caída de USD/MXN < $17.40 — collar FX protege completamente",
-        "Caída del oro < $2,700/oz — collar oro actúa",
+        "Caída de USD/MXN < $17.00 — collar FX protege completamente",
+        "Caída del oro < $4,400/oz — collar oro actúa",
         "Alza de gas > $3.35/MMBtu — swap fija el costo",
         "Alza SOFR > 4.50% — IRS fija la tasa de USD 67M",
-        "TIIE > 11% — cap del collar existente limita el techo",
+        "TIIE > 7.50% — cap del collar reestructurado limita el techo",
         "Volatilidad extrema de EBITDA en escenario adverso",
       ]
     },
@@ -800,15 +795,15 @@ function _estRenderTradeoff() {
         "40-50% de ingresos FX aún sin cubrir (hasta límite de política)",
         "Riesgo de contraparte OTC — mitigado con bancos IG",
         "Basis risk entre índice del derivado y precio real de cliente",
-        "TIIE entre 8.75% y floor — collar OTM hasta que suba la tasa",
+        "TIIE bajo 6.69% — floor del nuevo collar requiere pagar tasa floor",
         "Riesgo USMCA julio 2026 — no cubierto con derivado (tail risk político)",
       ]
     },
     sacr: {
       title: "✗ QUÉ UPSIDE SACRIFICO",
       items: [
-        "USD/MXN > $18.40 — collar FX limita el ingreso adicional",
-        "Oro > $3,300/oz — collar oro cede la ganancia extra",
+        "USD/MXN > $17.88 — collar FX limita el ingreso adicional",
+        "Oro > $4,569/oz — collar oro limita la ganancia extra",
         "Gas < $3.35/MMBtu — swap paga el precio fijo aunque mercado esté más bajo",
         "SOFR < 4.50% — IRS paga tasa fija aunque SOFR baje",
         "Beneficio total de un peso más débil en escenario optimista",
@@ -1064,8 +1059,8 @@ function _estRenderConclusion() {
       just: `The Fed's cycle suggests SOFR might decrease. Hedging 100% at the current fixed rate would sacrifice those potential future savings. The 50% hedges balance certainty with the possibility of capturing future cuts on the unhedged half.`,
     },
     {
-      dec: "Maintain TIIE collar (no unwinding)",
-      just: `Although it is out of the money today (TIIE ${tiie.toFixed(2)}% vs floor 8.75%), the exit cost does not justify unwinding. The collar serves as tail risk protection if USMCA fails and Banxico reverses the rate-cut cycle. It is cheap insurance for a real risk.`,
+      dec: "Restructure TIIE collar",
+      just: `Restructure the dead collar to a new costless collar (Cap 7.50% / Floor 6.69%). This replaces the inactive insurance with a structured hedge aligned with current market rates, protecting against the adverse scenario (7.75%) at zero net premium.`,
     },
   ] : [
     {
@@ -1081,8 +1076,8 @@ function _estRenderConclusion() {
       just: `El ciclo de la Fed sugiere que SOFR podría bajar. Cubrir el 100% a la tasa fija actual sacrificaría ese potencial ahorro. El 50% balancea la certidumbre con la posibilidad de capturar recortes futuros en la mitad no cubierta.`,
     },
     {
-      dec: "Mantener collar TIIE (no liquidar)",
-      just: `Aunque está fuera del dinero hoy (TIIE ${tiie.toFixed(2)}% vs floor 8.75%), el costo de salida no justifica la liquidación. El collar sirve como protección de tail risk si el USMCA falla y Banxico revierte el ciclo de recortes. Es un seguro barato para un riesgo real.`,
+      dec: "Reestructurar collar TIIE (no liquidar)",
+      just: `Reestructurar el collar muerto a un nuevo collar costless (Cap 7.50% / Floor 6.69%). Esto reemplaza el seguro inactivo por una cobertura estructurada alineada con las tasas actuales de mercado, protegiendo contra el escenario adverso (7.75%) con costo de prima cero.`,
     },
   ];
 
@@ -1098,7 +1093,7 @@ function _estRenderConclusion() {
       urgencia: "IMMEDIATE",
     },
     {
-      cond: "Gold drops below $2,700/oz",
+      cond: "Gold drops below $4,400/oz",
       accion: "Verify that the collar is exercising. Evaluate additional put if the trend is prolonged.",
       urgencia: "HIGH",
     },
@@ -1108,7 +1103,7 @@ function _estRenderConclusion() {
       urgencia: "MEDIUM",
     },
     {
-      cond: "TIIE rises above 8.75%",
+      cond: "TIIE rises above 7.50%",
       accion: "TIIE collar enters the money — monitor that execution is carrying out correctly.",
       urgencia: "MONITORING",
     },
@@ -1124,7 +1119,7 @@ function _estRenderConclusion() {
       urgencia: "INMEDIATA",
     },
     {
-      cond: "Oro baja de $2,700/oz",
+      cond: "Oro baja de $4,400/oz",
       accion: "Verificar que el collar esté ejerciéndose. Evaluar put adicional si la tendencia es prolongada.",
       urgencia: "ALTA",
     },
@@ -1134,7 +1129,7 @@ function _estRenderConclusion() {
       urgencia: "MEDIA",
     },
     {
-      cond: "TIIE sube sobre 8.75%",
+      cond: "TIIE sube sobre 7.50%",
       accion: "Collar TIIE entra en el dinero — monitorear que se esté ejecutando correctamente.",
       urgencia: "MONITOREO",
     },
